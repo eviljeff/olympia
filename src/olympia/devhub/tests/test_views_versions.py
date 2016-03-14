@@ -164,7 +164,7 @@ class TestVersion(TestCase):
         res = self.client.post(self.delete_url, self.delete_data)
         eq_(res.status_code, 302)
         eq_(self.addon.versions.count(), 1)
-        eq_(Addon.objects.get(id=3615).status, amo.STATUS_UNREVIEWED)
+        eq_(Addon.objects.get(id=3615).status, amo.STATUS_NULL)
 
     @mock.patch('olympia.files.models.File.hide_disabled_file')
     def test_user_can_disable_addon(self, hide_mock):

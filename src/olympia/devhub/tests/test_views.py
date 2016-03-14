@@ -825,15 +825,16 @@ class TestHome(TestCase):
         eq_(self.get_pq()('#devhub-sidebar #editor-promo').length, 0)
 
     def test_my_addons(self):
-        statuses = [(amo.STATUS_NOMINATED, amo.STATUS_NOMINATED),
+        statuses = [(amo.STATUS_UNREVIEWED, amo.STATUS_UNREVIEWED),
+                    (amo.STATUS_NOMINATED, amo.STATUS_UNREVIEWED),
                     (amo.STATUS_PUBLIC, amo.STATUS_UNREVIEWED),
-                    (amo.STATUS_LITE, amo.STATUS_UNREVIEWED)]
+                    (amo.STATUS_LITE_AND_NOMINATED, amo.STATUS_LITE)]
 
-        for addon_status in statuses:
+        for (addon_status, file_status) in statuses:
             file = self.addon.latest_version.files.all()[0]
-            file.update(status=addon_status[1])
+            file.update(status=file_status)
 
-            self.addon.update(status=addon_status[0])
+            self.addon.update(status=addon_status)
 
             doc = self.get_pq()
             addon_item = doc('#my-addons .addon-item')
@@ -849,7 +850,7 @@ class TestHome(TestCase):
             eq_(addon_item.find('.upload-new-version a').attr('href'),
                 self.addon.get_dev_url('versions') + '#version-upload')
 
-            self.addon.status = statuses[1][0]
+            self.addon.status = amo.STATUS_PUBLIC
             self.addon.save()
             doc = self.get_pq()
             addon_item = doc('#my-addons .addon-item')

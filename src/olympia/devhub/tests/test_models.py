@@ -276,7 +276,7 @@ class TestVersion(TestCase):
 
         self.version.delete()
         eq_(self.addon.versions.count(), 1)
-        eq_(Addon.objects.get(id=3615).status, amo.STATUS_UNREVIEWED)
+        eq_(Addon.objects.get(id=3615).status, amo.STATUS_NULL)
 
     def test_file_delete_status_null(self):
         eq_(self.addon.versions.count(), 1)

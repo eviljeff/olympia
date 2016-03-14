@@ -1229,7 +1229,7 @@ class TestAddonModels(TestCase):
         addon, version = self.setup_files(amo.STATUS_UNREVIEWED)
         addon.update(status=amo.STATUS_PUBLIC)
         version.save()
-        eq_(addon.status, amo.STATUS_UNREVIEWED)
+        eq_(addon.status, amo.STATUS_NOMINATED)
 
     def test_removing_public_with_prelim(self):
         addon, version = self.setup_files(amo.STATUS_LITE)
@@ -1624,10 +1624,6 @@ class TestGetVersion(TestCase):
         self.new_version(amo.STATUS_LITE)
         eq_(self.addon.get_version(), self.version)
 
-    def test_public_new_nominated_version(self):
-        self.new_version(amo.STATUS_NOMINATED)
-        eq_(self.addon.get_version(), self.version)
-
     def test_public_new_public_version(self):
         v = self.new_version(amo.STATUS_PUBLIC)
         eq_(self.addon.get_version(), v)
@@ -1638,31 +1634,31 @@ class TestGetVersion(TestCase):
 
     def test_lite_new_unreviewed_version(self):
         self.addon.update(status=amo.STATUS_LITE)
+        self.version.all_files[0].update(status=amo.STATUS_LITE)
         self.new_version(amo.STATUS_UNREVIEWED)
         eq_(self.addon.get_version(), self.version)
 
-    def test_lite_new_lan_version(self):
-        self.addon.update(status=amo.STATUS_LITE)
-        v = self.new_version(amo.STATUS_LITE_AND_NOMINATED)
-        eq_(self.addon.get_version(), v)
-
     def test_lite_new_lite_version(self):
         self.addon.update(status=amo.STATUS_LITE)
+        self.version.all_files[0].update(status=amo.STATUS_LITE)
         v = self.new_version(amo.STATUS_LITE)
         eq_(self.addon.get_version(), v)
 
     def test_lite_new_full_version(self):
         self.addon.update(status=amo.STATUS_LITE)
+        self.version.all_files[0].update(status=amo.STATUS_LITE)
         v = self.new_version(amo.STATUS_PUBLIC)
         eq_(self.addon.get_version(), v)
 
     def test_lan_new_lite_version(self):
         self.addon.update(status=amo.STATUS_LITE_AND_NOMINATED)
+        self.version.all_files[0].update(status=amo.STATUS_LITE)
         v = self.new_version(amo.STATUS_LITE)
         eq_(self.addon.get_version(), v)
 
     def test_lan_new_full_version(self):
         self.addon.update(status=amo.STATUS_LITE_AND_NOMINATED)
+        self.version.all_files[0].update(status=amo.STATUS_LITE)
         v = self.new_version(amo.STATUS_PUBLIC)
         eq_(self.addon.get_version(), v)
 

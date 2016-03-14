@@ -983,8 +983,8 @@ class Addon(OnChangeMixin, ModelBase):
     def update_status(self, ignore_version=None):
         self.reload()
 
-        if (self.status in [amo.STATUS_NULL, amo.STATUS_DELETED]
-                or self.is_disabled or self.is_persona()):
+        if (self.status in [amo.STATUS_NULL, amo.STATUS_DELETED] or
+                self.is_disabled or self.is_persona()):
             self.update_version(ignore=ignore_version)
             return
 
@@ -1007,14 +1007,21 @@ class Addon(OnChangeMixin, ModelBase):
             if versions.filter(files__status=amo.STATUS_LITE).exists():
                 status = amo.STATUS_LITE
                 logit('only lite files')
+            elif versions.filter(files__status=amo.STATUS_UNREVIEWED).exists():
+                status = amo.STATUS_NOMINATED
+                logit('only unreviewed files')
             else:
-                status = amo.STATUS_UNREVIEWED
-                logit('no reviewed files')
-        elif (self.status in amo.REVIEWED_STATUSES
-              and self.latest_version
-              and self.latest_version.has_files
-              and (self.latest_version.all_files[0].status
-                   in amo.UNDER_REVIEW_STATUSES)):
+                status = amo.STATUS_NULL
+                logit('no reviewed files - only beta?')
+        # elif (self.status == amo.STATUS_LITE and
+        #      not versions.filter(files__status=amo.STATUS_LITE).exists()):
+        #    status = amo.STATUS_UNREVIEWED
+        #    logit('only unreviewed files')
+        elif (self.status in amo.REVIEWED_STATUSES and
+              self.latest_version and
+              self.latest_version.has_files and
+              self.latest_version.all_files[0].status ==
+                amo.STATUS_UNREVIEWED):
             # Addon is public, but its latest file is not (it's the case on a
             # new file upload). So, call update, to trigger watch_status, which
             # takes care of setting nomination time when needed.
