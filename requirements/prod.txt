@@ -31,7 +31,7 @@ defusedxml==0.4.1 --hash=sha256:e7aaf25db5af04803d3997baae0837e94fbe09d2780a34d2
 dennis==0.4.2 --hash=sha256:2dfc7676faaf0790fe100279938d1ffbbf658202208a32961c593fbdb5479433 \
               --hash=sha256:196eef8dd37c197c7b862176b4db11ed0d0c07dcd9734ed2bb09eceeacaa5b93 \
               --hash=sha256:fa113c5167c3a8f7eace3263d091a5baf4332437ccd83212e4d44bbc94426c56
-Django==1.7.11 --hash=sha256:100164556897c1219f33706e63a656b8848d33d09b0161e2deefcc50978cf62d
+Django==1.8.13
 dj-database-url==0.2.2 --hash=sha256:492a7294b85ad8ac1b13be0b7337f381d2d44c4da185f289ab7c26dd765ef6cb \
                        --hash=sha256:4130b2d58edd44210b97bf0ced77606642f2858aa79e6c1c4c72128faa56ee80
 django-aesfield==0.1.2 --hash=sha256:b77932c67dd42f01a119133de1fa88effb2c4d97ab9039d9c95ae96049fadd5f \
