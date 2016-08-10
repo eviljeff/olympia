@@ -121,6 +121,9 @@ CSP_FRAME_SRC += ('https://www.sandbox.paypal.com',)
 CSP_IMG_SRC += (HTTP_GA_SRC,)
 CSP_SCRIPT_SRC += (HTTP_GA_SRC,)
 
+# Auth token required to authorize a postfix host.
+POSTFIX_AUTH_TOKEN = 'totally-unsecure-string-for-local-development-goodness'
+
 # If you have settings you want to overload, put them in a local_settings.py.
 try:
     from local_settings import *  # noqa

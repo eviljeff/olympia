@@ -1,0 +1,69 @@
+Hi Andreas,
+
+Thanks for comments. Here is our answers:
+
+1) We removed analytics.
+
+2) We=E2=80=99ve added version number of jquery into jquery file.
+
+and last, we=E2=80=99re submitting updated version at the moment.
+
+Best,
+
+=E2=80=94
+
+-----Original Message-----
+From: amo-editors@mozilla.org [mailto:amo-editors@mozilla.org]
+Sent: 28 August 2016 20:01
+To: fooobarrrr@foomail.com
+Subject: Mozilla Add-ons: Addon 1.0.3
+
+
+Hello,
+
+
+Your add-on, Addon 1.0.3, has been reviewed and did not meet the
+criteria for being hosted in our gallery.
+
+Reviewer:
+Andreas Wagner
+
+Comments:
+This version didn't pass review because of the following problems:
+
+1) A custom CSP for adding Google Analytics is not necessary. Please use
+the recommended method described in
+https://blog.mozilla.org/addons/2016/05/31/using-google-analytics-in-extens=
+ions/
+Related to that, the remote script injection in popup.html#L14 and
+popup.js#L32 is strictly prohibited.
+
+2) Your add-on includes a JavaScript library file that doesn't match any
+versions known to us. We require all add-ons to use unmodified release
+versions.
+* jQuery
+
+This version of your add-on has been disabled. You may re-request review by
+addressing the reviewer's comments and uploading a new version at
+https://addons.mozilla.org/en-US/developers/addon/segmentify/versions
+
+If you want to respond to this review, or have any questions about it,
+please reply to this email or join #amo-editors on irc.mozilla.org. To
+learn more about the review process, please visit
+https://developer.mozilla.org/en-US/Add-ons/AMO/Policy/Reviews
+--=20
+Mozilla Add-ons Team
+https://addons.mozilla.org
+
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+You received this email because you're subscribed to:
+* email me when my add-on is reviewed by an editor
+
+
+You can't unsubscribe from this type of email.
+
+Manage email notifications:
+https://addons.mozilla.org/users/edit#acct-notify

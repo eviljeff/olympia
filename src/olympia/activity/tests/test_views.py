@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 import json
+import mock
+import StringIO
+
+from django.test.utils import override_settings
 
 from olympia import amo
+from olympia.activity.models import ActivityLogToken
 from olympia.activity.tests.test_serializers import LogMixin
+from olympia.activity.tests.test_utils import sample_email
+from olympia.activity.views import post_email, EmailCreationPermission
 from olympia.amo.tests import (
-    addon_factory, APITestClient, user_factory, TestCase)
+    addon_factory, APITestClient, req_factory_factory, user_factory, TestCase)
 from olympia.amo.urlresolvers import reverse
 from olympia.addons.models import AddonUser
 from olympia.addons.utils import generate_addon_guid
+from olympia.devhub.models import ActivityLog
 from olympia.users.models import UserProfile
 
 
@@ -187,3 +195,69 @@ class TestReviewNotesViewSetList(ReviewNotesViewSetDetailMixin, TestCase):
         self.url = reverse('version-reviewnotes-list', kwargs={
             'addon_pk': addon_pk or self.addon.pk,
             'version_pk': version_pk or self.version.pk})
+
+
+@override_settings(ALLOWED_CLIENTS_EMAIL_API=['10.10.10.10'])
+@override_settings(POSTFIX_AUTH_TOKEN='something')
+class TestEmailApi(TestCase):
+
+    def get_request(self, data=None):
+        data = data or {}
+        datastr = json.dumps(data)
+        req = req_factory_factory(reverse('post-email-api'))
+        req.META['REMOTE_ADDR'] = '10.10.10.10'
+        req.META['HTTP_POSTFIX_AUTH_TOKEN'] = 'something'
+        req.META['CONTENT_LENGTH'] = len(datastr)
+        req.META['CONTENT_TYPE'] = 'application/json'
+        req.POST = data
+        req.method = 'POST'
+        req._stream = StringIO.StringIO(datastr)
+        return req
+
+    def test_basic(self):
+        user = user_factory()
+        self.grant_permission(user, '*:*')
+        addon = addon_factory()
+        req = self.get_request(
+            data={'body': open(sample_email).read()})
+
+        ActivityLogToken.objects.create(
+            user=user, version=addon.latest_version,
+            uuid='5a0b8a83d501412589cc5d562334b46b')
+
+        res = post_email(req)
+        assert res.status_code == 201
+        logs = ActivityLog.objects.for_addons(addon)
+        assert logs.count() == 1
+        assert logs.get(action=amo.LOG.REVIEWER_REPLY_VERSION.id)
+
+    def test_allowed(self):
+        assert EmailCreationPermission().has_permission(
+            self.get_request(), None)
+
+    def test_ip_denied(self):
+        req = self.get_request()
+        req.META['REMOTE_ADDR'] = '10.10.10.1'
+        assert not EmailCreationPermission().has_permission(req, None)
+
+    def test_no_postfix_token(self):
+        req = self.get_request()
+        del req.META['HTTP_POSTFIX_AUTH_TOKEN']
+        assert not EmailCreationPermission().has_permission(req, None)
+
+    def test_postfix_token_denied(self):
+        req = self.get_request()
+        req.META['HTTP_POSTFIX_AUTH_TOKEN'] = 'somethingwrong'
+        assert not EmailCreationPermission().has_permission(req, None)
+
+    @mock.patch('olympia.activity.tasks.process_email.apply_async')
+    def test_successful(self, _mock):
+        req = self.get_request({'body': 'something'})
+        res = post_email(req)
+        _mock.assert_called_with(('something',))
+        assert res.status_code == 201
+
+    def test_bad_request(self):
+        """Test with no email body."""
+        res = post_email(self.get_request())
+        assert res.status_code == 400
