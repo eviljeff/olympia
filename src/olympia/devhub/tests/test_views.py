@@ -2539,6 +2539,7 @@ class TestVersionAddFile(UploadTest):
         version_files.update(platform=amo.PLATFORM_LINUX.id,
                              status=amo.STATUS_UNREVIEWED)
         # We need to clear the cached properties for platform change above.
+        self.version.supported_platforms
         del self.version.supported_platforms
         del self.version.all_files
         # We're going to have a bad time in the tests if we can't upload.

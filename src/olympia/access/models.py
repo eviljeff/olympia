@@ -42,7 +42,10 @@ def groupuser_post_save(sender, instance, **kw):
 
     amo.log(amo.LOG.GROUP_USER_ADDED, instance.group, instance.user)
     log.info('Added %s to %s' % (instance.user, instance.group))
-    del instance.user.groups_list
+    if hasattr(instance.user, 'groups_list'):
+        delattr(instance.user, 'groups_list')
+    else:
+        raise
 
 
 @dispatch.receiver(signals.post_delete, sender=GroupUser,
@@ -53,4 +56,7 @@ def groupuser_post_delete(sender, instance, **kw):
 
     amo.log(amo.LOG.GROUP_USER_REMOVED, instance.group, instance.user)
     log.info('Removed %s from %s' % (instance.user, instance.group))
-    del instance.user.groups_list
+    if hasattr(instance.user, 'groups_list'):
+        delattr(instance.user, 'groups_list')
+    else:
+        raise
