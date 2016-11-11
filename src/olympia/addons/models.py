@@ -1050,7 +1050,7 @@ class Addon(OnChangeMixin, ModelBase):
                      % (self.id, old, self.status, reason))
             amo.log(amo.LOG.CHANGE_STATUS, self.get_status_display(), self)
 
-        versions = self.versions.all()
+        versions = self.versions.filter(channel=amo.RELEASE_CHANNEL_LISTED)
         status = None
         if not versions.exists():
             status = amo.STATUS_NULL
