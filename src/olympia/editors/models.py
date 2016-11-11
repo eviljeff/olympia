@@ -154,7 +154,6 @@ class ViewQueue(RawSQLModel):
             ],
             'where': [
                 'NOT addons.inactive',  # disabled_by_user
-                'addons.is_listed',
                 'versions.channel = %s' % amo.RELEASE_CHANNEL_LISTED,
                 'files.status = %s' % amo.STATUS_AWAITING_REVIEW,
             ],
@@ -257,7 +256,6 @@ class ViewUnlistedAllList(RawSQLModel):
             ],
             'where': [
                 'NOT addons.inactive',  # disabled_by_user
-                'NOT addons.is_listed',
                 'versions.channel = %s' % amo.RELEASE_CHANNEL_UNLISTED,
                 """((reviewed_versions.id = (select max(reviewed_versions.id)))
                     OR
