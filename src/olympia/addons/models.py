@@ -949,6 +949,7 @@ class Addon(OnChangeMixin, ModelBase):
             # 'upgrade' it's status to approved or nominated.  (But we
             # shouldn't block a downgrade either).
             new_status = self.status
+            reason += ' (upgrade blocked)'
 
         if self.status == amo.STATUS_PUBLIC:
             latest_version = self.find_latest_version(
@@ -967,7 +968,9 @@ class Addon(OnChangeMixin, ModelBase):
                      % (self.id, self.status, new_status, reason))
             self.update(status=new_status)
             amo.log(amo.LOG.CHANGE_STATUS, self.get_status_display(), self)
-
+        else:
+            log.debug('Add-on status not changing [%s]: %s (%s).'
+                      % (self.id, self.get_status_display(), reason))
         self.update_version(ignore=ignore_version)
 
     @staticmethod

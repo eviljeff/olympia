@@ -54,12 +54,12 @@ class TestCleanSlug(TestCase):
         b.save()
 
         # Test on another object without an id.
-        c = Addon()
+        c = addon_factory()
         c.clean_slug()
         assert c.slug == 'addon2'
 
         # Even if an addon is deleted, don't clash with its slug.
-        c.status = amo.STATUS_DELETED
+        c.delete()
         # Now save the instance to the database for future clashes.
         c.save()
 
@@ -241,8 +241,11 @@ class TestAddonManager(TestCase):
 
         # If we search for public or unreviewed we find it.
         addon.disabled_by_user = False
-        addon.status = amo.STATUS_NOMINATED
         addon.save()
+        for file_ in addon.current_version.files.all():
+            file_.update(status=amo.STATUS_AWAITING_REVIEW)
+        addon.reload()
+        assert addon.status == amo.STATUS_NOMINATED
         assert q.count() == 3
         assert Addon.objects.listed(amo.FIREFOX, amo.STATUS_PUBLIC,
                                     amo.STATUS_NOMINATED).count() == 4
