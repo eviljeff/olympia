@@ -1672,6 +1672,9 @@ class Persona(caching.CachingMixin, models.Model):
     def listed_authors(self):
         return self.addon.listed_authors
 
+    def update_status(self, new_status):
+        self.addon.update(status=new_status)
+
 
 class AddonCategory(caching.CachingMixin, models.Model):
     addon = models.ForeignKey(Addon, on_delete=models.CASCADE)
