@@ -432,11 +432,6 @@ class ReviewBase(object):
         self.review_type = review_type
         self.files = self.version.unreviewed_files if self.version else []
 
-    def set_addon(self, **kw):
-        """Alters addon and sets reviewed timestamp on version."""
-        self.addon.update(**kw)
-        self.version.update(reviewed=datetime.datetime.now())
-
     def set_files(self, status, files, hide_disabled_file=False):
         """Change the files to be the new status."""
         for file in files:
@@ -571,6 +566,7 @@ class ReviewAddon(ReviewBase):
         # Only files need to be changed - addon status will be updated
         # automatically.
         self.set_files(amo.STATUS_PUBLIC, self.files)
+        self.version.update(reviewed=datetime.datetime.now())
 
         self.log_action(amo.LOG.APPROVE_VERSION)
         template = u'%s_to_public' % self.review_type
@@ -593,6 +589,7 @@ class ReviewAddon(ReviewBase):
 
         self.set_files(amo.STATUS_DISABLED, self.files,
                        hide_disabled_file=True)
+        self.version.update(reviewed=datetime.datetime.now())
 
         self.log_action(amo.LOG.REJECT_VERSION)
         template = u'%s_to_sandbox' % self.review_type

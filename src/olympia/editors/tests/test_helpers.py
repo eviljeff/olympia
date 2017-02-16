@@ -376,6 +376,7 @@ class TestReviewHelper(TestCase):
             self.version.reload()
             self.file.reload()
         self.file.update(status=file_status)
+        self.addon.reload()
         self.helper = self.get_helper()
         data = self.get_data().copy()
         for key in delete:
