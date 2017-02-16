@@ -1371,7 +1371,7 @@ class BaseTestQueueSearch(SearchTest):
                 'version_str': '0.1',
                 'addon_status': amo.STATUS_NOMINATED,
                 'file_status': amo.STATUS_AWAITING_REVIEW,
-                'application': amo.MOBILE,
+                'application': amo.ANDROID,
             }),
             ('Linux Widget', {
                 'version_str': '0.1',
@@ -1539,18 +1539,18 @@ class TestQueueSearch(BaseTestQueueSearch):
 
     def test_search_by_app(self):
         self.generate_files(['Bieber For Mobile', 'Linux Widget'])
-        r = self.search(application_id=[amo.MOBILE.id])
+        r = self.search(application_id=[amo.ANDROID.id])
         assert r.status_code == 200
         assert self.named_addons(r) == ['Bieber For Mobile']
 
     def test_preserve_multi_apps(self):
         self.generate_files(['Bieber For Mobile', 'Linux Widget'])
-        for app in (amo.MOBILE, amo.FIREFOX):
+        for app in (amo.ANDROID, amo.FIREFOX):
             create_addon_file('Multi Application', '0.1',
                               amo.STATUS_NOMINATED, amo.STATUS_AWAITING_REVIEW,
                               application=app, listed=self.listed)
 
-        response = self.search(application_id=[amo.MOBILE.id])
+        response = self.search(application_id=[amo.ANDROID.id])
         assert response.status_code == 200
         assert self.named_addons(response) == [
             'Bieber For Mobile', 'Multi Application']
@@ -1765,7 +1765,7 @@ class TestReview(ReviewBase):
         assert self.addon.versions.filter(channel=channel).count() == 1
         self.review_version(self.version, self.url)
 
-        v2 = self.addons['something'].versions.all()[0]
+        v2 = self.addons[u'something'].versions.all()[0]
         v2.addon = self.addon
         v2.created = v2.created + timedelta(days=1)
         v2.save()
@@ -1812,7 +1812,7 @@ class TestReview(ReviewBase):
         self.addon.versions.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
         self.version.reload()
         # Throw in an listed version to be ignored.
-        self.addon_file(u'something', u'0.2', amo.STATUS_PUBLIC,
+        self.addon_file(u'something', u'0.7', amo.STATUS_PUBLIC,
                         amo.STATUS_PUBLIC,
                         version_kw={'channel': amo.RELEASE_CHANNEL_LISTED})
         self.url = reverse('editors.review', args=[
@@ -1821,10 +1821,6 @@ class TestReview(ReviewBase):
         self.test_item_history(channel=amo.RELEASE_CHANNEL_UNLISTED)
 
     def generate_deleted_versions(self):
-        self.addon = Addon.objects.create(type=amo.ADDON_EXTENSION,
-                                          name=u'something')
-        self.url = reverse('editors.review', args=[self.addon.slug])
-
         versions = ({'version': '0.1', 'action': 'comment',
                      'comments': 'millenium hand and shrimp'},
                     {'version': '0.1', 'action': 'public',
@@ -1833,10 +1829,13 @@ class TestReview(ReviewBase):
                      'comments': 'I told em'},
                     {'version': '0.3'})
 
+        to_delete = []
         for i, version in enumerate(versions):
-            a = create_addon_file(self.addon.name, version['version'],
-                                  amo.STATUS_PUBLIC,
+            a = create_addon_file(u'something', version['version'],
+                                  None,
                                   amo.STATUS_AWAITING_REVIEW)
+            self.addon = a['addon']
+            self.url = reverse('editors.review', args=[self.addon.slug])
 
             v = a['version']
             v.update(created=v.created + timedelta(days=i))
@@ -1846,7 +1845,10 @@ class TestReview(ReviewBase):
                             applications='something',
                             comments=version['comments'])
                 self.client.post(self.url, data)
-                v.delete(hard=True)
+                to_delete.append(v)
+
+        for v in to_delete:
+            v.delete(hard=True)
 
     @patch('olympia.editors.helpers.sign_file')
     def test_item_history_deleted(self, mock_sign):

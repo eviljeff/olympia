@@ -7,12 +7,12 @@ from django.core import mail
 
 from olympia import amo
 from olympia.amo.tests import TestCase
-from olympia.amo.tests import addon_factory, user_factory
+from olympia.amo.tests import (
+    addon_factory, file_factory, user_factory, version_factory)
 from olympia.addons.models import Addon, AddonUser
 from olympia.versions.models import (
-    Version, version_uploaded, ApplicationsVersions)
+    Version, version_uploaded)
 from olympia.files.models import File
-from olympia.applications.models import AppVersion
 from olympia.editors.models import (
     EditorSubscription, RereviewQueueTheme, ReviewerScore, send_notifications,
     ViewFullReviewQueue, ViewPendingQueue,
@@ -37,41 +37,49 @@ def create_addon_file(name, version_str, addon_status, file_status,
         else:
             channel = amo.RELEASE_CHANNEL_UNLISTED
         version_kw['channel'] = channel
-    app_vr, created_ = AppVersion.objects.get_or_create(
-        application=application.id, version='1.0')
-    addon, created_ = Addon.objects.get_or_create(
-        name__localized_string=name,
-        defaults={'type': addon_type, 'name': name})
-    if admin_review:
-        addon.update(admin_review=True)
-    version, created_ = Version.objects.get_or_create(
-        addon=addon, version=version_str, defaults=version_kw)
-    if nomination is not None:
-        version.nomination = nomination
-        version.save()
-
-    if not created_:
-        version.update(**version_kw)
-    va, created_ = ApplicationsVersions.objects.get_or_create(
-        version=version, application=application.id, min=app_vr, max=app_vr)
     file_defaults = {
-        'version': version,
         'filename': u"%s.xpi" % name,
         'platform': platform.id,
         'status': file_status,
         'no_restart': True
     }
     file_defaults.update(file_kw)
-    file_ = File.objects.create(**file_defaults)
+
+    try:
+        addon = Addon.objects.get(name__localized_string=name)
+        version = Version.objects.get(addon=addon, version=version_str)
+        version.update(**version_kw)
+        file_defaults['version'] = version
+        file_ = file_factory(**file_defaults)
+    except Addon.DoesNotExist:
+        version_kw['version'] = version_str
+        if 'application' not in version_kw:
+            version_kw['application'] = application.id
+        addon = addon_factory(type=addon_type, name=name,
+                              version_kw=version_kw, file_kw=file_defaults)
+        version = addon.versions.get()
+        file_ = version.files.get()
+    except Version.DoesNotExist:
+        version = version_factory(
+            addon=addon, version=version_str, file_kw=file_defaults,
+            **version_kw)
+        file_ = version.files.get()
+
+    if admin_review:
+        addon.update(admin_review=True)
+    if nomination is not None:
+        version.nomination = nomination
+        version.save()
     if created:
         version.update(created=created)
         file_.update(created=created)
     # Regular Version creation (via from_upload()) does this, it's necessary
     # to make sure files as in a consistent state:
     version.disable_old_files()
-    # Update status *after* we are done creating/modifying version and files:
     addon = Addon.objects.get(pk=addon.id)
-    addon.update(status=addon_status)
+    if addon_status is not None:
+        # Update status *after* we are done creating/modifying version & files:
+        addon.update(status=addon_status)
     return {'addon': addon, 'version': version, 'file': file_}
 
 
