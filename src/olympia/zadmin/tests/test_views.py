@@ -1917,11 +1917,11 @@ class TestPerms(TestCase):
         self.assert_status('zadmin.index', 200)
         self.assert_status('zadmin.settings', 200)
         self.assert_status('zadmin.langpacks', 200)
-        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
         self.assert_status('zadmin.addon-search', 200)
         self.assert_status('zadmin.monthly_pick', 200)
         self.assert_status('zadmin.features', 200)
         self.assert_status('discovery.module_admin', 200)
+        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
 
     def test_staff_user(self):
         # Staff users have some privileges.
@@ -1932,11 +1932,11 @@ class TestPerms(TestCase):
         self.assert_status('zadmin.index', 200)
         self.assert_status('zadmin.settings', 200)
         self.assert_status('zadmin.langpacks', 200)
-        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
         self.assert_status('zadmin.addon-search', 200)
         self.assert_status('zadmin.monthly_pick', 200)
         self.assert_status('zadmin.features', 200)
         self.assert_status('discovery.module_admin', 200)
+        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
 
     def test_sr_reviewers_user(self):
         # Sr Reviewers users have only a few privileges.
@@ -1947,9 +1947,9 @@ class TestPerms(TestCase):
         assert self.client.login(email='regular@mozilla.com')
         self.assert_status('zadmin.index', 200)
         self.assert_status('zadmin.langpacks', 200)
-        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
         self.assert_status('zadmin.addon-search', 200)
         self.assert_status('zadmin.settings', 403)
+        self.assert_status('zadmin.download_file', 404, uuid=self.FILE_ID)
 
     def test_unprivileged_user(self):
         # Unprivileged user.
@@ -1957,11 +1957,11 @@ class TestPerms(TestCase):
         self.assert_status('zadmin.index', 403)
         self.assert_status('zadmin.settings', 403)
         self.assert_status('zadmin.langpacks', 403)
-        self.assert_status('zadmin.download_file', 403, uuid=self.FILE_ID)
         self.assert_status('zadmin.addon-search', 403)
         self.assert_status('zadmin.monthly_pick', 403)
         self.assert_status('zadmin.features', 403)
         self.assert_status('discovery.module_admin', 403)
+        self.assert_status('zadmin.download_file', 403, uuid=self.FILE_ID)
         # Anonymous users should also get a 403.
         self.client.logout()
         self.assertLoginRedirects(
