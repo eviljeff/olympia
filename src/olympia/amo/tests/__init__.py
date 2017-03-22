@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import partial, wraps
 from tempfile import NamedTemporaryFile
-from urlparse import parse_qs, urlparse, urlsplit, urlunsplit
+from six.moves.urllib.parse import parse_qs, urlparse,  urlsplit, urlunsplit
 
 from django import forms, test
 from django.conf import settings

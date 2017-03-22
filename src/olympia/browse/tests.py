@@ -3,12 +3,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from dateutil.parser import parse as parse_dt
 import re
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
 from django.test.utils import override_settings
-from django.utils import http as urllib
+from django.utils import http
 from django.utils.translation import trim_whitespace
 
 import pytest
@@ -1004,7 +1004,7 @@ class TestCategoriesFeed(TestCase):
     def test_item_guid(self):
         t = self.feed.item_guid(self.addon)
         url = u'/addon/%s/versions/v%s' % (self.addon.slug,
-                                           urllib.urlquote(self.u))
+                                           http.urlquote(self.u))
         assert t.endswith(url), t
 
 

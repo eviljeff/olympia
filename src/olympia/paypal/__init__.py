@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import urllib
-import urlparse
+from six.moves.urllib.parse import parse_qsl, urlencode
 
 from django.conf import settings
 from django.utils.http import urlquote
@@ -106,7 +105,7 @@ def get_paykey(data):
     qs = {'uuid': data['uuid']}
     if 'qs' in data:
         qs.update(data['qs'])
-    uuid_qs = urllib.urlencode(qs)
+    uuid_qs = urlencode(qs)
 
     paypal_data = {
         'actionType': 'PAY',
@@ -207,7 +206,7 @@ def _call(url, paypal_data, ip=None):
         # method.
         raise PaypalError
 
-    response = dict(urlparse.parse_qsl(feeddata.text))
+    response = dict(parse_qsl(feeddata.text))
 
     if 'error(0).errorId' in response:
         id_, msg = response['error(0).errorId'], response['error(0).message']
@@ -232,7 +231,7 @@ def check_paypal_id(name):
     d['pwd'] = settings.PAYPAL_EMBEDDED_AUTH['PASSWORD']
     d['signature'] = settings.PAYPAL_EMBEDDED_AUTH['SIGNATURE']
     r = requests.get(settings.PAYPAL_API_URL, params=d, timeout=10)
-    response = dict(urlparse.parse_qsl(r.text))
+    response = dict(parse_qsl(r.text))
     valid = response['ACK'] == 'Success'
     msg = None if valid else response['L_LONGMESSAGE0']
     return valid, msg

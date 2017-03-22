@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import urllib
+from six.moves.urllib.parse import urlencode
 
 from django import http, test
 from django.conf import settings
@@ -25,7 +25,7 @@ class Client(test.Client):
         if data is None:
             data = {}
         if hasattr(data, 'items'):
-            data = urllib.urlencode(data)
+            data = urlencode(data)
             kw['content_type'] = URL_ENCODED
         return super(Client, self).post(url, data, **kw)
 

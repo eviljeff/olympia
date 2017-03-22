@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 from base64 import urlsafe_b64encode
-from urllib import urlencode
+from six.moves.urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import HttpResponseRedirect

@@ -6,7 +6,7 @@ from django.utils.encoding import force_bytes
 from email.Utils import formatdate
 from email.mime.text import MIMEText
 from time import time
-from urlparse import parse_qsl
+from six.moves.urllib.parse import parse_qsl
 
 from services.utils import mypool, settings
 

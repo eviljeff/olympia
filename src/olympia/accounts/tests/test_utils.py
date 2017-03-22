@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import urlparse
 from base64 import urlsafe_b64decode, urlsafe_b64encode
+from six.moves.urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
@@ -58,11 +58,11 @@ def test_default_fxa_login_url_with_state():
     request = RequestFactory().get(path)
     request.session = {'fxa_state': 'myfxastate'}
     raw_url = utils.default_fxa_login_url(request)
-    url = urlparse.urlparse(raw_url)
+    url = urlparse(raw_url)
     base = '{scheme}://{netloc}{path}'.format(
         scheme=url.scheme, netloc=url.netloc, path=url.path)
     assert base == 'https://accounts.firefox.com/oauth/authorization'
-    query = urlparse.parse_qs(url.query)
+    query = parse_qs(url.query)
     next_path = urlsafe_b64encode(path).rstrip('=')
     assert query == {
         'action': ['signin'],
@@ -79,11 +79,11 @@ def test_default_fxa_register_url_with_state():
     request = RequestFactory().get(path)
     request.session = {'fxa_state': 'myfxastate'}
     raw_url = utils.default_fxa_register_url(request)
-    url = urlparse.urlparse(raw_url)
+    url = urlparse(raw_url)
     base = '{scheme}://{netloc}{path}'.format(
         scheme=url.scheme, netloc=url.netloc, path=url.path)
     assert base == 'https://accounts.firefox.com/oauth/authorization'
-    query = urlparse.parse_qs(url.query)
+    query = parse_qs(url.query)
     next_path = urlsafe_b64encode(path).rstrip('=')
     assert query == {
         'action': ['signup'],
@@ -99,7 +99,7 @@ def test_unicode_next_path():
     request = RequestFactory().get(path)
     request.session = {}
     url = utils.default_fxa_login_url(request)
-    state = urlparse.parse_qs(urlparse.urlparse(url).query)['state'][0]
+    state = parse_qs(urlparse(url).query)['state'][0]
     next_path = urlsafe_b64decode(state.split(':')[1] + '===')
     assert next_path.decode('utf-8') == path
 

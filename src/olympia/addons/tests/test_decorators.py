@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import urllib
+from six.moves.urllib.parse import quote
 
 from django import http
 
@@ -20,7 +20,7 @@ class TestAddonView(TestCase):
         self.func.__name__ = 'mock_function'
         self.view = dec.addon_view(self.func)
         self.request = mock.Mock()
-        self.slug_path = urllib.quote(
+        self.slug_path = quote(
             ('/addon/%s/reviews' % self.addon.slug).encode('utf8'))
         self.request.path = self.id_path = u'/addon/%s/reviews' % self.addon.id
         self.request.GET = {}
@@ -33,7 +33,7 @@ class TestAddonView(TestCase):
         self.request.path = u'/addon/{id}/reviews/{id}345/path'.format(
             id=self.addon.id)
         res = self.view(self.request, str(self.addon.id))
-        redirection = urllib.quote(
+        redirection = quote(
             u'/addon/{slug}/reviews/{id}345/path'.format(
                 id=self.addon.id, slug=self.addon.slug).encode('utf8'))
         self.assert3xx(res, redirection, 301)

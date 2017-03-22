@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import base64
-import urlparse
 from datetime import datetime
+from six.moves.urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -83,11 +83,11 @@ class TestLoginStartBaseView(WithDynamicEndpoints, TestCase):
                         lambda: 'arandomstring'):
             response = self.client.get(self.url)
         assert response.status_code == 302
-        url = urlparse.urlparse(response['location'])
+        url = urlparse(response['location'])
         redirect = '{scheme}://{netloc}{path}'.format(
             scheme=url.scheme, netloc=url.netloc, path=url.path)
         assert redirect == 'https://accounts.firefox.com/v1/authorization'
-        assert urlparse.parse_qs(url.query) == {
+        assert parse_qs(url.query) == {
             'action': ['signin'],
             'client_id': ['amodefault'],
             'redirect_url': ['https://addons.mozilla.org/fxa-authenticate'],
@@ -110,8 +110,8 @@ class TestLoginStartBaseView(WithDynamicEndpoints, TestCase):
                         lambda: state):
             response = self.client.get(self.url, data={'to': path})
         assert self.client.session['fxa_state'] == state
-        url = urlparse.urlparse(response['location'])
-        query = urlparse.parse_qs(url.query)
+        url = urlparse(response['location'])
+        query = parse_qs(url.query)
         state_parts = query['state'][0].split(':')
         assert len(state_parts) == 2
         assert state_parts[0] == state
@@ -123,8 +123,8 @@ class TestLoginStartBaseView(WithDynamicEndpoints, TestCase):
         self.initialize_session({})
         response = self.client.get(
             '{url}?to={path}'.format(path=path, url=self.url))
-        url = urlparse.urlparse(response['location'])
-        query = urlparse.parse_qs(url.query)
+        url = urlparse(response['location'])
+        query = parse_qs(url.query)
         assert ':' not in query['state'][0]
 
 

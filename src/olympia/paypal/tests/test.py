@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import time
-import urllib
-import urlparse
+from six.moves.urllib.parse import parse_qsl, urlencode
 
 from django.conf import settings
 
@@ -32,7 +31,7 @@ other_error = ('error(0).errorId=520001&error(0).message=Foo')
 
 good_check_purchase = ('status=CREATED')  # There is more, but I trimmed it.
 
-good_token = urllib.urlencode({'token': 'foo', 'secret': 'bar'})
+good_token = urlencode({'token': 'foo', 'secret': 'bar'})
 
 
 class TestPayKey(TestCase):
@@ -119,7 +118,7 @@ class TestPayKey(TestCase):
         _call.return_value = {'payKey': '123', 'paymentExecStatus': ''}
         paypal.get_paykey(data)
         qs = _call.call_args[0][1]['returnUrl'].split('?')[1]
-        assert dict(urlparse.parse_qsl(qs))['foo'] == 'bar'
+        assert dict(parse_qsl(qs))['foo'] == 'bar'
 
     @mock.patch.object(settings, 'SITE_URL', 'http://foo.com')
     def _test_no_mock(self):

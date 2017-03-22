@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 import json
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from django.conf import settings
 from django.core import mail

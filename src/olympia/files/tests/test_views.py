@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import json
 import os
 import shutil
-import urlparse
+from six.moves.urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -473,7 +473,7 @@ class TestFileViewer(FilesBase, TestCase):
         res = self.client.get(self.files_redirect(binary))
         assert res.status_code == 302
         url = res['Location']
-        assert urlparse.urlparse(url).query.startswith('token=')
+        assert urlparse(url).query.startswith('token=')
 
     def test_memcache_goes_bye_bye(self):
         self.file_viewer.extract()

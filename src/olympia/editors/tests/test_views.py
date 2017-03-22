@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 import json
 import time
-import urlparse
 from datetime import datetime, timedelta
+from six.moves.urllib.parse import parse_qs
 
 from django.conf import settings
 from django.core import mail
@@ -752,7 +752,7 @@ class TestQueueBasics(QueueTest):
             # Update expected GET parameters with sort type.
             params.update(sort=[sort])
             # Parse querystring of link to make sure `sort` type is correct.
-            assert urlparse.parse_qs(a.attr('href').split('?')[1]) == params
+            assert parse_qs(a.attr('href').split('?')[1]) == params
 
     def test_no_results(self):
         r = self.client.get(self.url)
@@ -2697,7 +2697,8 @@ class TestStatusFile(ReviewBase):
 
     def test_other(self):
         self.addon.update(status=amo.STATUS_BETA)
-        self.check_status(six.text_type(File.STATUS_CHOICES[self.get_file().status]))
+        self.check_status(
+            six.text_type(File.STATUS_CHOICES[self.get_file().status]))
 
 
 class TestWhiteboard(ReviewBase):

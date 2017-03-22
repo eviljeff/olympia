@@ -1,6 +1,6 @@
 import datetime
 import os
-import urlparse
+from six.moves.urllib.parse import urlsplit
 
 from fxapom.fxapom import DEV_URL, PROD_URL, FxATestAccount
 import jwt
@@ -14,6 +14,7 @@ def capabilities(capabilities):
     capabilities['marionette'] = True
     return capabilities
 
+
 @pytest.fixture
 def fxa_account(base_url):
     url = DEV_URL if 'dev' in base_url else PROD_URL
@@ -23,7 +24,7 @@ def fxa_account(base_url):
 @pytest.fixture(scope='session')
 def jwt_issuer(base_url, variables):
     try:
-        hostname = [urlparse.urlsplit(base_url).hostname]
+        hostname = [urlsplit(base_url).hostname]
         return variables['api'][hostname]['jwt_issuer']
     except KeyError:
         return os.getenv('JWT_ISSUER')
@@ -32,7 +33,7 @@ def jwt_issuer(base_url, variables):
 @pytest.fixture(scope='session')
 def jwt_secret(base_url, variables):
     try:
-        hostname = [urlparse.urlsplit(base_url).hostname]
+        hostname = [urlsplit(base_url).hostname]
         return variables['api'][hostname]['jwt_secret']
     except KeyError:
         return os.getenv('JWT_SECRET')

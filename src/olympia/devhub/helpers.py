@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from collections import defaultdict
-import urllib
+from six.moves.urllib.parse import unquote
 
 import jinja2
 from jingo import register
@@ -123,7 +123,7 @@ def display_url(url):
     Note: returns a Unicode object, not a valid URL.
     """
     url = force_bytes(url, errors='replace')
-    return urllib.unquote(url).decode('utf-8', errors='replace')
+    return unquote(url).decode('utf-8', errors='replace')
 
 
 @register.function

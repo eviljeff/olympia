@@ -1,7 +1,7 @@
 import logging
 import logging.config
 import os
-import urllib
+from six.moves.urllib.parse import urlencode
 
 # get the right settings module
 settingmodule = os.environ.get('DJANGO_SETTINGS_MODULE', 'settings_local')
@@ -88,7 +88,7 @@ version_re = re.compile(r"""(?P<major>\d+)         # major (x in x.y)
 def get_cdn_url(id, row):
     host = user_media_url('addons')
     url = posixpath.join(host, str(id), row['filename'])
-    params = urllib.urlencode({'filehash': row['hash']})
+    params = urlencode({'filehash': row['hash']})
     return '{0}?{1}'.format(url, params)
 
 

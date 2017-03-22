@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import re
-import urlparse
+from six.moves.urllib.parse import parse_qs, urlparse
 
 import mock
 import pytest
@@ -131,11 +131,11 @@ def test_user_data():
 
 def test_manage_fxa_link():
     user = mock.MagicMock(email='me@someplace.ca', fxa_id='abcd1234')
-    link = urlparse.urlparse(manage_fxa_link({'user': user}))
+    link = urlparse(manage_fxa_link({'user': user}))
     url = '{scheme}://{netloc}{path}'.format(
         scheme=link.scheme, netloc=link.netloc, path=link.path)
     assert url == 'https://stable.dev.lcip.org/settings'
-    query = urlparse.parse_qs(link.query)
+    query = parse_qs(link.query)
     assert query == {
         'uid': ['abcd1234'],
         'email': ['me@someplace.ca'],

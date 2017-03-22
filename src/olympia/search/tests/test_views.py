@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import json
-import urlparse
+from six.moves.urllib.parse import parse_qs, parse_qsl, urlparse
 
 from django.http import QueryDict
 from django.test.client import RequestFactory
@@ -232,10 +232,10 @@ class TestESSearch(SearchBase):
         r = self.client.get(url + from_)
         assert r.status_code == 301
         redirected = r.url
-        parsed = urlparse.urlparse(redirected)
+        parsed = urlparse(redirected)
         params = parsed.query
         assert parsed.path == url
-        assert urlparse.parse_qs(params) == urlparse.parse_qs(to[1:])
+        assert parse_qs(params) == parse_qs(to[1:])
 
     def check_platform_filters(self, platform, expected=None):
         r = self.client.get('%s?platform=%s' % (self.url, platform),
@@ -437,8 +437,8 @@ class TestESSearch(SearchBase):
         expected = [
             ('All Add-ons', self.url),
             ('Extensions', urlparams(self.url, atype=amo.ADDON_EXTENSION)),
-            (six.text_type(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
-                                          cat=cat.id)),
+            (six.text_type(cat.name),
+             urlparams(self.url, atype=amo.ADDON_EXTENSION, cat=cat.id)),
         ]
         amo.tests.check_links(expected, links, selected, verify=False)
 
@@ -1077,7 +1077,7 @@ class TestCollectionSearch(SearchBase):
 ])
 def test_search_redirects(test_input, expected):
     assert views.fix_search_query(QueryDict(test_input)) == (
-        dict(urlparse.parse_qsl(expected)))
+        dict(parse_qsl(expected)))
 
 
 @pytest.mark.parametrize("test_input", [

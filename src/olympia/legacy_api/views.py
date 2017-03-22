@@ -6,8 +6,8 @@ import hashlib
 import itertools
 import json
 import random
-import urllib
 from datetime import date, timedelta
+from six.moves.urllib.parse import quote, unquote
 
 from django.core.cache import cache
 from django.db.transaction import non_atomic_requests
@@ -368,7 +368,7 @@ class SearchView(APIView):
         if self.version < 1.5:
             # Fix doubly encoded query strings.
             try:
-                query = urllib.unquote(query.encode('ascii'))
+                query = unquote(query.encode('ascii'))
             except UnicodeEncodeError:
                 # This fails if the string is already UTF-8.
                 pass
@@ -499,7 +499,7 @@ def redirect_view(request, url):
     Redirect all requests that come here to an API call with a view parameter.
     """
     dest = '/api/%.1f/%s' % (legacy_api.CURRENT_VERSION,
-                             urllib.quote(url.encode('utf-8')))
+                             quote(url.encode('utf-8')))
     dest = get_url_prefix().fix(dest)
 
     return HttpResponsePermanentRedirect(dest)

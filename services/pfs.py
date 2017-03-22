@@ -4,7 +4,7 @@ from collections import defaultdict
 from email.Utils import formatdate
 from string import Template
 from time import time
-from urlparse import parse_qsl
+from six.moves.urllib.parse import parse_qsl
 
 import jinja2
 

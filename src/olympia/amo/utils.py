@@ -14,8 +14,8 @@ import re
 import shutil
 import time
 import unicodedata
-import urllib
-import urlparse
+from six.moves.urllib.parse import (
+    parse_qsl, ParseResult, unquote, urlencode as py_urlencode, urlparse)
 
 import django.core.mail
 from django.http import HttpResponse
@@ -91,19 +91,19 @@ def urlparams(url_, hash=None, **query):
     New query params will be appended to existing parameters, except duplicate
     names, which will be replaced.
     """
-    url = urlparse.urlparse(url_)
+    url = urlparse(url_)
     fragment = hash if hash is not None else url.fragment
 
     # Use dict(parse_qsl) so we don't get lists of values.
     q = url.query
-    query_dict = dict(urlparse.parse_qsl(force_bytes(q))) if q else {}
+    query_dict = dict(parse_qsl(force_bytes(q))) if q else {}
     query_dict.update(
         (k, force_bytes(v) if v is not None else v) for k, v in query.items())
     query_string = urlencode(
-        [(k, urllib.unquote(v)) for k, v in query_dict.items()
+        [(k, unquote(v)) for k, v in query_dict.items()
          if v is not None])
-    new = urlparse.ParseResult(url.scheme, url.netloc, url.path, url.params,
-                               query_string, fragment)
+    new = ParseResult(url.scheme, url.netloc, url.path, url.params,
+                      query_string, fragment)
     return new.geturl()
 
 
@@ -364,9 +364,9 @@ def chunked(seq, n):
 def urlencode(items):
     """A Unicode-safe URLencoder."""
     try:
-        return urllib.urlencode(items)
+        return py_urlencode(items)
     except UnicodeEncodeError:
-        return urllib.urlencode([(k, force_bytes(v)) for k, v in items])
+        return py_urlencode([(k, force_bytes(v)) for k, v in items])
 
 
 def randslice(qs, limit, exclude=None):

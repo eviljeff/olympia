@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import urllib
+from six.moves.urllib.parse import quote
 
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
@@ -62,7 +62,7 @@ class ReviewsRss(NonAtomicFeed):
         """Guid for a particuar review  (<item><guid>)"""
         guid_url = helpers.absolutify(helpers.url('addons.reviews.list',
                                                   self.addon.slug))
-        return guid_url + urllib.quote(str(review.id))
+        return guid_url + quote(str(review.id))
 
     def item_author_name(self, review):
         """Author for a particuar review  (<item><dc:creator>)"""

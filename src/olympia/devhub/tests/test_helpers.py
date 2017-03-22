@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import urllib
+from six.moves.urllib.parse import quote
 
 from django.utils import translation
 
@@ -75,12 +75,12 @@ class TestDisplayUrl(amo.tests.BaseTestCase):
         self.raw_url = u'http://host/%s' % 'フォクすけといっしょ'.decode('utf8')
 
     def test_utf8(self):
-        url = urllib.quote(self.raw_url.encode('utf8'))
+        url = quote(self.raw_url.encode('utf8'))
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)
 
     def test_unicode(self):
-        url = urllib.quote(self.raw_url.encode('utf8'))
+        url = quote(self.raw_url.encode('utf8'))
         url = six.text_type(url, 'utf8')
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 
 import mock
-import urlparse
+from six.moves.urllib.parse import urljoin
 
 from olympia import amo
 from olympia.amo.tests import TestCase
@@ -90,9 +90,9 @@ class TestLangpackFetcher(TestCase):
     def fetch_langpacks(self, version):
         path = settings.LANGPACK_PATH_DEFAULT % ('firefox', version)
 
-        base_url = urlparse.urljoin(settings.LANGPACK_DOWNLOAD_BASE, path)
-        list_url = urlparse.urljoin(base_url, settings.LANGPACK_MANIFEST_PATH)
-        langpack_url = urlparse.urljoin(base_url, 'de-DE.xpi')
+        base_url = urljoin(settings.LANGPACK_DOWNLOAD_BASE, path)
+        list_url = urljoin(base_url, settings.LANGPACK_MANIFEST_PATH)
+        langpack_url = urljoin(base_url, 'de-DE.xpi')
 
         responses = {list_url: RequestMock(self.LISTING),
                      langpack_url: RequestMock(make_langpack(version))}

@@ -7,7 +7,7 @@ import textwrap
 import traceback
 from datetime import datetime
 from itertools import chain
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -332,7 +332,7 @@ def notify_compatibility(job, params):
 
         log.info('[%d@%d] Notifying %d authors about %d addons for '
                  'validation job %d'
-                 % (len(chunk), total, len(users), len(list(addons.keys())), job.pk))
+                 % (len(chunk), total, len(users), len(addons.keys()), job.pk))
 
         for u in users:
             addons = users_addons[u.pk]
@@ -384,7 +384,8 @@ def notify_compatibility_chunk(users, job, data, **kw):
                                  task_error[0], task_error[1]), exc_info=False)
 
             context = Context({
-                'APPLICATION': six.text_type(amo.APP_IDS[job.application].pretty),
+                'APPLICATION': six.text_type(
+                    amo.APP_IDS[job.application].pretty),
                 'VERSION': job.target_version.version,
                 'PASSING_ADDONS': user.passing_addons,
                 'FAILING_ADDONS': user.failing_addons,

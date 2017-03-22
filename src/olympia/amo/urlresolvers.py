@@ -3,9 +3,8 @@ from __future__ import absolute_import
 import hashlib
 import re
 import hmac
-import urllib
 from threading import local
-from urlparse import urlparse
+from six.moves.urllib.parse import quote, urlparse
 
 import bleach
 import jinja2
@@ -195,7 +194,7 @@ def get_outgoing_url(url):
     # Let '&=' through so query params aren't escaped.  We probably shouldn't
     # bother to quote the query part at all.
     return '/'.join([settings.REDIRECT_URL.rstrip('/'), sig,
-                     urllib.quote(url, safe='/&=')])
+                     quote(url, safe='/&=')])
 
 
 def linkify_bounce_url_callback(attrs, new=False):
