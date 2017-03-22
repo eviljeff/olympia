@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import codecs
 import mimetypes
 import os
@@ -24,6 +25,8 @@ from olympia.amo.utils import rm_local_tmp_dir
 from olympia.amo.urlresolvers import reverse
 from olympia.files.utils import (
     extract_xpi, get_sha256, get_all_files, atomic_lock)
+from six.moves import map
+from six.moves import range
 
 # Allow files with a shebang through.
 denied_magic_numbers = [b for b in list(blacklisted_magic_numbers)
@@ -94,7 +97,7 @@ def extract_file(viewer, **kw):
                 'in progress. Please try again in approximately 5 minutes.'
                 % viewer)
             msg.save(info_msg)
-    except Exception, err:
+    except Exception as err:
         error_message = _('There was an error accessing file %s.') % viewer
 
         if settings.DEBUG:
@@ -157,7 +160,7 @@ class FileViewer(object):
 
                 try:
                     os.makedirs(self.dest)
-                except OSError, err:
+                except OSError as err:
                     task_log.error(
                         'Error (%s) creating directories %s'
                         % (err, self.dest))
@@ -172,7 +175,7 @@ class FileViewer(object):
                         extracted_files = extract_xpi(
                             self.src, self.dest, expand=True)
                         self._verify_files(extracted_files)
-                    except Exception, err:
+                    except Exception as err:
                         task_log.error(
                             'Error (%s) extracting %s' % (err, self.src))
                         raise
@@ -274,7 +277,7 @@ class FileViewer(object):
         for manifest in ('install.rdf', 'manifest.json', 'package.json'):
             if manifest in files:
                 return manifest
-        return files.keys()[0] if files else None  # Eg: it's a search engine.
+        return list(files.keys())[0] if files else None  # Eg: it's a search engine.
 
     def get_files(self):
         """

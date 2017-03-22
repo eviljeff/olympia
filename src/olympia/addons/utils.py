@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import uuid
 import random
 
@@ -6,6 +7,7 @@ from django.db.models import Q
 import olympia.core.logger
 from olympia.amo.cache_nuggets import memoize
 from olympia.constants.categories import CATEGORIES_BY_ID
+from six.moves import map
 
 
 log = olympia.core.logger.getLogger('z.redis')
@@ -44,7 +46,7 @@ def get_featured_ids(app, lang=None, type=None):
     random.shuffle(ids)
     random.shuffle(other_ids)
     ids += other_ids
-    return map(int, ids)
+    return list(map(int, ids))
 
 
 @memoize('addons:creatured', time=60 * 10)
@@ -84,4 +86,4 @@ def get_creatured_ids(category, lang=None):
     per_locale = list(per_locale)
     random.shuffle(others)
     random.shuffle(per_locale)
-    return map(int, filter(None, per_locale + others))
+    return list(map(int, [_f for _f in per_locale + others if _f]))

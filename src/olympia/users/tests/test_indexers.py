@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia.amo.tests import TestCase
 from olympia.users.indexers import UserProfileIndexer
 from olympia.users.models import UserProfile
+import six
 
 
 class TestUserProfileIndexer(TestCase):
@@ -22,7 +24,7 @@ class TestUserProfileIndexer(TestCase):
         extracted = self._extract()
         for attr in ('email', 'username', 'display_name', 'bio',
                      'homepage', 'location', 'occupation'):
-            assert extracted[attr] == unicode(getattr(self.user, attr))
+            assert extracted[attr] == six.text_type(getattr(self.user, attr))
         assert extracted['id'] == self.user.pk
         assert extracted['deleted'] == self.user.deleted
 

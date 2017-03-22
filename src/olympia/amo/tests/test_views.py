@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 import json
 import random
@@ -8,7 +9,7 @@ from django.conf import settings
 from django.test.testcases import TransactionTestCase
 from django.test.utils import override_settings
 
-from Cookie import SimpleCookie
+from six.moves.http_cookies import SimpleCookie
 from lxml import etree
 import mock
 from mock import patch

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia import amo
 from olympia.amo.tests import addon_factory, TestCase, version_factory
 from olympia.legacy_api.utils import find_compatible_version

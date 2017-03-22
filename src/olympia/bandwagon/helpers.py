@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import math
 
 import jinja2
@@ -13,7 +14,7 @@ from olympia.amo.utils import chunked
 @register.inclusion_tag('bandwagon/collection_listing_items.html')
 @jinja2.contextfunction
 def collection_listing_items(context, collections, field=None):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(collections=collections, field=field)
     return c
 
@@ -21,7 +22,7 @@ def collection_listing_items(context, collections, field=None):
 @register.inclusion_tag('bandwagon/impala/collection_listing_items.html')
 @jinja2.contextfunction
 def impala_collection_listing_items(context, collections, field=None):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(collections=collections, field=field)
     return c
 
@@ -41,7 +42,7 @@ def user_collection_list(collections=None, heading='', id='', link=None):
 @jinja2.contextfunction
 def barometer(context, collection):
     """Shows a barometer for a collection."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     request = c['request']
 
     user_vote = None  # Non-zero if logged in and voted.
@@ -98,7 +99,7 @@ def barometer(context, collection):
 @jinja2.contextfunction
 def collection_add_widget(context, addon, condensed=False):
     """Displays 'Add to Collection' widget"""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(locals())
     return c
 
@@ -116,7 +117,7 @@ def collection_grid(context, collections, src=None, pagesize=4, cols=2):
 @jinja2.contextfunction
 def favorites_widget(context, addon, condensed=False):
     """Displays 'Add to Favorites' widget."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     request = c['request']
     if request.user.is_authenticated():
         is_favorite = addon.id in request.user.favorite_addons
@@ -140,7 +141,7 @@ def favorites_widget(context, addon, condensed=False):
 @jinja2.contextfunction
 def collection_widgets(context, collection, condensed=False):
     """Displays collection widgets"""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     if collection:
         c.update({'condensed': condensed,
                   'c': collection})

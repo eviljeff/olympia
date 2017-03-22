@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import httplib2
 import itertools
@@ -123,7 +124,7 @@ def update_google_analytics(date, **kw):
         # Storing this under the webtrends stat name so it goes on the
         # same graph as the old webtrends data.
         p = ['webtrends_DailyVisitors', data['rows'][0][0], date]
-    except Exception, e:
+    except Exception as e:
         log.critical(
             'Fetching stats data for %s from Google Analytics failed: %s' % e)
         return
@@ -131,7 +132,7 @@ def update_google_analytics(date, **kw):
         cursor = connection.cursor()
         cursor.execute('REPLACE INTO global_stats (name, count, date) '
                        'values (%s, %s, %s)', p)
-    except Exception, e:
+    except Exception as e:
         log.critical('Failed to update global stats: (%s): %s' % (p, e))
         return
 
@@ -155,7 +156,7 @@ def update_global_totals(job, date, **kw):
     try:
         cursor = connection.cursor()
         cursor.execute(q, p)
-    except Exception, e:
+    except Exception as e:
         log.critical('Failed to update global stats: (%s): %s' % (p, e))
 
     log.debug('Committed global stats details: (%s) has (%s) for (%s)'
@@ -286,7 +287,7 @@ def index_update_counts(ids, index=None, **kw):
             data.append(search.extract_update_count(update))
         bulk_index(es, data, index=index,
                    doc_type=UpdateCount.get_mapping_type(), refresh=True)
-    except Exception, exc:
+    except Exception as exc:
         index_update_counts.retry(args=[ids, index], exc=exc, **kw)
         raise
 
@@ -305,7 +306,7 @@ def index_download_counts(ids, index=None, **kw):
             data.append(search.extract_download_count(dl))
         bulk_index(es, data, index=index,
                    doc_type=DownloadCount.get_mapping_type(), refresh=True)
-    except Exception, exc:
+    except Exception as exc:
         index_download_counts.retry(args=[ids, index], exc=exc)
         raise
 
@@ -332,7 +333,7 @@ def index_collection_counts(ids, index=None, **kw):
         bulk_index(es, data, index=index,
                    doc_type=CollectionCount.get_mapping_type(),
                    refresh=True)
-    except Exception, exc:
+    except Exception as exc:
         index_collection_counts.retry(args=[ids], exc=exc)
         raise
 
@@ -353,6 +354,6 @@ def index_theme_user_counts(ids, index=None, **kw):
             data.append(search.extract_theme_user_count(user_count))
         bulk_index(es, data, index=index,
                    doc_type=ThemeUserCount.get_mapping_type(), refresh=True)
-    except Exception, exc:
+    except Exception as exc:
         index_theme_user_counts.retry(args=[ids], exc=exc, **kw)
         raise

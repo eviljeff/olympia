@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 from urllib2 import unquote
 
@@ -13,6 +14,8 @@ from olympia.amo.utils import raise_required
 from olympia.lib import happyforms
 
 from .models import Review, ReviewFlag
+from six.moves import range
+from six.moves import zip
 
 
 class ReviewReplyForm(forms.Form):
@@ -57,7 +60,7 @@ class ReviewForm(ReviewReplyForm):
         label="Review",
     )
     rating = forms.ChoiceField(
-        zip(range(1, 6), range(1, 6)), label=_lazy(u"Rating")
+        list(zip(list(range(1, 6)), list(range(1, 6)))), label=_lazy(u"Rating")
     )
     flags = re.I | re.L | re.U | re.M
     # This matches the following three types of patterns:

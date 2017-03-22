@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -22,6 +23,7 @@ from olympia.files.models import File
 from olympia.translations.models import Translation
 from olympia.users.models import UserProfile
 from olympia.versions.models import Version
+import six
 
 
 pytestmark = pytest.mark.django_db
@@ -54,7 +56,7 @@ class TestViewPendingQueueTable(TestCase):
     def test_addon_type_id(self):
         row = Mock()
         row.addon_type_id = amo.ADDON_THEME
-        assert unicode(self.table.render_addon_type_id(row)) == (
+        assert six.text_type(self.table.render_addon_type_id(row)) == (
             u'Complete Theme')
 
     def test_waiting_time_in_days(self):
@@ -270,7 +272,7 @@ class TestReviewHelper(TestCase):
             helper = self.get_helper()
             actions = helper.actions
             for k, v in actions.items():
-                assert unicode(v['details']), "Missing details for: %s" % k
+                assert six.text_type(v['details']), "Missing details for: %s" % k
 
     def get_review_actions(self, addon_status, file_status):
         self.file.update(status=file_status)
@@ -281,23 +283,23 @@ class TestReviewHelper(TestCase):
 
     def test_actions_full_nominated(self):
         expected = ['public', 'reject', 'info', 'super', 'comment']
-        assert self.get_review_actions(
+        assert list(self.get_review_actions(
             addon_status=amo.STATUS_NOMINATED,
-            file_status=amo.STATUS_AWAITING_REVIEW).keys() == expected
+            file_status=amo.STATUS_AWAITING_REVIEW).keys()) == expected
 
     def test_actions_full_update(self):
         expected = ['public', 'reject', 'info', 'super', 'comment']
-        assert self.get_review_actions(
+        assert list(self.get_review_actions(
             addon_status=amo.STATUS_PUBLIC,
-            file_status=amo.STATUS_AWAITING_REVIEW).keys() == expected
+            file_status=amo.STATUS_AWAITING_REVIEW).keys()) == expected
 
     def test_actions_full_nonpending(self):
         expected = ['info', 'super', 'comment']
         f_statuses = [amo.STATUS_PUBLIC, amo.STATUS_DISABLED]
         for file_status in f_statuses:
-            assert self.get_review_actions(
+            assert list(self.get_review_actions(
                 addon_status=amo.STATUS_PUBLIC,
-                file_status=file_status).keys() == expected
+                file_status=file_status).keys()) == expected
 
     def test_set_files(self):
         self.file.update(datestatuschanged=yesterday)
@@ -357,7 +359,7 @@ class TestReviewHelper(TestCase):
 
         self.helper.set_data(self.get_data())
         context_data = self.helper.handler.get_context_data()
-        for template, context_key in expected.iteritems():
+        for template, context_key in six.iteritems(expected):
             mail.outbox = []
             self.helper.handler.notify_email(template, 'Sample subject %s, %s')
             assert len(mail.outbox) == 1

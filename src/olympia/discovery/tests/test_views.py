@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia import amo
 from olympia.discovery.data import discopane_items
 from olympia.amo.helpers import absolutify
 from olympia.amo.tests import addon_factory, TestCase, user_factory
 from olympia.amo.urlresolvers import reverse
+import six
 
 
 class TestDiscoveryViewList(TestCase):
@@ -34,7 +36,7 @@ class TestDiscoveryViewList(TestCase):
     def _check_disco_addon(self, result, item):
         addon = self.addons[item.addon_id]
         assert result['addon']['id'] == item.addon_id == addon.pk
-        assert result['addon']['name'] == unicode(addon.name)
+        assert result['addon']['name'] == six.text_type(addon.name)
         assert result['addon']['slug'] == addon.slug
         assert result['addon']['icon_url'] == absolutify(
             addon.get_icon_url(64))
@@ -43,7 +45,7 @@ class TestDiscoveryViewList(TestCase):
 
         assert u'<a href="{0}">{1} by {2}</a>'.format(
             absolutify(addon.get_url_path()),
-            unicode(item.addon_name or addon.name),
+            six.text_type(item.addon_name or addon.name),
             u', '.join(author.name for author in addon.listed_authors),
         ) in result['heading']
         assert '<span>' in result['heading']
@@ -53,12 +55,12 @@ class TestDiscoveryViewList(TestCase):
     def _check_disco_theme(self, result, item):
         addon = self.addons[item.addon_id]
         assert result['addon']['id'] == item.addon_id == addon.pk
-        assert result['addon']['name'] == unicode(addon.name)
+        assert result['addon']['name'] == six.text_type(addon.name)
         assert result['addon']['slug'] == addon.slug
 
         assert u'{1} <span>by <a href="{0}">{2}</a></span>'.format(
             absolutify(addon.get_url_path()),
-            unicode(item.addon_name or addon.name),
+            six.text_type(item.addon_name or addon.name),
             u', '.join(author.name for author in addon.listed_authors)
         ) == result['heading']
         assert not result['description']

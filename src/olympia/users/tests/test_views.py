@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 import json
@@ -28,6 +29,8 @@ from olympia.reviews.models import Review
 from olympia.users import notifications as email
 from olympia.users.models import UserProfile, UserNotification
 from olympia.users.utils import UnsubscribeCode
+import six
+from six.moves import range
 
 
 def migrate_path(next_path=None):
@@ -135,13 +138,13 @@ class TestEdit(UserViewBase):
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['bio'])
-        assert unicode(self.get_profile().bio) == data['bio']
+        assert six.text_type(self.get_profile().bio) == data['bio']
 
         data['bio'] = 'yyy unst unst'
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['bio'])
-        assert unicode(self.get_profile().bio) == data['bio']
+        assert six.text_type(self.get_profile().bio) == data['bio']
 
     def check_default_choices(self, choices, checked=True):
         doc = pq(self.client.get(self.url).content)
@@ -167,7 +170,7 @@ class TestEdit(UserViewBase):
 
         assert UserNotification.objects.count() == len(email.NOTIFICATIONS)
         assert UserNotification.objects.filter(enabled=True).count() == (
-            len(filter(lambda x: x.mandatory, email.NOTIFICATIONS)))
+            len([x for x in email.NOTIFICATIONS if x.mandatory]))
         self.check_default_choices(choices, checked=False)
 
     def test_edit_notifications(self):
@@ -730,7 +733,7 @@ class TestProfileSections(TestCase):
         assert pq(r.content)('#my-addons .paginator').length == 0
 
     def test_my_reviews_pagination(self):
-        for i in xrange(20):
+        for i in range(20):
             AddonUser.objects.create(user=self.user, addon_id=3615)
         assert len(self.user.addons_listed) > 10, (
             'This user should have way more than 10 add-ons.')
@@ -757,7 +760,7 @@ class TestProfileSections(TestCase):
 
         a = li.find('a')
         assert a.attr('href') == coll.get_url_path()
-        assert a.text() == unicode(coll.name)
+        assert a.text() == six.text_type(coll.name)
 
     def test_my_collections_created(self):
         coll = Collection.objects.listed().get(author=self.user)
@@ -777,7 +780,7 @@ class TestProfileSections(TestCase):
 
         a = li.find('a')
         assert a.attr('href') == coll.get_url_path()
-        assert a.text() == unicode(coll.name)
+        assert a.text() == six.text_type(coll.name)
 
     def test_no_my_collections(self):
         Collection.objects.filter(author=self.user).delete()
@@ -837,7 +840,7 @@ class TestThemesProfile(TestCase):
         results = doc('.personas-grid .persona.hovercard')
         assert results.length == 1
         assert force_text(
-            results.find('h3').html()) == unicode(self.theme.name)
+            results.find('h3').html()) == six.text_type(self.theme.name)
 
     def test_bad_user(self):
         res = self.client.get(reverse('users.themes', args=['yolo']))

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 
 from django.core.cache import cache
@@ -27,6 +28,7 @@ from olympia.bandwagon.models import (
 from olympia.bandwagon.views import CollectionFilter
 from olympia.browse.tests import TestFeeds
 from olympia.users.models import UserProfile
+import six
 
 
 pytestmark = pytest.mark.django_db
@@ -477,7 +479,7 @@ class TestCRUD(TestCase):
         assert r.request['PATH_INFO'].decode('utf-8') == (
             '/en-US/firefox/collections/admin/%s/' % self.slug)
         c = Collection.objects.get(slug=self.slug)
-        assert unicode(c.name) == self.data['name']
+        assert six.text_type(c.name) == self.data['name']
         assert c.description == ''
         assert c.addons.all()[0].id == 3615
 
@@ -525,7 +527,7 @@ class TestCRUD(TestCase):
         url = reverse('collections.edit', args=['admin', self.slug])
         r = self.client.get(url, follow=True)
         assert Collection.objects.get(slug=self.slug).author_id == (
-            long(pq(r.content)('#contributor-ac').attr('data-owner')))
+            int(pq(r.content)('#contributor-ac').attr('data-owner')))
 
     def test_edit_post(self):
         """Test edit of collection."""
@@ -536,7 +538,7 @@ class TestCRUD(TestCase):
                                    'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'HALP'
+        assert six.text_type(c.name) == 'HALP'
 
     def test_edit_description(self):
         self.create_collection()
@@ -546,7 +548,7 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
+        assert six.text_type(Collection.objects.get(slug=self.slug).description) == (
             'abc')
 
     def test_edit_no_description(self):
@@ -558,7 +560,7 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
+        assert six.text_type(Collection.objects.get(slug=self.slug).description) == (
             '')
 
     def test_edit_spaces(self):
@@ -571,7 +573,7 @@ class TestCRUD(TestCase):
                               'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'H A L  P'
+        assert six.text_type(c.name) == 'H A L  P'
 
     def test_forbidden_edit(self):
         self.create_collection()
@@ -686,7 +688,7 @@ class TestCRUD(TestCase):
         assert r.status_code == 302
 
         c = Collection.objects.get(id=fav.id)
-        assert unicode(c.name) == 'xxx'
+        assert six.text_type(c.name) == 'xxx'
 
     def test_edit_contrib_tab(self):
         self.create_collection()
@@ -837,7 +839,7 @@ class TestCRUD(TestCase):
 
         newc = Collection.objects.get(slug=self.slug,
                                       author__username=c.author_username)
-        assert unicode(newc.name) == 'new name'
+        assert six.text_type(newc.name) == 'new name'
 
 
 class TestChangeAddon(TestCase):
@@ -1197,7 +1199,7 @@ class TestCollectionDetailFeed(TestCase):
 
         assert data['addons'][0]['type'] == 'background-theme'
         assert data['addons'][0]['theme']['id'] == (
-            unicode(theme.persona.persona_id))
+            six.text_type(theme.persona.persona_id))
 
         assert data['addons'][0]['theme']['header']
         assert data['addons'][0]['theme']['footer'] == ''

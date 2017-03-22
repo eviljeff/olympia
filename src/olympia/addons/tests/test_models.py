@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 import os
 import time
@@ -34,6 +35,8 @@ from olympia.translations.models import (
 from olympia.users.models import UserProfile
 from olympia.versions.models import ApplicationsVersions, Version
 from olympia.versions.compare import version_int
+import six
+from six.moves import range
 
 
 class TestCleanSlug(TestCase):
@@ -1967,12 +1970,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == six.text_type(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == six.text_type(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))
@@ -2006,12 +2009,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == six.text_type(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == six.text_type(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))

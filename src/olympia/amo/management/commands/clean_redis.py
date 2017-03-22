@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import socket
 import time
 
@@ -7,6 +8,8 @@ from django.core.management.base import BaseCommand
 import redis as redislib
 
 import olympia.core.logger
+from six.moves import range
+from six.moves import zip
 
 
 log = olympia.core.logger.getLogger('z.redis')
@@ -28,7 +31,7 @@ def cleanup(master, slave):
 
     def keys():
         try:
-            ks = slave.keys()
+            ks = list(slave.keys())
         except RedisError:
             log.error('Cannot fetch keys.')
             raise
@@ -37,9 +40,9 @@ def cleanup(master, slave):
         ks = iter(ks)
         while 1:
             buffer = []
-            for _ in xrange(CHUNK):
+            for _ in range(CHUNK):
                 try:
-                    buffer.append(ks.next())
+                    buffer.append(next(ks))
                 except StopIteration:
                     yield buffer
                     return
@@ -54,7 +57,7 @@ def cleanup(master, slave):
             drop = [k for k, size in zip(ks, pipe.execute())
                     if not k.startswith(settings.CACHE_PREFIX) or
                     0 < size < MIN or size > MAX]
-        except RedisError, err:
+        except RedisError as err:
             log.warning('ignoring pipe.execute() error: {}'.format(err))
             continue
         num += len(ks)
@@ -66,7 +69,7 @@ def cleanup(master, slave):
             pipe.expire(k, EXPIRE)
         try:
             pipe.execute()
-        except RedisError, err:
+        except RedisError as err:
             log.warning('ignoring pipe.execute() error: {}'.format(err))
             continue
         time.sleep(1)  # Poor man's rate limiting.

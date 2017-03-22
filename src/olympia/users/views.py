@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import functools
 from operator import attrgetter
 
@@ -183,7 +184,7 @@ def _clean_next_url(request):
         url = settings.LOGIN_REDIRECT_URL
 
     domain = gets.get('domain', None)
-    if domain in settings.VALID_LOGIN_REDIRECTS.keys():
+    if domain in list(settings.VALID_LOGIN_REDIRECTS.keys()):
         url = settings.VALID_LOGIN_REDIRECTS[domain] + url
 
     gets['to'] = url

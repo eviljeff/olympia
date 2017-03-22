@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import collections
 import itertools
 import json
@@ -49,6 +50,9 @@ from olympia.versions.compare import version_int
 from olympia.versions.models import inherit_nomination, Version
 
 from . import signals
+import six
+from six.moves import map
+from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.addons')
@@ -131,7 +135,7 @@ def clean_slug(instance, slug_field='slug'):
 class AddonQuerySet(caching.CachingQuerySet):
     def id_or_slug(self, val):
         """Get add-ons by id or slug."""
-        if isinstance(val, basestring) and not val.isdigit():
+        if isinstance(val, six.string_types) and not val.isdigit():
             return self.filter(slug=val)
         return self.filter(id=val)
 
@@ -259,9 +263,10 @@ class Addon(OnChangeMixin, ModelBase):
                                       db_column='defaultlocale')
 
     type = models.PositiveIntegerField(
-        choices=amo.ADDON_TYPE.items(), db_column='addontype_id', default=0)
+        choices=list(amo.ADDON_TYPE.items()), db_column='addontype_id',
+        default=0)
     status = models.PositiveIntegerField(
-        choices=STATUS_CHOICES.items(), db_index=True, default=0)
+        choices=list(STATUS_CHOICES.items()), db_index=True, default=0)
     icon_type = models.CharField(max_length=25, blank=True,
                                  db_column='icontype')
     homepage = TranslatedField()
@@ -379,8 +384,8 @@ class Addon(OnChangeMixin, ModelBase):
         try:
             type_idx = Addon._meta._type_idx
         except AttributeError:
-            type_idx = (idx for idx, f in enumerate(Addon._meta.fields)
-                        if f.attname == 'type').next()
+            type_idx = next((idx for idx, f in enumerate(Addon._meta.fields)
+                            if f.attname == 'type'))
             Addon._meta._type_idx = type_idx
         return object.__new__(cls)
 
@@ -493,7 +498,7 @@ class Addon(OnChangeMixin, ModelBase):
             self._reviews.all().delete()
             # The last parameter is needed to automagically create an AddonLog.
             activity.log_create(amo.LOG.DELETE_ADDON, self.pk,
-                                unicode(self.guid), self)
+                                six.text_type(self.guid), self)
             self.update(status=amo.STATUS_DELETED, slug=None,
                         _current_version=None, modified=datetime.now())
             models.signals.post_delete.send(sender=Addon, instance=self)
@@ -774,7 +779,7 @@ class Addon(OnChangeMixin, ModelBase):
         # as File's) when deleting a version. If so, we should avoid putting
         # that version-being-deleted in any fields.
         if ignore is not None:
-            updated = {k: v for k, v in updated.iteritems() if v != ignore}
+            updated = {k: v for k, v in six.iteritems(updated) if v != ignore}
 
         if updated:
             diff = [self._current_version, new_current_version]
@@ -788,7 +793,7 @@ class Addon(OnChangeMixin, ModelBase):
                 log.info(u'Version changed from current: %s to %s '
                          u'for addon %s'
                          % tuple(diff + [self]))
-            except Exception, e:
+            except Exception as e:
                 log.error(u'Could not save version changes current: %s to %s '
                           u'for addon %s (%s)' %
                           tuple(diff + [self, e]))
@@ -965,7 +970,8 @@ class Addon(OnChangeMixin, ModelBase):
         if addon_dict is None:
             addon_dict = dict((a.id, a) for a in addons)
 
-        all_ids = set(filter(None, (a._current_version_id for a in addons)))
+        all_ids = set([a._current_version_id for a in addons
+                       if a._current_version_id])
         versions = list(Version.objects.filter(id__in=all_ids).order_by())
         for version in versions:
             try:
@@ -1258,7 +1264,7 @@ class Addon(OnChangeMixin, ModelBase):
         if user is None or user.is_anonymous():
             return False
         if roles is None:
-            roles = dict(amo.AUTHOR_CHOICES).keys()
+            roles = list(dict(amo.AUTHOR_CHOICES).keys())
         return AddonUser.objects.filter(addon=self, user=user,
                                         role__in=roles).exists()
 
@@ -1293,8 +1299,9 @@ class Addon(OnChangeMixin, ModelBase):
 
     @amo.cached_property(writable=True)
     def all_categories(self):
-        return filter(
-            None, [cat.to_static_category() for cat in self.categories.all()])
+        return [_f for _f in
+                [cat.to_static_category() for cat in self.categories.all()]
+                if _f]
 
     @amo.cached_property(writable=True)
     def all_previews(self):
@@ -1327,7 +1334,7 @@ class Addon(OnChangeMixin, ModelBase):
             files = (self.current_version.files
                          .filter(platform=amo.PLATFORM_ANDROID.id))
             try:
-                return unicode(files[0].get_localepicker(), 'utf-8')
+                return six.text_type(files[0].get_localepicker(), 'utf-8')
             except IndexError:
                 pass
         return ''
@@ -1505,7 +1512,7 @@ class Persona(caching.CachingMixin, models.Model):
         db_table = 'personas'
 
     def __unicode__(self):
-        return unicode(self.addon.name)
+        return six.text_type(self.addon.name)
 
     def is_new(self):
         return self.persona_id == 0
@@ -1612,15 +1619,15 @@ class Persona(caching.CachingMixin, models.Model):
 
         addon = self.addon
         return {
-            'id': unicode(self.addon.id),  # Personas dislikes ints
-            'name': unicode(addon.name),
+            'id': six.text_type(self.addon.id),  # Personas dislikes ints
+            'name': six.text_type(addon.name),
             'accentcolor': hexcolor(self.accentcolor),
             'textcolor': hexcolor(self.textcolor),
-            'category': (unicode(addon.all_categories[0].name) if
+            'category': (six.text_type(addon.all_categories[0].name) if
                          addon.all_categories else ''),
             # TODO: Change this to be `addons_users.user.display_name`.
             'author': self.display_username,
-            'description': unicode(addon.description),
+            'description': six.text_type(addon.description),
             'header': self.header_url,
             'footer': self.footer_url or '',
             'headerURL': self.header_url,
@@ -1707,7 +1714,7 @@ class AddonFeatureCompatibility(ModelBase):
         choices=amo.E10S_COMPATIBILITY_CHOICES, default=amo.E10S_UNKNOWN)
 
     def __unicode__(self):
-        return unicode(self.addon) if self.pk else u""
+        return six.text_type(self.addon) if self.pk else u""
 
     def get_e10s_classname(self):
         return amo.E10S_COMPATIBILITY_CHOICES_API[self.e10s]
@@ -1722,7 +1729,8 @@ class AddonApprovalsCounter(ModelBase):
     counter = models.PositiveIntegerField(default=0)
 
     def __unicode__(self):
-        return u'%s: %d' % (unicode(self.pk), self.counter) if self.pk else u''
+        return (u'%s: %d' % (six.text_type(self.pk), self.counter) if self.pk
+                else u'')
 
     @classmethod
     def increment_for_addon(cls, addon):
@@ -1789,10 +1797,10 @@ class Category(OnChangeMixin, ModelBase):
             # If we can't find the category in the constants dict, fall back
             # to the db field.
             value = self.db_name
-        return unicode(value)
+        return six.text_type(value)
 
     def __unicode__(self):
-        return unicode(self.name)
+        return six.text_type(self.name)
 
     def get_url_path(self):
         try:
@@ -1847,7 +1855,7 @@ class Preview(ModelBase):
     def as_dict(self, src=None):
         d = {'full': urlparams(self.image_url, src=src),
              'thumbnail': urlparams(self.thumbnail_url, src=src),
-             'caption': unicode(self.caption)}
+             'caption': six.text_type(self.caption)}
         return d
 
     @property
@@ -1944,7 +1952,7 @@ class Charity(ModelBase):
     def outgoing_url(self):
         if self.pk == amo.FOUNDATION_ORG:
             return self.url
-        return get_outgoing_url(unicode(self.url))
+        return get_outgoing_url(six.text_type(self.url))
 
 
 class DeniedSlug(ModelBase):
@@ -2000,7 +2008,7 @@ class CompatOverride(ModelBase):
 
     def __unicode__(self):
         if self.addon:
-            return unicode(self.addon)
+            return six.text_type(self.addon)
         elif self.name:
             return '%s (%s)' % (self.name, self.guid)
         else:

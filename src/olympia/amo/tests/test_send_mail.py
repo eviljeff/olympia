@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import mimetypes
 import os.path
 
@@ -15,6 +16,7 @@ from olympia.amo.tests import BaseTestCase
 from olympia.amo.utils import send_mail, send_html_mail_jinja
 from olympia.users.models import UserProfile, UserNotification
 from olympia.users import notifications
+import six
 
 
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -183,7 +185,7 @@ class TestSendMail(BaseTestCase):
         perm_setting = []
 
         def ctx(d, autoescape):
-            perm_setting.append(unicode(d['perm_setting']))
+            perm_setting.append(six.text_type(d['perm_setting']))
             return TemplateContext(d, autoescape=autoescape)
         fake_Context.side_effect = ctx
         user = UserProfile.objects.all()[0]
@@ -227,7 +229,7 @@ class TestSendMail(BaseTestCase):
         assert '<a href' not in message1, 'text-only email contained HTML!'
         assert '<a href' in message2, 'HTML email did not contain HTML!'
 
-        unsubscribe_msg = unicode(notifications.individual_contact.label)
+        unsubscribe_msg = six.text_type(notifications.individual_contact.label)
         assert unsubscribe_msg in message1
         assert unsubscribe_msg in message2
 

@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 from django import forms
 from django.template import Context, loader
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from olympia.users import notifications as email
+import six
 
 
 class NotificationsSelectMultiple(forms.CheckboxSelectMultiple):
@@ -19,7 +21,7 @@ class NotificationsSelectMultiple(forms.CheckboxSelectMultiple):
 
         # Mark the mandatory fields.
         mandatory = [k for k, v in
-                     email.ALL_NOTIFICATIONS_BY_ID.iteritems() if v.mandatory]
+                     six.iteritems(email.ALL_NOTIFICATIONS_BY_ID) if v.mandatory]
         str_values = set(mandatory + str_values)
 
         for idx, label in sorted(self.choices):

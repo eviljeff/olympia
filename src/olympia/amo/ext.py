@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import jinja2.runtime
 from jinja2 import nodes
 

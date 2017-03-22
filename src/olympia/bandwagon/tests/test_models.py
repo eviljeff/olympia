@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import random
 
@@ -12,6 +13,7 @@ from olympia.bandwagon.models import (
     Collection, CollectionAddon, CollectionUser, CollectionWatcher)
 from olympia.bandwagon import tasks
 from olympia.users.models import UserProfile
+import six
 
 
 def get_addons(c):
@@ -41,7 +43,7 @@ class TestCollections(TestCase):
             description='<a href="http://example.com">example.com</a> '
                         'http://example.com <b>foo</b> some text')
         # All markup escaped, links are stripped.
-        assert unicode(c.description) == '&lt;b&gt;foo&lt;/b&gt; some text'
+        assert six.text_type(c.description) == '&lt;b&gt;foo&lt;/b&gt; some text'
 
     def test_icon_url(self):
         # Has no icon.
@@ -68,7 +70,7 @@ class TestCollections(TestCase):
     def test_translation_default(self):
         """Make sure we're getting strings from the default locale."""
         c = Collection.objects.get(pk=512)
-        assert unicode(c.name) == 'yay'
+        assert six.text_type(c.name) == 'yay'
 
     def test_listed(self):
         """Make sure the manager's listed() filter works."""
@@ -83,7 +85,7 @@ class TestCollections(TestCase):
     def test_auto_uuid(self):
         c = Collection.objects.create(author=self.user)
         assert c.uuid != ''
-        assert isinstance(c.uuid, basestring)
+        assert isinstance(c.uuid, six.string_types)
 
     def test_set_addons(self):
         addons = list(Addon.objects.values_list('id', flat=True))

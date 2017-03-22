@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 
 from olympia.versions.compare import version_re

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django import http
 from django.utils.translation import ugettext as _
 
@@ -9,6 +10,7 @@ from olympia.addons.models import Addon
 from olympia.browse.feeds import AddonFeedMixin
 
 from . import views
+import six
 
 
 class CollectionFeedMixin(NonAtomicFeed):
@@ -18,10 +20,10 @@ class CollectionFeedMixin(NonAtomicFeed):
         return absolutify(c.get_url_path())
 
     def item_title(self, c):
-        return unicode(c.name or '')
+        return six.text_type(c.name or '')
 
     def item_description(self, c):
-        return unicode(c.description or '')
+        return six.text_type(c.description or '')
 
     def item_author_name(self, c):
         return c.author_username

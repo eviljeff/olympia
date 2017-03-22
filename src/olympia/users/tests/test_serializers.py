@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from rest_framework.test import APIRequestFactory
 
 from olympia.amo.helpers import absolutify

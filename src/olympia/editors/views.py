@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 import json
@@ -40,6 +41,7 @@ from olympia.zadmin.models import get_config, set_config
 from .decorators import (
     addons_reviewer_required, any_reviewer_required,
     unlisted_addons_reviewer_required)
+import six
 
 
 def base_context(**kw):
@@ -458,7 +460,7 @@ def queue_counts(type=None, unlisted=False, admin_reviewer=False,
                     else exclude_admin_only_addons(
                         ViewUnlistedAllList.objects)).count}
     rv = {}
-    if isinstance(type, basestring):
+    if isinstance(type, six.string_types):
         return counts[type]()
     for k, v in counts.items():
         if not isinstance(type, list) or k in type:
@@ -563,7 +565,7 @@ def _get_comments_for_hard_deleted_versions(addon):
     for c in comments:
         c.version = c.activity_log.details.get('version', c.created)
         comment_versions[c.version].all_activity.append(c)
-    return comment_versions.values()
+    return list(comment_versions.values())
 
 
 @addons_reviewer_required
@@ -615,7 +617,7 @@ def review(request, addon, channel=None):
                 devhub_tasks.validate(file_)
 
     canned = AddonCannedResponse.objects.all()
-    actions = form.helper.actions.items()
+    actions = list(form.helper.actions.items())
 
     try:
         show_diff = version and (
@@ -767,7 +769,7 @@ def queue_viewing(request):
 def queue_version_notes(request, addon_id):
     addon = get_object_or_404(Addon.objects, pk=addon_id)
     version = addon.latest_version
-    return {'releasenotes': unicode(version.releasenotes),
+    return {'releasenotes': six.text_type(version.releasenotes),
             'approvalnotes': version.approvalnotes}
 
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 import decimal
 import json as jsonlib
@@ -31,6 +32,8 @@ from jingo_minify.helpers import (
 from olympia import amo
 from olympia.amo import utils, urlresolvers
 from olympia.constants.licenses import PERSONA_LICENSES_IDS
+import six
+from six.moves import range
 
 # Yanking filters from Django.
 register.filter(defaultfilters.slugify)
@@ -44,7 +47,7 @@ register.function(utils.randslice)
 
 # Mark a lazy marked instance as safe but keep
 # it lazy
-mark_safe_lazy = lazy(mark_safe, unicode)
+mark_safe_lazy = lazy(mark_safe, six.text_type)
 
 
 @register.function
@@ -200,7 +203,7 @@ class Paginator(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,
@@ -265,8 +268,8 @@ def strip_controls(s):
     Strips control characters from a string.
     """
     # Translation table of control characters.
-    control_trans = dict((n, None) for n in xrange(32) if n not in [10, 13])
-    rv = unicode(s).translate(control_trans)
+    control_trans = dict((n, None) for n in range(32) if n not in [10, 13])
+    rv = six.text_type(s).translate(control_trans)
     return jinja2.Markup(rv) if isinstance(s, jinja2.Markup) else rv
 
 
@@ -286,7 +289,7 @@ def strip_html(s, just_kidding=False):
 @register.filter
 def external_url(url):
     """Bounce a URL off outgoing.prod.mozaws.net."""
-    return urlresolvers.get_outgoing_url(unicode(url))
+    return urlresolvers.get_outgoing_url(six.text_type(url))
 
 
 @register.filter
@@ -301,7 +304,7 @@ def license_link(license):
     """Link to a code license, including icon where applicable."""
     # If passed in an integer, try to look up the License.
     from olympia.versions.models import License
-    if isinstance(license, (long, int)):
+    if isinstance(license, six.integer_types):
         if license in PERSONA_LICENSES_IDS:
             # Grab built-in license.
             license = PERSONA_LICENSES_IDS[license]
@@ -334,7 +337,7 @@ def field(field, label=None, **attrs):
 @register.inclusion_tag('amo/category-arrow.html')
 @jinja2.contextfunction
 def category_arrow(context, key, prefix):
-    d = dict(context.items())
+    d = dict(list(context.items()))
     d.update(key=key, prefix=prefix)
     return d
 
@@ -351,7 +354,7 @@ def timesince(time):
 @register.inclusion_tag('amo/recaptcha.html')
 @jinja2.contextfunction
 def recaptcha(context, form):
-    d = dict(context.items())
+    d = dict(list(context.items()))
     d.update(form=form)
     return d
 
@@ -599,7 +602,7 @@ def id_to_path(pk):
     12 => 2/12/12
     123456 => 6/56/123456
     """
-    pk = unicode(pk)
+    pk = six.text_type(pk)
     path = [pk[-1]]
     if len(pk) >= 2:
         path.append(pk[-2:])

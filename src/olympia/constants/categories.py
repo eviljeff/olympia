@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -6,6 +7,7 @@ from olympia.constants.applications import (
 from olympia.constants.base import (
     ADDON_DICT, ADDON_EXTENSION, ADDON_LPAPP, ADDON_PERSONA, ADDON_SEARCH,
     ADDON_SLUGS, ADDON_THEME)
+import six
 
 
 class StaticCategory(object):
@@ -29,7 +31,7 @@ class StaticCategory(object):
         object.__setattr__(self, 'weight', weight)
 
     def __unicode__(self):
-        return unicode(self.name)
+        return six.text_type(self.name)
 
     def __repr__(self):
         return u'<%s: %s (%s)>' % (

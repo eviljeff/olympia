@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 
 from django.conf import settings
@@ -12,6 +13,8 @@ from olympia.amo.utils import cache_ns_key, urlparams, epoch
 from olympia.tags.models import Tag
 from olympia.versions.compare import version_int
 from olympia.versions.models import Version
+from six.moves import map
+import six
 
 
 log = olympia.core.logger.getLogger('z.api')
@@ -39,16 +42,16 @@ def addon_to_dict(addon, disco=False, src='api'):
 
     d = {
         'id': addon.id,
-        'name': unicode(addon.name) if addon.name else None,
+        'name': six.text_type(addon.name) if addon.name else None,
         'guid': addon.guid,
         'status': amo.STATUS_CHOICES_API[addon.status],
         'type': amo.ADDON_SLUGS_UPDATE[addon.type],
-        'authors': [{'id': a.id, 'name': unicode(a.name),
+        'authors': [{'id': a.id, 'name': six.text_type(a.name),
                      'link': absolutify(a.get_url_path(src=src))}
                     for a in addon.listed_authors],
         'summary': (
-            strip_tags(unicode(addon.summary)) if addon.summary else None),
-        'description': strip_tags(unicode(addon.description)),
+            strip_tags(six.text_type(addon.summary)) if addon.summary else None),
+        'description': strip_tags(six.text_type(addon.description)),
         'icon': addon.icon_url,
         'learnmore': learnmore,
         'reviews': url(addon.reviews_url),
@@ -57,24 +60,24 @@ def addon_to_dict(addon, disco=False, src='api'):
         'adu': addon.average_daily_users,
         'created': epoch(addon.created),
         'last_updated': epoch(addon.last_updated),
-        'homepage': unicode(addon.homepage) if addon.homepage else None,
-        'support': unicode(addon.support_url) if addon.support_url else None,
+        'homepage': six.text_type(addon.homepage) if addon.homepage else None,
+        'support': six.text_type(addon.support_url) if addon.support_url else None,
     }
     if addon.is_persona():
         d['theme'] = addon.persona.theme_data
 
     if v:
         d['version'] = v.version
-        d['platforms'] = [unicode(a.name) for a in v.supported_platforms]
+        d['platforms'] = [six.text_type(a.name) for a in v.supported_platforms]
         d['compatible_apps'] = [
-            {unicode(amo.APP_IDS[obj.application].pretty): {
-                'min': unicode(obj.min), 'max': unicode(obj.max)}}
+            {six.text_type(amo.APP_IDS[obj.application].pretty): {
+                'min': six.text_type(obj.min), 'max': six.text_type(obj.max)}}
             for obj in v.compatible_apps.values()]
     if addon.eula:
-        d['eula'] = unicode(addon.eula)
+        d['eula'] = six.text_type(addon.eula)
 
     if addon.developer_comments:
-        d['dev_comments'] = unicode(addon.developer_comments)
+        d['dev_comments'] = six.text_type(addon.developer_comments)
 
     if addon.takes_contributions:
         contribution = {

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Check all our redirects from remora to zamboni."""
+from __future__ import absolute_import
 from django.db import connection
 
 from olympia import amo

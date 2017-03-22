@@ -1,6 +1,7 @@
 """
 Monkey patch and defuse all stdlib xml packages and lxml.
 """
+from __future__ import absolute_import
 import sys
 
 patched_modules = (

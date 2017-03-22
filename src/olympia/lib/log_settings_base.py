@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logging
 import logging.config
 import logging.handlers
@@ -115,7 +116,7 @@ def log_configure():
         cfg['loggers']['z.timer'] = {'handlers': ['syslog2']}
 
     # Set the level and handlers for all loggers.
-    for logger in cfg['loggers'].values() + [cfg['root']]:
+    for logger in list(cfg['loggers'].values()) + [cfg['root']]:
         if 'handlers' not in logger:
             logger['handlers'] = ['syslog' if USE_SYSLOG else 'console']
         if 'level' not in logger:

@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 from django.conf import settings
 
 from olympia.amo.tests import TestCase
 from olympia.amo.urlresolvers import reverse
+import six
 
 
 class TestPages(TestCase):
@@ -25,7 +27,7 @@ class TestPages(TestCase):
 class TestRedirects(TestCase):
 
     def _check(self, pages):
-        for old, new in pages.iteritems():
+        for old, new in six.iteritems(pages):
             if new.startswith('http'):
                 r = self.client.get(old)
                 assert r['Location'] == new

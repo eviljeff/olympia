@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import mock
 
 from olympia.amo.tests import addon_factory, TestCase, user_factory

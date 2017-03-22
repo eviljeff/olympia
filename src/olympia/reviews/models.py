@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 
 from django.core.cache import cache
@@ -17,6 +18,8 @@ from olympia.amo.models import ManagerBase, ModelBase
 from olympia.amo.utils import send_mail_jinja
 from olympia.translations.fields import save_signal, TranslatedField
 from olympia.translations.helpers import truncate
+import six
+from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.reviews')
@@ -115,8 +118,8 @@ class Review(ModelBase):
 
     def __unicode__(self):
         if self.title:
-            return unicode(self.title)
-        return truncate(unicode(self.body), 10)
+            return six.text_type(self.title)
+        return truncate(six.text_type(self.body), 10)
 
     def __init__(self, *args, **kwargs):
         user_responsible = kwargs.pop('user_responsible', None)
@@ -132,10 +135,10 @@ class Review(ModelBase):
 
         activity.log_create(
             amo.LOG.APPROVE_REVIEW, self.addon, self, user=user, details=dict(
-                title=unicode(self.title),
-                body=unicode(self.body),
+                title=six.text_type(self.title),
+                body=six.text_type(self.body),
                 addon_id=self.addon.pk,
-                addon_title=unicode(self.addon.name),
+                addon_title=six.text_type(self.addon.name),
                 is_flagged=self.reviewflag_set.exists()))
         for flag in self.reviewflag_set.all():
             flag.delete()
@@ -160,17 +163,17 @@ class Review(ModelBase):
             activity.log_create(
                 amo.LOG.DELETE_REVIEW, self.addon, self, user=user_responsible,
                 details=dict(
-                    title=unicode(self.title),
-                    body=unicode(self.body),
+                    title=six.text_type(self.title),
+                    body=six.text_type(self.body),
                     addon_id=self.addon.pk,
-                    addon_title=unicode(self.addon.name),
+                    addon_title=six.text_type(self.addon.name),
                     is_flagged=self.reviewflag_set.exists()))
             for flag in self.reviewflag_set.all():
                 flag.delete()
 
         log.info(u'Review deleted: %s deleted id:%s by %s ("%s": "%s")',
                  user_responsible.name, self.pk, self.user.name,
-                 unicode(self.title), unicode(self.body))
+                 six.text_type(self.title), six.text_type(self.body))
         self.update(deleted=True)
         # Force refreshing of denormalized data (it wouldn't happen otherwise
         # because we're not dealing with a creation).

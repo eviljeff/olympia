@@ -1,6 +1,7 @@
 """
 API views
 """
+from __future__ import absolute_import
 import hashlib
 import itertools
 import json
@@ -33,6 +34,8 @@ from olympia.legacy_api.utils import (
 from olympia.search.views import (
     AddonSuggestionsAjax, PersonaSuggestionsAjax, name_query)
 from olympia.versions.compare import version_int
+import six
+from six.moves import map
 
 
 ERROR = 'error'
@@ -315,7 +318,7 @@ def guid_search(request, api_version, guids):
                     })
                 addons_xml[key] = addon_xml
 
-    cache.set_many(dict((k, v) for k, v in addons_xml.iteritems()
+    cache.set_many(dict((k, v) for k, v in six.iteritems(addons_xml)
                         if k in dirty_keys))
 
     compat = (CompatOverride.objects.filter(guid__in=guids)
@@ -467,7 +470,7 @@ class ListView(APIView):
         def f():
             return self._process(addons, *args)
 
-        return cached_with(addons, f, map(force_bytes, args))
+        return cached_with(addons, f, list(map(force_bytes, args)))
 
     def _process(self, addons, *args):
         return self.render('legacy_api/list.xml',

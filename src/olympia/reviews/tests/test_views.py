@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 
 from django.core import mail
@@ -19,6 +20,7 @@ from olympia.activity.models import ActivityLog
 from olympia.addons.models import Addon, AddonUser
 from olympia.reviews.models import Review, ReviewFlag
 from olympia.users.models import UserProfile
+import six
 
 
 class ReviewTest(TestCase):
@@ -1221,8 +1223,8 @@ class TestReviewViewSetEdit(TestCase):
         assert response.status_code == 200
         self.review.reload()
         assert response.data['id'] == self.review.pk
-        assert response.data['body'] == unicode(self.review.body) == u'løl!'
-        assert response.data['title'] == unicode(self.review.title) == u'Titlé'
+        assert response.data['body'] == six.text_type(self.review.body) == u'løl!'
+        assert response.data['title'] == six.text_type(self.review.title) == u'Titlé'
         assert response.data['rating'] == self.review.rating == 2
         assert response.data['version'] == {
             'id': self.review.version.id,
@@ -1269,8 +1271,8 @@ class TestReviewViewSetEdit(TestCase):
         assert response.status_code == 200
         self.review.reload()
         assert response.data['id'] == self.review.pk
-        assert response.data['body'] == unicode(self.review.body) == u'løl!'
-        assert response.data['title'] == unicode(self.review.title) == u'Titlé'
+        assert response.data['body'] == six.text_type(self.review.body) == u'løl!'
+        assert response.data['title'] == six.text_type(self.review.title) == u'Titlé'
         assert response.data['version'] == {
             'id': self.review.version.id,
             'version': self.review.version.version,
@@ -1368,10 +1370,10 @@ class TestReviewViewSetPost(TestCase):
         assert response.status_code == 201
         review = Review.objects.latest('pk')
         assert review.pk == response.data['id']
-        assert unicode(review.body) == response.data['body'] == u'test bodyé'
+        assert six.text_type(review.body) == response.data['body'] == u'test bodyé'
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert unicode(review.title) == response.data['title'] == u'blahé'
+        assert six.text_type(review.title) == response.data['title'] == u'blahé'
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1404,10 +1406,10 @@ class TestReviewViewSetPost(TestCase):
         assert response.status_code == 201
         review = Review.objects.latest('pk')
         assert review.pk == response.data['id']
-        assert unicode(review.body) == response.data['body'] == cleaned_body
+        assert six.text_type(review.body) == response.data['body'] == cleaned_body
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert unicode(review.title) == response.data['title'] == u'blahé'
+        assert six.text_type(review.title) == response.data['title'] == u'blahé'
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1460,7 +1462,7 @@ class TestReviewViewSetPost(TestCase):
         assert response.status_code == 201
         review = Review.objects.latest('pk')
         assert review.pk == response.data['id']
-        assert unicode(review.body) == response.data['body'] == u'test bodyé'
+        assert six.text_type(review.body) == response.data['body'] == u'test bodyé'
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
         assert review.title is None
@@ -1893,7 +1895,7 @@ class TestReviewViewSetReply(TestCase):
         data = json.loads(response.content)
         assert Review.objects.count() == 2
         existing_reply.reload()
-        assert unicode(existing_reply.body) == data['body'] == u'My réply...'
+        assert six.text_type(existing_reply.body) == data['body'] == u'My réply...'
 
     def test_reply_if_an_existing_reply_was_deleted_updates_existing(self):
         self.addon_author = user_factory()
@@ -1913,7 +1915,7 @@ class TestReviewViewSetReply(TestCase):
         assert Review.objects.count() == 2  # No longer deleted.
         assert Review.unfiltered.count() == 2
         existing_reply.reload()
-        assert unicode(existing_reply.body) == data['body'] == u'My réply...'
+        assert six.text_type(existing_reply.body) == data['body'] == u'My réply...'
         assert existing_reply.deleted is False
 
     def test_reply_disabled_addon(self):

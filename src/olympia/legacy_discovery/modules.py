@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import caching.base as caching
 import jingo
 import jinja2
@@ -9,6 +10,7 @@ from olympia.addons.models import Addon
 from olympia.bandwagon.models import Collection, MonthlyPick as MP
 from olympia.legacy_api.views import addon_filter
 from olympia.versions.compare import version_int
+import six
 
 
 # The global registry for promo modules.  Managed through PromoModuleMeta.
@@ -25,14 +27,13 @@ class PromoModuleMeta(type):
         return cls
 
 
-class PromoModule(object):
+class PromoModule(six.with_metaclass(PromoModuleMeta, object)):
     """
     Base class for promo modules in the discovery pane.
 
     Subclasses should assign a slug and define render().  The slug is only used
     internally, so it doesn't have to really be a slug.
     """
-    __metaclass__ = PromoModuleMeta
     abstract = True
     slug = None
 

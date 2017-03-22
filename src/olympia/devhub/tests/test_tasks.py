@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 import shutil
@@ -25,6 +26,7 @@ from olympia.constants.base import VALIDATOR_SKELETON_RESULTS
 from olympia.devhub import tasks
 from olympia.files.models import FileUpload
 from olympia.versions.models import Version
+from six.moves import zip
 
 
 pytestmark = pytest.mark.django_db

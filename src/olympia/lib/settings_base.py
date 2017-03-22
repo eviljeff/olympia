@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Django settings for addons-server project.
 
+from __future__ import absolute_import
 import logging
 import os
 import socket

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 from datetime import datetime
 
@@ -15,6 +16,7 @@ from olympia.compat.indexers import AppCompatIndexer
 from olympia.compat.models import CompatReport, CompatTotals
 from olympia.stats.models import UpdateCount
 from olympia.versions.models import ApplicationsVersions
+from six.moves import range
 
 
 class TestCompatReportModel(TestCase):
@@ -375,9 +377,9 @@ class TestCompatibilityReportCronMixin(object):
     def generate_reports(self, addon, good, bad, app, app_version):
         defaults = dict(guid=addon.guid, app_guid=app.guid,
                         app_version=app_version)
-        for x in xrange(good):
+        for x in range(good):
             CompatReport.objects.create(works_properly=True, **defaults)
-        for x in xrange(bad):
+        for x in range(bad):
             CompatReport.objects.create(works_properly=False, **defaults)
 
 

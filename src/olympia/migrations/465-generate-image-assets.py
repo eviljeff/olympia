@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from amo.utils import chunked
 
 from mkt.developers.tasks import generate_image_assets

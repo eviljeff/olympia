@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import re
 
 import mock
@@ -18,6 +19,8 @@ from olympia.applications.models import AppVersion
 from olympia.files.models import File
 from olympia.users.models import UserProfile
 from olympia.versions.models import ApplicationsVersions, Version
+from six.moves import map
+import six
 
 
 class TestVersion(TestCase):
@@ -282,7 +285,7 @@ class TestVersion(TestCase):
         entry = ActivityLog.objects.get()
         assert entry.action == amo.LOG.USER_ENABLE.id
         msg = entry.to_string()
-        assert unicode(self.addon.name) in msg, ("Unexpected: %r" % msg)
+        assert six.text_type(self.addon.name) in msg, ("Unexpected: %r" % msg)
 
     def test_unprivileged_user_cant_disable_addon(self):
         self.addon.update(disabled_by_user=False)
@@ -636,8 +639,8 @@ class TestVersionEditDetails(TestVersionEditBase):
         response = self.client.post(self.url, data)
         assert response.status_code == 302
         version = self.get_version()
-        assert unicode(version.releasenotes) == 'xx'
-        assert unicode(version.approvalnotes) == 'yy'
+        assert six.text_type(version.releasenotes) == 'xx'
+        assert six.text_type(version.approvalnotes) == 'yy'
 
     def test_version_number_redirect(self):
         url = self.url.replace(str(self.version.id), self.version.version)
@@ -784,8 +787,8 @@ class TestVersionEditSearchEngine(TestVersionEditMixin,
         response = self.client.post(self.url, dd)
         assert response.status_code == 302
         version = Addon.objects.no_cache().get(id=4594).current_version
-        assert unicode(version.releasenotes) == 'xx'
-        assert unicode(version.approvalnotes) == 'yy'
+        assert six.text_type(version.releasenotes) == 'xx'
+        assert six.text_type(version.approvalnotes) == 'yy'
 
     def test_no_compat(self):
         response = self.client.get(self.url)
@@ -826,8 +829,8 @@ class TestVersionEditFiles(TestVersionEditBase):
         File.objects.create(version=self.version,
                             platform=amo.PLATFORM_MAC.id)
 
-        forms = map(initial,
-                    self.client.get(self.url).context['file_form'].forms)
+        forms = list(map(initial,
+                    self.client.get(self.url).context['file_form'].forms))
         forms[1]['platform'] = forms[0]['platform']
         response = self.client.post(
             self.url, self.formset(*forms, prefix='files'))
@@ -844,7 +847,7 @@ class TestVersionEditFiles(TestVersionEditBase):
         File.objects.create(version=self.version,
                             platform=amo.PLATFORM_MAC.id)
         forms = self.client.get(self.url).context['file_form'].forms
-        forms = map(initial, forms)
+        forms = list(map(initial, forms))
         response = self.client.post(
             self.url, self.formset(*forms, prefix='files'))
         assert response.context['file_form'].non_form_errors()[0] == (
@@ -876,7 +879,7 @@ class TestVersionEditFiles(TestVersionEditBase):
     def test_all_unsupported_platforms_unchange(self):
         bsd = self.add_in_bsd()
         forms = self.client.get(self.url).context['file_form'].forms
-        forms = map(initial, forms)
+        forms = list(map(initial, forms))
         self.client.post(self.url, self.formset(*forms, prefix='files'))
         assert File.objects.no_cache().get(pk=bsd.pk).platform == (
             amo.PLATFORM_BSD.id)
@@ -884,7 +887,7 @@ class TestVersionEditFiles(TestVersionEditBase):
     def test_all_unsupported_platforms_change(self):
         bsd = self.add_in_bsd()
         forms = self.client.get(self.url).context['file_form'].forms
-        forms = map(initial, forms)
+        forms = list(map(initial, forms))
         # Update the file platform to Linux:
         forms[1]['platform'] = amo.PLATFORM_LINUX.id
         self.client.post(self.url, self.formset(*forms, prefix='files'))
@@ -958,7 +961,7 @@ class TestVersionEditCompat(TestVersionEditBase):
             initial_count=1)
         response = self.client.post(self.url, data)
         assert response.status_code == 302
-        apps = self.get_version().compatible_apps.keys()
+        apps = list(self.get_version().compatible_apps.keys())
         assert sorted(apps) == sorted([amo.FIREFOX, amo.THUNDERBIRD])
         assert list(ActivityLog.objects.all().values_list('action')) == (
             [(amo.LOG.MAX_APPVERSION_UPDATED.id,)])
@@ -1001,12 +1004,12 @@ class TestVersionEditCompat(TestVersionEditBase):
         # Add thunderbird compat so we can delete firefox.
         self.test_add_appversion()
         form = self.client.get(self.url).context['compat_form']
-        data = map(initial, form.initial_forms)
+        data = list(map(initial, form.initial_forms))
         data[0]['DELETE'] = True
         response = self.client.post(
             self.url, self.formset(*data, initial_count=2))
         assert response.status_code == 302
-        apps = self.get_version().compatible_apps.keys()
+        apps = list(self.get_version().compatible_apps.keys())
         assert apps == [amo.THUNDERBIRD]
         assert list(ActivityLog.objects.all().values_list('action')) == (
             [(amo.LOG.MAX_APPVERSION_UPDATED.id,)])

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.exceptions import ObjectDoesNotExist
 
 import olympia.core.logger
@@ -5,6 +6,7 @@ from olympia import amo
 from olympia.amo.indexers import BaseSearchIndexer
 from olympia.amo.utils import attach_trans_dict
 from olympia.versions.compare import version_int
+import six
 
 
 log = olympia.core.logger.getLogger('z.es')
@@ -279,6 +281,6 @@ class AddonIndexer(BaseSearchIndexer):
 
         # Finally, add the special sort field, coercing the current translation
         # into an unicode object first.
-        data['name_sort'] = unicode(obj.name).lower()
+        data['name_sort'] = six.text_type(obj.name).lower()
 
         return data

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
@@ -46,7 +47,7 @@ class Command(BaseCommand):
         task = tasks.get(options.get('task'))
         if not task:
             raise CommandError('Unknown task provided. Options are: %s'
-                               % ', '.join(tasks.keys()))
+                               % ', '.join(list(tasks.keys())))
         if options.get('with_deleted'):
             addon_manager = Addon.unfiltered
         else:

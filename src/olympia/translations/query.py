@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import itertools
 
 from django.conf import settings
@@ -84,7 +85,7 @@ class SQLCompiler(compiler.SQLCompiler):
         # Temporarily remove translation tables from query.tables so Django
         # doesn't create joins against them.
         old_tables = list(self.query.tables)
-        for table in itertools.chain(*self.query.translation_aliases.values()):
+        for table in itertools.chain(*list(self.query.translation_aliases.values())):
             if table in self.query.tables:
                 self.query.tables.remove(table)
 

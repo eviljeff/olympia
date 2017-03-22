@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import datetime
 import json
 
@@ -19,6 +20,8 @@ from olympia.amo.urlresolvers import reverse
 from olympia.editors.models import RereviewQueueTheme, ReviewerScore, ThemeLock
 from olympia.editors.views_themes import _get_themes, home, themes_search
 from olympia.users.models import UserProfile
+import six
+from six.moves import range
 
 
 class ThemeReviewTestMixin(object):
@@ -776,7 +779,7 @@ class TestXssOnThemeName(amo.tests.TestXss):
         super(TestXssOnThemeName, self).setUp()
         self.theme = addon_factory(type=amo.ADDON_PERSONA,
                                    status=amo.STATUS_PENDING,
-                                   name=unicode(self.name, 'utf-8'))
+                                   name=six.text_type(self.name, 'utf-8'))
         persona = self.theme.persona
         persona.persona_id = 0
         persona.header = 'header'

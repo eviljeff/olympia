@@ -3,6 +3,7 @@
 
 Currently these tests are coupled tighly with MySQL
 """
+from __future__ import absolute_import
 from datetime import datetime
 
 from django.db import connection, models
@@ -12,6 +13,7 @@ import pytest
 
 from olympia.amo.tests import BaseTestCase
 from olympia.editors.sql_model import RawSQLModel
+import six
 
 
 def execute_all(statements):
@@ -276,8 +278,8 @@ class TestSQLModel(BaseTestCase):
 
     def test_types(self):
         row = Summary.objects.all().order_by('category')[0]
-        self.check_type(row.category, unicode)
-        self.check_type(row.total, (int, long))
+        self.check_type(row.category, six.text_type)
+        self.check_type(row.total, six.integer_types)
         self.check_type(row.latest_product_date, datetime)
 
     def test_values(self):

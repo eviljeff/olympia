@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia.amo.tests import BaseTestCase
 from olympia.accounts.serializers import UserProfileSerializer
 from olympia.users.models import UserProfile

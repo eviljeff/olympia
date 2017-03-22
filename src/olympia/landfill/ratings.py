@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import random
 
 from django.utils.crypto import get_random_string
 
 from olympia.addons.models import Review
 from olympia.users.models import UserProfile
+from six.moves import range
 
 
 def generate_ratings(addon, num):

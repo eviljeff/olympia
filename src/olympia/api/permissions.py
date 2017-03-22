@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 

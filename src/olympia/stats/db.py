@@ -1,13 +1,14 @@
+from __future__ import absolute_import
 from django.db import models
 
 import phpserialize as php
 import json
+import six
 
 
-class StatsDictField(models.TextField):
+class StatsDictField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
     description = 'A dictionary of counts stored as serialized php or json.'
-    __metaclass__ = models.SubfieldBase
 
     def db_type(self, connection):
         return 'text'
@@ -29,7 +30,7 @@ class StatsDictField(models.TextField):
         else:
             # phpserialize data
             try:
-                if isinstance(value, unicode):
+                if isinstance(value, six.text_type):
                     value = value.encode('utf8')
                 d = php.unserialize(value, decode_strings=True)
             except ValueError:

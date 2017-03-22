@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import mimetypes
 import os
 from datetime import datetime, timedelta

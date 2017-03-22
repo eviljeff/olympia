@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import hashlib
 import json
 import os
@@ -27,6 +28,7 @@ from olympia.files.models import (
 from olympia.files.helpers import copyfileobj
 from olympia.files.utils import check_xpi_info, parse_addon, parse_xpi
 from olympia.versions.models import Version
+from six.moves import map
 
 
 pytestmark = pytest.mark.django_db

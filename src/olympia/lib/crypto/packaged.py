@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import hashlib
 import json
 import os
@@ -16,6 +17,7 @@ from signing_clients.apps import get_signature_serial_number, JarExtractor
 import olympia.core.logger
 from olympia import amo
 from olympia.versions.compare import version_int
+import six
 
 log = olympia.core.logger.getLogger('z.crypto')
 
@@ -86,7 +88,7 @@ def call_signing(file_obj, endpoint):
             endpoint,
             timeout=settings.SIGNING_SERVER_TIMEOUT,
             data={'addon_id': get_id(file_obj.version.addon)},
-            files={'file': (u'mozilla.sf', unicode(jar.signatures))})
+            files={'file': (u'mozilla.sf', six.text_type(jar.signatures))})
     if response.status_code != 200:
         msg = u'Posting to add-on signing failed: {0}'.format(response.reason)
         log.error(msg)
@@ -139,7 +141,7 @@ def sign_file(file_obj, server):
         return
 
     # Sign the file. If there's any exception, we skip the rest.
-    cert_serial_num = unicode(call_signing(file_obj, endpoint))
+    cert_serial_num = six.text_type(call_signing(file_obj, endpoint))
 
     size = storage.size(file_obj.file_path)
     # Save the certificate serial number for revocation if needed, and re-hash

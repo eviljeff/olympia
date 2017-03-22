@@ -3,6 +3,7 @@
 For different add-on and file statuses, test reviewing them, and make sure then
 end up in the correct state.
 """
+from __future__ import absolute_import
 import pytest
 
 from olympia import amo

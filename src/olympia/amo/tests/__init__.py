@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import math
 import os
 import random
@@ -58,6 +59,8 @@ from olympia.versions.models import ApplicationsVersions, License, Version
 from olympia.users.models import UserProfile
 
 from . import dynamic_urls
+import six
+from six.moves import map
 
 
 # We might not have gettext available in jinja2.env.globals when running tests.
@@ -125,7 +128,7 @@ def check_links(expected, elements, selected=None, verify=True):
         if isinstance(item, tuple):
             text, link = item
         # Or list item could be `link`.
-        elif isinstance(item, basestring):
+        elif isinstance(item, six.string_types):
             text, link = None, item
 
         e = elements.eq(idx)
@@ -145,8 +148,8 @@ def check_links(expected, elements, selected=None, verify=True):
 
 def assert_url_equal(url, other, compare_host=False):
     """Compare url paths and query strings."""
-    parsed = urlparse(unicode(url))
-    parsed_other = urlparse(unicode(other))
+    parsed = urlparse(six.text_type(url))
+    parsed_other = urlparse(six.text_type(other))
     assert parsed.path == parsed_other.path  # Paths are equal.
     # Params are equal.
     assert parse_qs(parsed.query) == parse_qs(parsed_other.query)
@@ -456,7 +459,7 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
             # There are multiple contexts so iter all of them.
             tpl = response.context
         for ctx in tpl:
-            for k, v in ctx.iteritems():
+            for k, v in six.iteritems(ctx):
                 if isinstance(v, (forms.BaseForm, forms.formsets.BaseFormSet)):
                     if isinstance(v, forms.formsets.BaseFormSet):
                         # Concatenate errors from each form in the formset.
@@ -485,10 +488,10 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
         """
 
         # Try parsing the string if it's not a datetime.
-        if isinstance(dt, basestring):
+        if isinstance(dt, six.string_types):
             try:
                 dt = dateutil_parser(dt)
-            except ValueError, e:
+            except ValueError as e:
                 raise AssertionError(
                     'Expected valid date; got %s\n%s' % (dt, e))
 
@@ -521,7 +524,7 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
         assert 'API-Status' in res['Access-Control-Expose-Headers']
         assert 'API-Version' in res['Access-Control-Expose-Headers']
 
-        verbs = map(str.upper, verbs) + ['OPTIONS']
+        verbs = list(map(str.upper, verbs)) + ['OPTIONS']
         actual = res['Access-Control-Allow-Methods'].split(', ')
         self.assertSetEqual(verbs, actual)
         assert res['Access-Control-Allow-Headers'] == (
@@ -638,7 +641,8 @@ def addon_factory(
     category = kw.pop('category', None)
 
     # Keep as much unique data as possible in the uuid: '-' aren't important.
-    name = kw.pop('name', u'Addôn %s' % unicode(uuid.uuid4()).replace('-', ''))
+    name = kw.pop('name', u'Addôn %s' % (
+        six.text_type(uuid.uuid4()).replace('-', '')))
 
     kwargs = {
         # Set artificially the status to STATUS_PUBLIC for now, the real
@@ -685,7 +689,7 @@ def addon_factory(
     application = version_kw.get('application', amo.FIREFOX.id)
     if not category:
         static_category = random.choice(
-            CATEGORIES[application][type_].values())
+            list(CATEGORIES[application][type_].values()))
         category, _ = Category.objects.get_or_create(
             id=static_category.id, defaults=static_category.__dict__)
     AddonCategory.objects.create(addon=addon, category=category)
@@ -859,15 +863,15 @@ class ESTestCase(TestCase):
         stop_es_mocks()
         try:
             cls.es.cluster.health()
-        except Exception, e:
+        except Exception as e:
             e.args = tuple(
                 [u"%s (it looks like ES is not running, try starting it or "
                  u"don't run ES tests: make test_no_es)" % e.args[0]] +
                 list(e.args[1:]))
             raise
 
-        aliases_and_indexes = set(settings.ES_INDEXES.values() +
-                                  cls.es.indices.get_aliases().keys())
+        aliases_and_indexes = set(list(settings.ES_INDEXES.values()) +
+                                  list(cls.es.indices.get_aliases().keys()))
         for key in aliases_and_indexes:
             if key.startswith('test_amo'):
                 cls.es.indices.delete(key, ignore=[404])

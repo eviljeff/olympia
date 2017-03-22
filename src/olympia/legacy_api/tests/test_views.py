@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 from textwrap import dedent
 
@@ -27,6 +28,7 @@ from olympia.files.tests.test_models import UploadTest
 from olympia.legacy_api.utils import addon_to_dict
 from olympia.legacy_api.views import addon_filter
 from olympia.tags.models import AddonTag, Tag
+import six
 
 
 pytestmark = pytest.mark.django_db
@@ -304,7 +306,7 @@ class APITest(TestCase):
         response = self.client.get(
             '/en-US/firefox/api/%.1f/addon/3615?format=json' % 1.2)
         data = json.loads(response.content)
-        assert data['name'] == unicode(addon.name)
+        assert data['name'] == six.text_type(addon.name)
         assert data['type'] == 'extension'
         assert data['guid'] == addon.guid
         assert data['version'] == '2.1.072'
@@ -312,7 +314,7 @@ class APITest(TestCase):
         assert data['authors'] == (
             [{'id': 55021, 'name': u'55021 \u0627\u0644\u062a\u0637\u0628',
               'link': absolutify(u'/en-US/firefox/user/55021/?src=api')}])
-        assert data['summary'] == unicode(addon.summary)
+        assert data['summary'] == six.text_type(addon.summary)
         assert data['description'] == (
             'This extension integrates your browser with Delicious '
             '(http://delicious.com), the leading social bookmarking '
@@ -322,7 +324,7 @@ class APITest(TestCase):
                 'addon_icons'))
         assert data['compatible_apps'] == (
             [{'Firefox': {'max': '4.0', 'min': '2.0'}}])
-        assert data['eula'] == unicode(addon.eula)
+        assert data['eula'] == six.text_type(addon.eula)
         assert data['learnmore'] == (
             absolutify('/en-US/firefox/addon/a3615/?src=api'))
         assert 'theme' not in data
@@ -352,7 +354,7 @@ class APITest(TestCase):
         assert doc('license').length == 1
         assert doc('license name').length == 1
         assert doc('license url').length == 1
-        assert doc('license name').text() == unicode(license.name)
+        assert doc('license name').text() == six.text_type(license.name)
         assert doc('license url').text() == absolutify(license.url)
 
         license.url = ''
@@ -464,7 +466,7 @@ class APITest(TestCase):
         for needle in needles:
             self.assertContains(response, needle)
 
-        for tag, needle in url_needles.iteritems():
+        for tag, needle in six.iteritems(url_needles):
             url = doc(tag).text()
             self.assertUrlEqual(url, needle)
 
@@ -793,7 +795,7 @@ class TestGuidSearch(TestCase):
         super(TestGuidSearch, self).setUp()
         addon = Addon.objects.get(id=3615)
         c = CompatOverride.objects.create(guid=addon.guid)
-        app = addon.compatible_apps.keys()[0]
+        app = list(addon.compatible_apps.keys())[0]
         CompatOverrideRange.objects.create(compat=c, app=app.id)
 
     def test_success(self):
@@ -976,7 +978,7 @@ class SearchTest(ESTestCase):
                 'TwitterBar',
         }
 
-        for url, text in expect.iteritems():
+        for url, text in six.iteritems(expect):
             if not url.startswith('/'):
                 url = '/en-US/firefox/api/1.2/search/' + url
 
@@ -1305,7 +1307,7 @@ class LanguagePacksTest(UploadTest):
 
     @patch('olympia.addons.models.Addon.get_localepicker')
     def test_localepicker(self, get_localepicker):
-        get_localepicker.return_value = unicode('title=اختر لغة', 'utf8')
+        get_localepicker.return_value = six.text_type('title=اختر لغة', 'utf8')
         self.addon.update(type=amo.ADDON_LPAPP, status=amo.STATUS_PUBLIC)
         res = self.client.get(self.url)
         self.assertContains(res, dedent("""

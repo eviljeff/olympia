@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from amo.utils import chunked
 
 from mkt.constants import APP_IMAGE_SIZES

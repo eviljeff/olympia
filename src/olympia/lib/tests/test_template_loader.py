@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from olympia.amo.tests import BaseTestCase
 from olympia.lib.template_loader import Loader
 

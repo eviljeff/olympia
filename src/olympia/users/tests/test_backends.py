@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia.amo.tests import TestCase
 from olympia.users.backends import TestUserBackend
 from olympia.users.models import UserProfile

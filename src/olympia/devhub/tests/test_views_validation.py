@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 
 from django import forms
@@ -21,6 +22,7 @@ from olympia.files.tests.test_models import UploadTest as BaseUploadTest
 from olympia.files.utils import check_xpi_info, parse_addon
 from olympia.users.models import UserProfile
 from olympia.zadmin.models import ValidationResult
+import six
 
 
 class TestUploadValidation(BaseUploadTest):
@@ -689,7 +691,7 @@ class TestUploadCompatCheck(BaseUploadTest):
         doc = pq(res.content)
 
         options = doc('#id_application option')
-        expected = [(str(a.id), unicode(a.pretty)) for a in amo.APP_USAGE]
+        expected = [(str(a.id), six.text_type(a.pretty)) for a in amo.APP_USAGE]
         for idx, element in enumerate(options):
             e = pq(element)
             val, text = expected[idx]

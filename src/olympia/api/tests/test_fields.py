@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.core.exceptions import ValidationError
 
 from mock import Mock
@@ -12,6 +13,7 @@ from olympia.api.fields import (
     TranslationSerializerField)
 from olympia.amo.tests import addon_factory, TestCase
 from olympia.translations.models import Translation
+import six
 
 
 class TestReverseChoiceField(TestCase):
@@ -58,10 +60,11 @@ class TestTranslationSerializerField(TestCase):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
         expected = {
-            'en-US': unicode(Translation.objects.get(id=self.addon.name.id,
-                                                     locale='en-US')),
-            'es': unicode(Translation.objects.get(id=self.addon.name.id,
-                                                  locale='es')),
+            'en-US': six.text_type(
+                Translation.objects.get(id=self.addon.name.id,
+                                        locale='en-US')),
+            'es': six.text_type(
+                Translation.objects.get(id=self.addon.name.id, locale='es')),
         }
         assert result == expected
 
@@ -77,13 +80,13 @@ class TestTranslationSerializerField(TestCase):
     def _test_expected_single_string(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.name)
+        expected = six.text_type(self.addon.name)
         assert result == expected
 
         field.source = None
         field.bind('description', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.description)
+        expected = six.text_type(self.addon.description)
         assert result == expected
 
     def test_to_representation(self):
@@ -141,10 +144,11 @@ class TestTranslationSerializerField(TestCase):
         field = self.field_class(source='mymock.mymocked_field')
         result = field.to_internal_value(field.get_attribute(self.addon))
         expected = {
-            'en-US': unicode(Translation.objects.get(id=self.addon.name.id,
-                                                     locale='en-US')),
-            'es': unicode(Translation.objects.get(id=self.addon.name.id,
-                                                  locale='es')),
+            'en-US': six.text_type(
+                Translation.objects.get(id=self.addon.name.id,
+                                        locale='en-US')),
+            'es': six.text_type(
+                Translation.objects.get(id=self.addon.name.id, locale='es')),
         }
         assert result == expected
 
@@ -269,13 +273,13 @@ class TestESTranslationSerializerField(TestTranslationSerializerField):
     def _test_expected_single_string(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.name_translations['en-US'])
+        expected = six.text_type(self.addon.name_translations['en-US'])
         assert result == expected
 
         field.source = None
         field.bind('description', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.description_translations['en-US'])
+        expected = six.text_type(self.addon.description_translations['en-US'])
         assert result == expected
 
     def test_get_attribute_source(self):

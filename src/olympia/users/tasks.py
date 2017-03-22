@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.files.storage import default_storage as storage
 
 import olympia.core.logger
@@ -25,7 +26,7 @@ def delete_photo(dst, **kw):
 
     try:
         storage.delete(dst)
-    except Exception, e:
+    except Exception as e:
         task_log.error("Error deleting userpic: %s" % e)
 
 
@@ -38,7 +39,7 @@ def resize_photo(src, dst, locally=False, **kw):
     try:
         resize_image(src, dst, (200, 200), locally=locally)
         return True
-    except Exception, e:
+    except Exception as e:
         task_log.error("Error saving userpic: %s" % e)
 
 

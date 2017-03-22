@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from django.db import models
 
 from olympia import amo
@@ -119,7 +121,7 @@ def run():
         try:
             tier = Price.objects.filter(price=k).no_transforms()[0]
         except IndexError:
-            print 'Tier does not exist: {0}'.format(k)
+            print('Tier does not exist: {0}'.format(k))
             continue
 
         for country, values in v.items():
@@ -131,4 +133,4 @@ def run():
                 region=values['region'],
                 currency=values['currency']
             )
-            print 'Creating: {0}, {1}'.format(k, country)
+            print('Creating: {0}, {1}'.format(k, country))

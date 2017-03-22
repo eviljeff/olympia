@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
 from celery import group
 from optparse import make_option
 
@@ -21,7 +23,7 @@ class Command(BaseCommand):
         if not options['force']:
             files = files.filter(_webext_permissions=None)
         pks = files.values_list('pk', flat=True)
-        print 'pks count %s' % pks.count()
+        print('pks count %s' % pks.count())
         if pks:
             grouping = []
             for chunk in chunked(pks, 100):

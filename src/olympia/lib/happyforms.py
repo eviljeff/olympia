@@ -1,6 +1,8 @@
+from __future__ import absolute_import
 from django import forms
 from django.forms.fields import FileField
 from django.core.exceptions import ValidationError
+import six
 
 
 class BaseFormMixin(object):
@@ -24,7 +26,7 @@ class BaseFormMixin(object):
                     initial = self.initial.get(name, field.initial)
                     value = field.clean(value, initial)
                 else:
-                    if isinstance(value, basestring):
+                    if isinstance(value, six.string_types):
                         value = field.clean(value.strip())
                     else:
                         value = field.clean(value)
@@ -32,7 +34,7 @@ class BaseFormMixin(object):
                 if hasattr(self, 'clean_%s' % name):
                     value = getattr(self, 'clean_%s' % name)()
                     self.cleaned_data[name] = value
-            except ValidationError, e:
+            except ValidationError as e:
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:
                     del self.cleaned_data[name]

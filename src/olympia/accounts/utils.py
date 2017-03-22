@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 from base64 import urlsafe_b64encode
 from urllib import urlencode
@@ -5,11 +6,12 @@ from urllib import urlencode
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.http import is_safe_url
+import six
 
 
 def fxa_config(request):
     config = {camel_case(key): value
-              for key, value in settings.FXA_CONFIG['default'].iteritems()
+              for key, value in six.iteritems(settings.FXA_CONFIG['default'])
               if key != 'client_secret'}
     if request.user.is_authenticated():
         config['email'] = request.user.email

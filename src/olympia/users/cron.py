@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db import connections
 
 import cronjobs
@@ -11,6 +12,7 @@ from olympia.amo.utils import chunked
 
 from .models import UserProfile
 from .tasks import update_user_ratings_task
+from six.moves import map
 
 task_log = olympia.core.logger.getLogger('z.task')
 

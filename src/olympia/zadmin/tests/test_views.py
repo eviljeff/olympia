@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import csv
 import os
 import json
@@ -39,6 +40,8 @@ from olympia.zadmin.models import (
     ValidationResultAffectedAddon, ValidationResultMessage)
 from olympia.zadmin.tasks import updated_versions
 from olympia.zadmin.views import find_files
+import six
+from six.moves import range
 
 
 SHORT_LIVED_CACHE_PARAMS = settings.CACHES.copy()
@@ -1218,9 +1221,9 @@ class TestEmailPreview(TestCase):
                             args=[self.topic.topic]))
         assert r.status_code == 200
         rdr = csv.reader(StringIO(r.content))
-        assert rdr.next() == ['from_email', 'recipient_list', 'subject',
+        assert next(rdr) == ['from_email', 'recipient_list', 'subject',
                               'body']
-        assert rdr.next() == ['admin@mozilla.org', 'funnyguy@mozilla.org',
+        assert next(rdr) == ['admin@mozilla.org', 'funnyguy@mozilla.org',
                               'the subject', 'Hello Ivan Krsti\xc4\x87']
 
 
@@ -1619,7 +1622,7 @@ class TestCompat(TestCompatibilityReportCronMixin, amo.tests.ESTestCase):
 
         name = tr.find('.name')
         assert name.find('.version').text() == 'v' + version
-        assert name.remove('.version').text() == unicode(addon.name)
+        assert name.remove('.version').text() == six.text_type(addon.name)
         assert name.find('a').attr('href') == addon.get_url_path()
 
         assert tr.find('.maxver').text() == (

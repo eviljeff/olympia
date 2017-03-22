@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from constants.payments import PAYMENT_METHOD_CARD
 
 from market.models import Price, PriceCurrency
@@ -10,11 +12,11 @@ def run():
             pc = PriceCurrency.objects.get(tier__price=tier,
                                            region=regions.CO.id)
         except PriceCurrency.DoesNotExist:
-            print 'Skipping deleting PriceCurrency of {0} for CO'.format(tier)
+            print('Skipping deleting PriceCurrency of {0} for CO'.format(tier))
             continue
 
         pc.delete()
-        print 'Deleted PriceCurrency of {0} for CO'.format(tier)
+        print('Deleted PriceCurrency of {0} for CO'.format(tier))
 
     for tier, amount in [('14.99', '31280.00'),
                          ('19.99', '41720.00'),
@@ -22,7 +24,7 @@ def run():
         try:
             price = Price.objects.get(price=tier)
         except Price.DoesNotExist:
-            print 'Skipping adding in {0} for CO'.format(tier)
+            print('Skipping adding in {0} for CO'.format(tier))
             continue
 
         if not PriceCurrency.objects.filter(tier=price,
@@ -30,16 +32,16 @@ def run():
             PriceCurrency.objects.create(region=regions.CO.id, currency='COP',
                                          price=amount, carrier=None,
                                          provider=1, tier=price)
-            print 'Created {0} for CO'.format(tier)
+            print('Created {0} for CO'.format(tier))
 
     for tier in ['6.99', '9.99', '12.49', '14.99', '19.99', '24.99', '29.99']:
         try:
             pc = PriceCurrency.objects.get(tier__price=tier,
                                            region=regions.CO.id)
         except PriceCurrency.DoesNotExist:
-            print 'Skipping modifying PriceCurrency of {0} for CO'.format(tier)
+            print('Skipping modifying PriceCurrency of {0} for CO'.format(tier))
             continue
 
         pc.method = PAYMENT_METHOD_CARD
         pc.save()
-        print 'Updated {0} for CO to card'.format(tier)
+        print('Updated {0} for CO to card'.format(tier))

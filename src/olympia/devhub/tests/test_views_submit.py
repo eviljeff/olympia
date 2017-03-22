@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 from datetime import datetime, timedelta
 
@@ -20,6 +21,8 @@ from olympia.files.tests.test_models import UploadTest
 from olympia.users.models import UserProfile
 from olympia.versions.models import License
 from olympia.zadmin.models import Config
+import six
+from six.moves import zip
 
 
 def get_addon_count(name):
@@ -558,7 +561,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
     def test_welcome_email_for_newbies(self, send_welcome_email_mock):
         self.client.get(self.url)
         context = {
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': six.text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -574,7 +577,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         new_addon.addonuser_set.create(user=self.addon.authors.all()[0])
         self.client.get(self.url)
         context = {
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': six.text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -593,7 +596,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         new_addon.addonuser_set.create(user=self.addon.authors.all()[0])
         self.client.get(self.url)
         context = {
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': six.text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -1149,9 +1152,9 @@ class TestVersionSubmitDetails(TestSubmitBase):
         # metadata is missing, name, slug, summary and category are required to
         # be present.
         data = {
-            'name': unicode(self.addon.name),
+            'name': six.text_type(self.addon.name),
             'slug': self.addon.slug,
-            'summary': unicode(self.addon.summary),
+            'summary': six.text_type(self.addon.summary),
 
             'form-0-categories': [22, 1],
             'form-0-application': 1,

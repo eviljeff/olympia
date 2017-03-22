@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.utils import translation
 
 from elasticsearch_dsl import F, query
@@ -137,7 +138,7 @@ class AddonStatusFilterParam(AddonFilterParam):
 class AddonCategoryFilterParam(AddonFilterParam):
     query_param = 'category'
     es_field = 'category'
-    valid_values = CATEGORIES_BY_ID.keys()
+    valid_values = list(CATEGORIES_BY_ID.keys())
 
     def __init__(self, request):
         super(AddonCategoryFilterParam, self).__init__(request)

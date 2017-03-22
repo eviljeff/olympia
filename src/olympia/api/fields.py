@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf import settings
 from django.utils.translation import get_language, ugettext_lazy as _lazy
 from django.core.exceptions import ValidationError
@@ -6,6 +7,7 @@ from rest_framework import fields
 
 from olympia.amo.utils import to_language
 from olympia.translations.models import Translation
+import six
 
 
 class ReverseChoiceField(fields.ChoiceField):
@@ -74,11 +76,11 @@ class TranslationSerializerField(fields.Field):
     def fetch_all_translations(self, obj, source, field):
         translations = field.__class__.objects.filter(
             id=field.id, localized_string__isnull=False)
-        return {to_language(trans.locale): unicode(trans)
+        return {to_language(trans.locale): six.text_type(trans)
                 for trans in translations} if translations else None
 
     def fetch_single_translation(self, obj, source, field, requested_language):
-        return unicode(field) if field else None
+        return six.text_type(field) if field else None
 
     def get_attribute(self, obj):
         source = self.source or self.field_name
@@ -103,7 +105,7 @@ class TranslationSerializerField(fields.Field):
         return val
 
     def to_internal_value(self, data):
-        if isinstance(data, basestring):
+        if isinstance(data, six.string_types):
             self.validate(data)
             return data.strip()
         elif isinstance(data, dict):
@@ -111,12 +113,12 @@ class TranslationSerializerField(fields.Field):
             for key, value in data.items():
                 data[key] = value and value.strip()
             return data
-        return unicode(data)
+        return six.text_type(data)
 
     def validate(self, value):
         value_too_short = True
 
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             if len(value.strip()) >= self.min_length:
                 value_too_short = False
         else:

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import calendar
 import collections
 import contextlib
@@ -50,6 +51,7 @@ from olympia.users.models import UserNotification
 from olympia.users.utils import UnsubscribeCode
 
 from . import logger_log as log
+import six
 
 
 def render_to_string(request, template, context=None):
@@ -193,7 +195,7 @@ def send_mail(subject, message, from_email=None, recipient_list=None,
     if not recipient_list:
         return True
 
-    if isinstance(recipient_list, basestring):
+    if isinstance(recipient_list, six.string_types):
         raise ValueError('recipient_list should be a list, not a string.')
 
     # Check against user notification settings
@@ -225,7 +227,7 @@ def send_mail(subject, message, from_email=None, recipient_list=None,
 
     if cc:
         # If not basestring, assume it is already a list.
-        if isinstance(cc, basestring):
+        if isinstance(cc, six.string_types):
             cc = [cc]
 
     if not headers:
@@ -600,7 +602,7 @@ class HttpResponseSendFile(HttpResponse):
         super(HttpResponseSendFile, self).__init__('', status=status,
                                                    content_type=content_type)
         header_path = self.path
-        if isinstance(header_path, unicode):
+        if isinstance(header_path, six.text_type):
             header_path = header_path.encode('utf8')
         if settings.XSENDFILE:
             self[settings.XSENDFILE_HEADER] = header_path
@@ -706,7 +708,7 @@ def escape_all(v, linkify_only_full=False):
     Only linkify full urls, including a scheme, if "linkify_only_full" is True.
 
     """
-    if isinstance(v, basestring):
+    if isinstance(v, six.string_types):
         v = jinja2.escape(force_text(v))
         v = linkify_with_outgoing(v, only_full=linkify_only_full)
         return v
@@ -714,7 +716,7 @@ def escape_all(v, linkify_only_full=False):
         for i, lv in enumerate(v):
             v[i] = escape_all(lv, linkify_only_full=linkify_only_full)
     elif isinstance(v, dict):
-        for k, lv in v.iteritems():
+        for k, lv in six.iteritems(v):
             v[k] = escape_all(lv, linkify_only_full=linkify_only_full)
     elif isinstance(v, Translation):
         v = jinja2.escape(force_text(v))
@@ -801,7 +803,7 @@ def attach_trans_dict(model, objs):
         converted_translation = new_class()
         converted_translation.__dict__ = translation.__dict__
         return (converted_translation.locale.lower(),
-                unicode(converted_translation))
+                six.text_type(converted_translation))
 
     # Build and attach translations for each field on each object.
     for obj in objs:

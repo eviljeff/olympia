@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import hashlib
 import json
 import os
@@ -32,6 +33,8 @@ from olympia.amo.helpers import user_media_path, user_media_url
 from olympia.applications.models import AppVersion
 from olympia.files.utils import SafeUnzip, write_crx_as_xpi
 from olympia.translations.fields import TranslatedField
+import six
+from six.moves import map
 
 
 log = olympia.core.logger.getLogger('z.files')
@@ -59,7 +62,7 @@ class File(OnChangeMixin, ModelBase):
     original_hash = models.CharField(max_length=255, default='')
     jetpack_version = models.CharField(max_length=10, null=True)
     status = models.PositiveSmallIntegerField(
-        choices=STATUS_CHOICES.items(), default=amo.STATUS_AWAITING_REVIEW)
+        choices=list(STATUS_CHOICES.items()), default=amo.STATUS_AWAITING_REVIEW)
     datestatuschanged = models.DateTimeField(null=True, auto_now_add=True)
     no_restart = models.BooleanField(default=False)
     strict_compatibility = models.BooleanField(default=False)
@@ -94,7 +97,7 @@ class File(OnChangeMixin, ModelBase):
         db_table = 'files'
 
     def __unicode__(self):
-        return unicode(self.id)
+        return six.text_type(self.id)
 
     def get_platform_display(self):
         return force_text(amo.PLATFORMS[self.platform].name)
@@ -131,7 +134,7 @@ class File(OnChangeMixin, ModelBase):
             host = user_media_url('addons')
 
         return posixpath.join(
-            *map(force_bytes, [host, self.version.addon.id, self.filename]))
+            *list(map(force_bytes, [host, self.version.addon.id, self.filename])))
 
     def get_url_path(self, src):
         return self._make_download_url('downloads.file', src)
@@ -213,7 +216,7 @@ class File(OnChangeMixin, ModelBase):
             if name in zip_.namelist():
                 try:
                     opts = json.load(zip_.open(name))
-                except ValueError, exc:
+                except ValueError as exc:
                     log.info('Could not parse harness-options.json in %r: %s' %
                              (path, exc))
                 else:
@@ -346,7 +349,7 @@ class File(OnChangeMixin, ModelBase):
 
         try:
             manifest = zip.extract_path('chrome.manifest')
-        except KeyError, e:
+        except KeyError as e:
             log.info('No file named: chrome.manifest in file: %s' % self.pk)
             return ''
 
@@ -360,10 +363,10 @@ class File(OnChangeMixin, ModelBase):
             if 'localepicker.properties' not in p:
                 p = os.path.join(p, 'localepicker.properties')
             res = zip.extract_from_manifest(p)
-        except (zipfile.BadZipfile, IOError), e:
+        except (zipfile.BadZipfile, IOError) as e:
             log.error('Error unzipping: %s, %s in file: %s' % (p, e, self.pk))
             return ''
-        except (ValueError, KeyError), e:
+        except (ValueError, KeyError) as e:
             log.error('No file named: %s in file: %s' % (e, self.pk))
             return ''
 
@@ -426,7 +429,7 @@ class File(OnChangeMixin, ModelBase):
         try:
             # Filter out any errant non-strings included in the manifest JSON.
             return [p for p in self._webext_permissions.permissions
-                    if isinstance(p, basestring)]
+                    if isinstance(p, six.string_types)]
         except WebextPermission.DoesNotExist:
             return []
 
@@ -586,7 +589,7 @@ class FileUpload(ModelBase):
         db_table = 'file_uploads'
 
     def __unicode__(self):
-        return unicode(self.uuid.hex)
+        return six.text_type(self.uuid.hex)
 
     def save(self, *args, **kw):
         if self.validation:
@@ -697,7 +700,7 @@ class FileValidation(ModelBase):
 
     @classmethod
     def from_json(cls, file, validation):
-        if isinstance(validation, basestring):
+        if isinstance(validation, six.string_types):
             validation = json.loads(validation)
         new = cls(file=file, validation=json.dumps(validation),
                   errors=validation['errors'],
@@ -761,6 +764,6 @@ class WebextPermissionDescription(ModelBase):
 
 def nfd_str(u):
     """Uses NFD to normalize unicode strings."""
-    if isinstance(u, unicode):
+    if isinstance(u, six.text_type):
         return unicodedata.normalize('NFD', u).encode('utf-8')
     return u

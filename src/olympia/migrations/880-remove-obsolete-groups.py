@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia.access.models import Group
 
 GROUPS_TO_REMOVE = (

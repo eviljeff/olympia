@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import datetime
 from decimal import Decimal
 import os
@@ -32,6 +33,9 @@ from olympia.translations.models import Translation
 from olympia.translations.utils import transfield_changed
 from olympia.users.models import UserEmailField
 from olympia.versions.models import Version
+import six
+from six.moves import map
+from six.moves import zip
 
 
 log = olympia.core.logger.getLogger('z.addons')
@@ -53,7 +57,7 @@ def clean_addon_slug(slug, instance):
 
 def clean_tags(request, tags):
     target = [slugify(t, spaces=True, lower=True) for t in tags.split(',')]
-    target = set(filter(None, target))
+    target = set([_f for _f in target if _f])
 
     min_len = amo.MIN_TAG_LENGTH
     max_len = Tag._meta.get_field('tag_text').max_length
@@ -221,7 +225,7 @@ class CategoryForm(forms.Form):
                 'You can have only {0} categories.',
                 max_cat).format(max_cat))
 
-        has_misc = filter(lambda x: x.misc, categories)
+        has_misc = [x for x in categories if x.misc]
         if has_misc and total > 1:
             raise forms.ValidationError(
                 _('The miscellaneous category cannot be combined with '
@@ -237,7 +241,7 @@ class BaseCategoryFormSet(BaseFormSet):
         self.request = kw.pop('request', None)
         super(BaseCategoryFormSet, self).__init__(*args, **kw)
         self.initial = []
-        apps = sorted(self.addon.compatible_apps.keys(),
+        apps = sorted(list(self.addon.compatible_apps.keys()),
                       key=lambda x: x.id)
 
         # Drop any apps that don't have appropriate categories.
@@ -338,7 +342,7 @@ class AddonFormDetails(AddonFormBase):
             fields = dict((k, getattr(self.instance, k + '_id'))
                           for k in required)
             locale = self.cleaned_data['default_locale']
-            ids = filter(None, fields.values())
+            ids = [_f for _f in list(fields.values()) if _f]
             qs = (Translation.objects.filter(locale=locale, id__in=ids,
                                              localized_string__isnull=False)
                   .values_list('id', flat=True))
@@ -596,7 +600,7 @@ class EditThemeForm(AddonFormBase):
             'display_username': self.request.user.name
         }
         changed = False
-        for k, v in persona_data.iteritems():
+        for k, v in six.iteritems(persona_data):
             if v != getattr(persona, k):
                 changed = True
                 setattr(persona, k, v)

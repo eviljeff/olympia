@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 from operator import attrgetter
 
@@ -121,7 +122,7 @@ def _get_locales(addons):
         locales[locale] = Locale(addon.target_locale, addon.locale_display,
                                  addon.locale_native, dicts, packs)
 
-    for locale in sorted(locales.items(), key=lambda x: x[1].display):
+    for locale in sorted(list(locales.items()), key=lambda x: x[1].display):
         yield locale
 
 

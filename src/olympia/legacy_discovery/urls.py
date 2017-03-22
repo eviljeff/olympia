@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf.urls import include, patterns, url
 from django.core.urlresolvers import reverse
 from django.db.transaction import non_atomic_requests

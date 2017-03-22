@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import json
 
@@ -22,6 +23,8 @@ from olympia.editors.sql_model import RawSQLModel
 from olympia.files.models import FileValidation
 from olympia.users.models import UserForeignKey, UserProfile
 from olympia.versions.models import Version, version_uploaded
+import six
+from six.moves import zip
 
 
 user_log = olympia.core.logger.getLogger('z.users')
@@ -33,13 +36,13 @@ class CannedResponse(ModelBase):
     response = models.TextField()
     sort_group = models.CharField(max_length=255)
     type = models.PositiveIntegerField(
-        choices=amo.CANNED_RESPONSE_CHOICES.items(), db_index=True, default=0)
+        choices=list(amo.CANNED_RESPONSE_CHOICES.items()), db_index=True, default=0)
 
     class Meta:
         db_table = 'cannedresponses'
 
     def __unicode__(self):
-        return unicode(self.name)
+        return six.text_type(self.name)
 
 
 class AddonCannedResponseManager(ManagerBase):
@@ -273,7 +276,7 @@ class ViewUnlistedAllList(RawSQLModel):
     @property
     def authors(self):
         ids = self._explode_concat(self._author_ids)
-        usernames = self._explode_concat(self._author_usernames, cast=unicode)
+        usernames = self._explode_concat(self._author_usernames, cast=six.text_type)
         return list(set(zip(ids, usernames)))
 
 
@@ -359,7 +362,7 @@ class ReviewerScore(ModelBase):
     addon = models.ForeignKey(Addon, blank=True, null=True, related_name='+')
     score = models.SmallIntegerField()
     # For automated point rewards.
-    note_key = models.SmallIntegerField(choices=amo.REVIEWED_CHOICES.items(),
+    note_key = models.SmallIntegerField(choices=list(amo.REVIEWED_CHOICES.items()),
                                         default=0)
     # For manual point rewards with a note.
     note = models.CharField(max_length=255)
@@ -469,9 +472,8 @@ class ReviewerScore(ModelBase):
         if val is not None:
             return val
 
-        val = (ReviewerScore.objects.no_cache().filter(user=user)
-                                    .aggregate(total=Sum('score'))
-                                    .values())[0]
+        val = (list(ReviewerScore.objects.no_cache().filter(user=user)
+                                    .aggregate(total=Sum('score')).values()))[0]
         if val is None:
             val = 0
 

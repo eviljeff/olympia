@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from olympia.applications.models import AppVersion
 from olympia.lib.es.utils import create_index
 from olympia.stats.models import (
     CollectionCount, DownloadCount, StatsSearchMixin, UpdateCount)
+import six
 
 
 # Number of elements to index at once in ES. The size of a dict to send to ES
@@ -22,7 +24,7 @@ def es_dict(items):
     if not items:
         return {}
     if hasattr(items, 'items'):
-        items = items.items()
+        items = list(items.items())
     return [{'k': key, 'v': value} for key, value in items]
 
 
@@ -59,14 +61,14 @@ def extract_update_count(update, all_apps=None):
         for key, count in update.oses.items():
             platform = None
 
-            if unicode(key).lower() in amo.PLATFORM_DICT:
-                platform = amo.PLATFORM_DICT[unicode(key).lower()]
+            if six.text_type(key).lower() in amo.PLATFORM_DICT:
+                platform = amo.PLATFORM_DICT[six.text_type(key).lower()]
             elif key in amo.PLATFORMS:
                 platform = amo.PLATFORMS[key]
 
             if platform is not None:
                 os[platform.name] += count
-                doc['os'] = es_dict((unicode(k), v) for k, v in os.items())
+                doc['os'] = es_dict((six.text_type(k), v) for k, v in os.items())
 
     # Case-normalize locales.
     if update.locales:

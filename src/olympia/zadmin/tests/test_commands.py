@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core import management
 
 from olympia.amo.tests import TestCase

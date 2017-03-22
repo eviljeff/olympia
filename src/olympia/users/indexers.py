@@ -1,7 +1,10 @@
+from __future__ import absolute_import
 from operator import attrgetter
 
 
 from olympia.amo.indexers import BaseSearchIndexer
+import six
+from six.moves import zip
 
 
 class UserProfileIndexer(BaseSearchIndexer):
@@ -29,10 +32,10 @@ class UserProfileIndexer(BaseSearchIndexer):
         # These all get converted into unicode.
         unicode_attrs = ('email', 'username', 'display_name', 'bio',
                          'homepage', 'location', 'occupation')
-        data = dict(zip(unicode_attrs,
-                    [unicode(attr) for attr in attrgetter(*unicode_attrs)(obj)
-                     if attr]))
+        data = dict(list(zip(unicode_attrs,
+                    [six.text_type(attr) for attr in attrgetter(*unicode_attrs)(obj)
+                     if attr])))
         # These are just extracted as-is.
         attrs = ('id', 'deleted')
-        data.update(dict(zip(attrs, attrgetter(*attrs)(obj))))
+        data.update(dict(list(zip(attrs, attrgetter(*attrs)(obj)))))
         return data

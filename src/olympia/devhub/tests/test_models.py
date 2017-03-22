@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia import amo
 from olympia.amo.tests import TestCase
 from olympia.addons.models import Addon

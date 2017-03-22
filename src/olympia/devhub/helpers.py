@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import defaultdict
 import urllib
 
@@ -15,6 +16,7 @@ from olympia.activity.utils import filter_queryset_to_pending_replies
 from olympia.addons.helpers import new_context
 from olympia.compat.models import CompatReport
 from olympia.files.models import File
+import six
 
 
 register.function(acl.check_addon_ownership)
@@ -73,7 +75,7 @@ def dev_files_status(files):
     for file in files:
         status_count[file.status] += 1
 
-    return [(count, unicode(choices[status])) for
+    return [(count, six.text_type(choices[status])) for
             (status, count) in status_count.items()]
 
 

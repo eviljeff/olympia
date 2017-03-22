@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia import amo
 from olympia.amo.tests import TestCase
 from olympia.addons.models import Addon, Review
 from olympia.landfill.ratings import generate_ratings
 from olympia.users.models import UserProfile
+import six
 
 
 class RatingsTests(TestCase):
@@ -18,5 +20,5 @@ class RatingsTests(TestCase):
         assert UserProfile.objects.count() == 3
         for n, review in enumerate(Review.objects.all().order_by('pk')):
             assert review.addon == self.addon
-            assert unicode(review.title) == u'Test Review %d' % (n + 1)
+            assert six.text_type(review.title) == u'Test Review %d' % (n + 1)
             assert review.user.email.endswith('@example.com')

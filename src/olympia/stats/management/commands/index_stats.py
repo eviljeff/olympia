@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import date, timedelta
 from optparse import make_option
 
@@ -12,6 +13,7 @@ from olympia.stats.search import CHUNK_SIZE
 from olympia.stats.tasks import (
     index_collection_counts, index_download_counts, index_theme_user_counts,
     index_update_counts)
+from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.stats')

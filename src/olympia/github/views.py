@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import requests
 from rest_framework import status
 from rest_framework.response import Response

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import jinja2
 
 from jingo import register
@@ -95,7 +96,7 @@ def impala_contribution(context, addon, text=None, src='', show_install=False,
 @jinja2.contextfunction
 def review_list_box(context, addon, reviews):
     """Details page: Show a box with three add-on reviews."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(addon=addon, reviews=reviews)
     return c
 
@@ -104,7 +105,7 @@ def review_list_box(context, addon, reviews):
 @jinja2.contextfunction
 def impala_review_list_box(context, addon, reviews):
     """Details page: Show a box with three add-on reviews."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(addon=addon, reviews=reviews)
     return c
 
@@ -113,7 +114,7 @@ def impala_review_list_box(context, addon, reviews):
 @jinja2.contextfunction
 def review_add_box(context, addon):
     """Details page: Show a box for the user to post a review."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c['addon'] = addon
     return c
 
@@ -122,7 +123,7 @@ def review_add_box(context, addon):
 @jinja2.contextfunction
 def impala_review_add_box(context, addon):
     """Details page: Show a box for the user to post a review."""
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c['addon'] = addon
     return c
 
@@ -134,7 +135,7 @@ def tags_box(context, addon, tags=None):
     Details page: Show a box with existing tags along with a form to add new
     ones.
     """
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({'addon': addon,
               'tags': tags})
     return c
@@ -265,7 +266,7 @@ def addon_toplist(context, addons, vital='users', src=None):
 
 
 def new_context(context, **kw):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(kw)
     return c
 
@@ -277,7 +278,7 @@ def persona_preview(context, persona, size='large', linked=True, extra=None,
     preview_map = {'large': persona.preview_url,
                    'small': persona.thumb_url}
     addon = persona.addon
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({'persona': persona, 'addon': addon, 'linked': linked,
               'size': size, 'preview': preview_map[size], 'extra': extra,
               'details': details, 'title': title, 'caption': caption,
@@ -289,7 +290,7 @@ def persona_preview(context, persona, size='large', linked=True, extra=None,
 @jinja2.contextfunction
 def mobile_persona_preview(context, persona):
     addon = persona.addon
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({'persona': persona, 'addon': addon})
     return c
 
@@ -298,7 +299,7 @@ def mobile_persona_preview(context, persona):
 @jinja2.contextfunction
 def mobile_persona_confirm(context, persona, size='large'):
     addon = persona.addon
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({'persona': persona, 'addon': addon, 'size': size})
     return c
 
@@ -313,7 +314,7 @@ def persona_grid(context, addons):
 @jinja2.contextfilter
 @register.inclusion_tag('addons/impala/persona_grid.html')
 def impala_persona_grid(context, personas, src=None, pagesize=6, cols=3):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     return dict(pages=chunked(personas, pagesize),
                 columns='cols-%d' % cols, **c)
 

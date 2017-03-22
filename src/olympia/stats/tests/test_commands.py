@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 import shutil
@@ -17,6 +18,7 @@ from olympia.stats.management.commands.update_counts_from_file import Command
 from olympia.stats.models import (
     DownloadCount, ThemeUpdateCount, UpdateCount, ThemeUserCount)
 from olympia.zadmin.models import DownloadSource
+from six.moves import range
 
 
 hive_folder = os.path.join(settings.ROOT, 'src/olympia/stats/fixtures/files')
@@ -284,7 +286,7 @@ class TestThemeADICommand(FixturesFolderMixin, TestCase):
         assert UpdateCount.objects.all().count() == 1
         uc = UpdateCount.objects.last()
         assert uc.count == 1320
-        assert uc.date == date(2014, 11, 06)
+        assert uc.date == date(2014, 11, 0o6)
         assert (uc.versions ==
                 {u'1.7.16': 1, u'userEnabled': 3, u'1.7.13': 2, u'1.7.11': 3,
                  u'1.6.0': 1, u'1.7.14': 1304, u'1.7.6': 6})

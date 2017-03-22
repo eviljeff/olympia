@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia.amo.utils import slugify
 from olympia.addons.models import AddonCategory, AddonUser
 from olympia.users.models import UserProfile

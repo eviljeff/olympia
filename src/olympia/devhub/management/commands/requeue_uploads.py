@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from django.core.management.base import BaseCommand
 
 
@@ -9,6 +11,6 @@ class Command(BaseCommand):
         from olympia.devhub import tasks
         qs = FileUpload.objects.filter(validation=None)
         pks = qs.values_list('pk', flat=True)
-        print 'Restarting %s tasks.' % len(pks)
+        print('Restarting %s tasks.' % len(pks))
         for pk in pks:
             tasks.validator.delay(pk)

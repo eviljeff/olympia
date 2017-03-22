@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import mock
 
 from django.utils.encoding import force_text
@@ -69,12 +70,12 @@ class TestReviewActions(TestCase):
         action_allowed_mock.return_value = True
         status = self.set_statuses(addon_status=amo.STATUS_NOMINATED,
                                    file_status=amo.STATUS_AWAITING_REVIEW)
-        assert 'public' in status.keys()
+        assert 'public' in list(status.keys())
         # Test with an non-admin editor.
         action_allowed_mock.return_value = False
         status = self.set_statuses(addon_status=amo.STATUS_NOMINATED,
                                    file_status=amo.STATUS_AWAITING_REVIEW)
-        assert 'public' not in status.keys()
+        assert 'public' not in list(status.keys())
 
 
 class TestCannedResponses(TestReviewActions):

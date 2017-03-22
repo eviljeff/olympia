@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import olympia.core.logger
 from olympia.amo.indexers import BaseSearchIndexer
 from olympia.addons.cron import reindex_addons

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia import amo
 import mkt
 from mkt.webapps.models import AddonExcludedRegion

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
@@ -25,7 +27,7 @@ class Command(BaseCommand):
                 uuid__in=args)]
             log.info(u'%s tokens (%s) expired' % (len(done), ','.join(args)))
             if version_pk:
-                print 'Warning: --version_id ignored as tokens provided too'
+                print('Warning: --version_id ignored as tokens provided too')
         elif version_pk:
             done = [t.expire() for t in ActivityLogToken.objects.filter(
                 version__pk=version_pk)]

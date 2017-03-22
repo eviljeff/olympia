@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import string
 import uuid
@@ -25,6 +26,7 @@ from olympia.tags.models import Tag
 from olympia.users.helpers import user_link
 from olympia.users.models import UserProfile
 from olympia.versions.models import Version
+import six
 
 
 log = olympia.core.logger.getLogger('z.amo.activity')
@@ -290,7 +292,7 @@ class ActivityLog(ModelBase):
         objs = []
         for item in d:
             # item has only one element.
-            model_name, pk = item.items()[0]
+            model_name, pk = list(item.items())[0]
             if model_name in ('str', 'int', 'null'):
                 objs.append(pk)
             else:
@@ -316,16 +318,18 @@ class ActivityLog(ModelBase):
         serialize_me = []
 
         for arg in args:
-            if isinstance(arg, basestring):
+            if isinstance(arg, six.string_types):
                 serialize_me.append({'str': arg})
-            elif isinstance(arg, (int, long)):
+            elif isinstance(arg, six.integer_types):
                 serialize_me.append({'int': arg})
             elif isinstance(arg, tuple):
                 # Instead of passing an addon instance you can pass a tuple:
                 # (Addon, 3) for Addon with pk=3
-                serialize_me.append(dict(((unicode(arg[0]._meta), arg[1]),)))
+                serialize_me.append(
+                    dict(((six.text_type(arg[0]._meta), arg[1]),)))
             else:
-                serialize_me.append(dict(((unicode(arg._meta), arg.pk),)))
+                serialize_me.append(
+                    dict(((six.text_type(arg._meta), arg.pk),)))
 
         self._arguments = json.dumps(serialize_me)
 

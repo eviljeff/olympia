@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import mock
 
 from django.core import mail
@@ -13,6 +14,7 @@ from olympia.reviews import tasks
 from olympia.reviews.models import (
     check_spam, GroupedRating, Review, ReviewFlag, Spam)
 from olympia.users.models import UserProfile
+import six
 
 
 class TestReviewModel(TestCase):
@@ -64,8 +66,8 @@ class TestReviewModel(TestCase):
         assert log_mock.info.call_args[0][1] == user_responsible.name
         assert log_mock.info.call_args[0][2] == review.pk
         assert log_mock.info.call_args[0][3] == review.user.name
-        assert log_mock.info.call_args[0][4] == unicode(review.title)
-        assert log_mock.info.call_args[0][5] == unicode(review.body)
+        assert log_mock.info.call_args[0][4] == six.text_type(review.title)
+        assert log_mock.info.call_args[0][5] == six.text_type(review.body)
 
     def test_hard_delete(self):
         # Hard deletion is only for tests, but it's still useful to make sure
@@ -139,8 +141,8 @@ class TestReviewModel(TestCase):
         assert log_mock.info.call_args[0][1] == moderator.name
         assert log_mock.info.call_args[0][2] == review.pk
         assert log_mock.info.call_args[0][3] == review.user.name
-        assert log_mock.info.call_args[0][4] == unicode(review.title)
-        assert log_mock.info.call_args[0][5] == unicode(review.body)
+        assert log_mock.info.call_args[0][4] == six.text_type(review.title)
+        assert log_mock.info.call_args[0][5] == six.text_type(review.body)
 
     def test_moderator_approve(self):
         moderator = user_factory()

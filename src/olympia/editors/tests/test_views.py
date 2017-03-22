@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 import time
 import urlparse
@@ -33,6 +34,9 @@ from olympia.reviews.models import Review, ReviewFlag
 from olympia.users.models import UserProfile
 from olympia.versions.models import ApplicationsVersions, AppVersion, Version
 from olympia.zadmin.models import get_config, set_config
+import six
+from six.moves import range
+from six.moves import zip
 
 
 class EditorTest(TestCase):
@@ -90,7 +94,7 @@ class TestEventLog(EditorTest):
         reviews.
         """
         review = self.make_review()
-        for i in xrange(2):
+        for i in range(2):
             ActivityLog.create(amo.LOG.APPROVE_REVIEW, review, review.addon)
             ActivityLog.create(amo.LOG.DELETE_REVIEW, review.id, review.addon)
         r = self.client.get(self.url, dict(filter='deleted'))
@@ -136,8 +140,8 @@ class TestBetaSignedLog(EditorTest):
         response = self.client.get(self.url)
         results = pq(response.content)('tbody tr')
         assert results.length == 2
-        assert self.file1_url in unicode(results)
-        assert self.file2_url in unicode(results)
+        assert self.file1_url in six.text_type(results)
+        assert self.file2_url in six.text_type(results)
 
     def test_no_results(self):
         ActivityLog.objects.all().delete()
@@ -394,7 +398,7 @@ class TestHome(EditorTest):
         url = reverse('editors.eventlog.detail', args=[al_id])
         doc = pq(self.client.get(url).content)
 
-        elems = zip(doc('dt'), doc('dd'))
+        elems = list(zip(doc('dt'), doc('dd')))
         expected = [
             ('Add-on Title', 'yermom'),
             ('Review Title', 'foo'),
@@ -609,7 +613,7 @@ class QueueTest(EditorTest):
         results = SortedDict()
         channel = (amo.RELEASE_CHANNEL_LISTED if self.listed else
                    amo.RELEASE_CHANNEL_UNLISTED)
-        for name, attrs in files.iteritems():
+        for name, attrs in six.iteritems(files):
             if not subset or name in subset:
                 version_kw = attrs.get('version_kw', {})
                 version_kw.update(
@@ -674,7 +678,7 @@ class QueueTest(EditorTest):
         for idx, addon in enumerate(self.expected_addons):
             latest_version = self.get_addon_latest_version(addon)
             assert latest_version
-            name = '%s %s' % (unicode(addon.name),
+            name = '%s %s' % (six.text_type(addon.name),
                               latest_version.version)
             channel = ['unlisted'] if not self.listed else []
             url = reverse('editors.review', args=channel + [addon.slug])
@@ -742,7 +746,7 @@ class TestQueueBasics(QueueTest):
             2: '-addon_type_id',    # Type.
             3: 'waiting_time_min',  # Waiting Time.
         }
-        for idx, sort in sorts.iteritems():
+        for idx, sort in six.iteritems(sorts):
             # Get column link.
             a = tr('th').eq(idx).find('a')
             # Update expected GET parameters with sort type.
@@ -1387,7 +1391,7 @@ class BaseTestQueueSearch(SearchTest):
         results = {}
         channel = (amo.RELEASE_CHANNEL_LISTED if self.listed else
                    amo.RELEASE_CHANNEL_UNLISTED)
-        for name, attrs in files.iteritems():
+        for name, attrs in six.iteritems(files):
             if not subset or name in subset:
                 version_kw = attrs.get('version_kw', {})
                 version_kw.update(
@@ -1809,7 +1813,7 @@ class TestReview(ReviewBase):
         comments = rows.siblings('td')
         assert comments.length == 2
 
-        for idx in xrange(comments.length):
+        for idx in range(comments.length):
             td = comments.eq(idx)
             assert td.find('.history-comment').text() == 'something'
             assert td.find('th').text() == {
@@ -1882,7 +1886,7 @@ class TestReview(ReviewBase):
         assert '0.1' in ths.eq(0).text()
         assert '0.2' in ths.eq(1).text()
         assert '0.3' in ths.eq(2).text()
-        for idx in xrange(2):
+        for idx in range(2):
             assert 'Deleted' in ths.eq(idx).text()
 
         bodies = table.children('.listing-body')
@@ -2693,7 +2697,7 @@ class TestStatusFile(ReviewBase):
 
     def test_other(self):
         self.addon.update(status=amo.STATUS_BETA)
-        self.check_status(unicode(File.STATUS_CHOICES[self.get_file().status]))
+        self.check_status(six.text_type(File.STATUS_CHOICES[self.get_file().status]))
 
 
 class TestWhiteboard(ReviewBase):

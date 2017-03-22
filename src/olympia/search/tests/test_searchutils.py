@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import pytest
 
 from olympia.search.utils import floor_version

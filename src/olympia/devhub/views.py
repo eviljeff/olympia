@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import json
 import os
@@ -55,6 +56,7 @@ from olympia.versions.models import Version
 from olympia.zadmin.models import get_config, ValidationResult
 
 from . import forms, tasks, feeds, signals
+import six
 
 
 log = olympia.core.logger.getLogger('z.devhub')
@@ -707,7 +709,7 @@ def bulk_compat_result(request, addon_id, addon, result_id):
 def _compat_result(request, revalidate_url, target_app, target_version,
                    validated_filename=None, validated_ts=None,
                    for_addon=None):
-    app_trans = dict((g, unicode(a.pretty)) for g, a in amo.APP_GUIDS.items())
+    app_trans = dict((g, six.text_type(a.pretty)) for g, a in amo.APP_GUIDS.items())
     ff_versions = (AppVersion.objects.filter(application=amo.FIREFOX.id,
                                              version_int__gte=4000000000000)
                    .values_list('application', 'version')
@@ -774,7 +776,7 @@ def json_upload_detail(request, upload, addon_slug=None):
                 raise django_forms.ValidationError(
                     _(u'You cannot submit an add-on with a guid ending '
                       u'"@mozilla.org"'))
-        except django_forms.ValidationError, exc:
+        except django_forms.ValidationError as exc:
             errors_before = result['validation'].get('errors', 0)
             # FIXME: This doesn't guard against client-side
             # tinkering.
@@ -800,8 +802,8 @@ def json_upload_detail(request, upload, addon_slug=None):
                     app_ids.remove(app.id)
             if len(app_ids):
                 # Targets any other non-mobile app:
-                supported_platforms.extend(amo.DESKTOP_PLATFORMS.keys())
-            s = amo.SUPPORTED_PLATFORMS.keys()
+                supported_platforms.extend(list(amo.DESKTOP_PLATFORMS.keys()))
+            s = list(amo.SUPPORTED_PLATFORMS.keys())
             plat_exclude = set(s) - set(supported_platforms)
             plat_exclude = [str(p) for p in plat_exclude]
 
@@ -1529,7 +1531,7 @@ def _submit_finish(request, addon, version, is_file=False):
         # We can use locale-prefixed URLs because the submitter probably
         # speaks the same language by the time he/she reads the email.
         context = {
-            'app': unicode(request.APP.pretty),
+            'app': six.text_type(request.APP.pretty),
             'detail_url': absolutify(addon.get_url_path()),
             'version_url': absolutify(addon.get_dev_url('versions')),
             'edit_url': absolutify(addon.get_dev_url('edit')),

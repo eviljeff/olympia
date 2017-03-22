@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from pyquery import PyQuery as pq
 
 from olympia.amo.tests import TestCase

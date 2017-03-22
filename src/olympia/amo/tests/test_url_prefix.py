@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django import shortcuts
 from django.conf import settings
 from django.core.urlresolvers import set_script_prefix

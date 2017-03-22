@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 from django.utils.translation import ugettext_lazy as _
 
 from olympia.versions.compare import version_int as vint
 
-from base import *  # noqa
+from .base import *  # noqa
 
 
 class App(object):

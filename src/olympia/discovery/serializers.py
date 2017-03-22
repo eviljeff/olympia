@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 
 from rest_framework import serializers
@@ -6,6 +7,7 @@ from olympia.addons.models import Addon
 from olympia.addons.serializers import AddonSerializer, VersionSerializer
 from olympia.amo.helpers import absolutify
 from olympia.versions.models import Version
+import six
 
 
 class DiscoveryVersionSerializer(VersionSerializer):
@@ -32,7 +34,7 @@ class DiscoverySerializer(serializers.Serializer):
         data = super(DiscoverySerializer, self).to_representation(instance)
         authors = u', '.join(
             author.name for author in instance.addon.listed_authors)
-        addon_name = unicode(instance.addon_name or instance.addon.name)
+        addon_name = six.text_type(instance.addon_name or instance.addon.name)
         url = absolutify(instance.addon.get_url_path())
 
         if data['heading'] is None:

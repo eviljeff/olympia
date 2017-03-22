@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django_statsd.clients import statsd
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 import tempfile
@@ -28,6 +29,9 @@ from olympia.bandwagon.models import (
 from olympia.devhub.views import edit_theme
 from olympia.tags.models import Tag, AddonTag
 from olympia.users.models import UserProfile
+from six.moves import map
+import six
+from six.moves import range
 
 
 def get_section_url(addon, section, edit=False):
@@ -111,14 +115,14 @@ class BaseTestEditBasic(BaseTestEdit):
         assert response.status_code == 200
         addon = self.get_addon()
 
-        assert unicode(addon.name) == data['name']
+        assert six.text_type(addon.name) == data['name']
         assert addon.name.id == old_name.id
 
-        assert unicode(addon.slug) == data['slug']
-        assert unicode(addon.summary) == data['summary']
+        assert six.text_type(addon.slug) == data['slug']
+        assert six.text_type(addon.summary) == data['summary']
 
         if self.listed:
-            assert [unicode(t) for t in addon.tags.all()] == sorted(self.tags)
+            assert [six.text_type(t) for t in addon.tags.all()] == sorted(self.tags)
 
     def test_edit_check_description(self):
         # Make sure bug 629779 doesn't return.
@@ -178,13 +182,13 @@ class BaseTestEditBasic(BaseTestEdit):
         assert response.status_code == 200
         addon = self.get_addon()
 
-        assert unicode(addon.name) == data['name']
+        assert six.text_type(addon.name) == data['name']
 
-        assert unicode(addon.slug) == data['slug']
-        assert unicode(addon.summary) == data['summary']
+        assert six.text_type(addon.slug) == data['slug']
+        assert six.text_type(addon.summary) == data['summary']
 
         if self.listed:
-            assert [unicode(t) for t in addon.tags.all()] == sorted(self.tags)
+            assert [six.text_type(t) for t in addon.tags.all()] == sorted(self.tags)
 
     def test_edit_name_required(self):
         data = self.get_dict(name='', slug='test_addon')
@@ -258,7 +262,7 @@ class BaseTestEditBasic(BaseTestEdit):
 
         response = self.client.get(self.url)
         doc_links = [
-            unicode(a.attrib['href'])
+            six.text_type(a.attrib['href'])
             for a in pq(response.content)('#edit-addon-nav').find('li a')]
         assert links == doc_links
 
@@ -415,7 +419,7 @@ class TestEditBasicListed(BaseTestEditBasic):
         self.cat_initial['categories'] = [22, 1]
         data = self.get_dict()
         self.client.post(self.basic_edit_url, data)
-        assert unicode(self.get_addon().name) == data['name']
+        assert six.text_type(self.get_addon().name) == data['name']
 
     def test_edit_categories_no_disclaimer(self):
         """Ensure that there is a not disclaimer for non-creatured add-ons."""
@@ -647,7 +651,7 @@ class TestEditMedia(BaseTestEdit):
         assert addon.get_icon_url(64).endswith('icons/default-64.png')
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
     def test_edit_media_preuploadedicon(self):
         data = {'icon_type': 'icon/appearance'}
@@ -660,7 +664,7 @@ class TestEditMedia(BaseTestEdit):
         assert addon.get_icon_url(64).endswith('icons/appearance-64.png')
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
     def test_edit_media_uploadedicon(self):
         img = get_image_path('mozilla.png')
@@ -951,7 +955,7 @@ class BaseTestEditDetails(BaseTestEdit):
         addon = self.get_addon()
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
     def test_edit_xss(self):
         """
@@ -978,15 +982,15 @@ class BaseTestEditDetails(BaseTestEdit):
         addon = self.get_addon()
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
 
 class TestEditDetailsListed(BaseTestEditDetails):
 
     def test_edit_default_locale_required_trans(self):
         # name, summary, and description are required in the new locale.
-        description, homepage = map(unicode, [self.addon.description,
-                                              self.addon.homepage])
+        description, homepage = list(map(six.text_type, [self.addon.description,
+                                              self.addon.homepage]))
         # TODO: description should get fixed up with the form.
         error = ('Before changing your default locale you must have a name, '
                  'summary, and description in that locale. '
@@ -1064,7 +1068,7 @@ class TestEditSupport(BaseTestEdit):
         addon = self.get_addon()
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
     def test_edit_support_optional_url(self):
         data = {
@@ -1077,7 +1081,7 @@ class TestEditSupport(BaseTestEdit):
         addon = self.get_addon()
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
     def test_edit_support_optional_email(self):
         data = {
@@ -1090,7 +1094,7 @@ class TestEditSupport(BaseTestEdit):
         addon = self.get_addon()
 
         for k in data:
-            assert unicode(getattr(addon, k)) == data[k]
+            assert six.text_type(getattr(addon, k)) == data[k]
 
 
 class TestEditTechnical(BaseTestEdit):
@@ -1143,9 +1147,9 @@ class TestEditTechnical(BaseTestEdit):
         addon = self.get_addon()
         for k in data:
             if k == 'developer_comments':
-                assert unicode(getattr(addon, k)) == unicode(data[k])
+                assert six.text_type(getattr(addon, k)) == six.text_type(data[k])
             elif k == 'whiteboard':
-                assert unicode(getattr(addon, k)) == unicode(data[k])
+                assert six.text_type(getattr(addon, k)) == six.text_type(data[k])
             else:
                 assert getattr(addon, k) == (data[k] == 'on')
 
@@ -1171,7 +1175,7 @@ class TestEditTechnical(BaseTestEdit):
         addon = self.get_addon()
         for k in data:
             if k == 'developer_comments':
-                assert unicode(getattr(addon, k)) == unicode(data[k])
+                assert six.text_type(getattr(addon, k)) == six.text_type(data[k])
             else:
                 assert getattr(addon, k) == (data[k] == 'on')
 
@@ -1205,7 +1209,7 @@ class TestEditTechnical(BaseTestEdit):
         assert req.find('li').length == 1
         link = req.find('a')
         assert link.attr('href') == self.dependent_addon.get_url_path()
-        assert link.text() == unicode(self.dependent_addon.name)
+        assert link.text() == six.text_type(self.dependent_addon.name)
 
     def test_dependencies_initial(self):
         response = self.client.get(self.technical_edit_url)
@@ -1219,7 +1223,7 @@ class TestEditTechnical(BaseTestEdit):
             'background-image:url(%s)' % self.dependent_addon.icon_url)
         link = div.find('a')
         assert link.attr('href') == self.dependent_addon.get_url_path()
-        assert link.text() == unicode(self.dependent_addon.name)
+        assert link.text() == six.text_type(self.dependent_addon.name)
 
     def test_dependencies_add(self):
         addon = Addon.objects.get(id=5299)
@@ -1238,7 +1242,7 @@ class TestEditTechnical(BaseTestEdit):
         assert req.length == 1
         link = req.find('div a')
         assert link.attr('href') == addon.get_url_path()
-        assert link.text() == unicode(addon.name)
+        assert link.text() == six.text_type(addon.name)
 
     def test_dependencies_limit(self):
         deps = Addon.objects.public().exclude(

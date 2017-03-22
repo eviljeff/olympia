@@ -1,6 +1,8 @@
+from __future__ import absolute_import
 import olympia.core.logger
 from olympia import amo
 from olympia.search.utils import floor_version
+from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.compat')

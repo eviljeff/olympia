@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db import connections, models, router
 from django.db.models.deletion import Collector
 from django.utils.encoding import force_text
@@ -9,6 +10,8 @@ from olympia.amo.models import ModelBase, ManagerBase
 from olympia.amo import urlresolvers
 
 from . import utils
+from six.moves import map
+import six
 
 
 log = olympia.core.logger.getLogger('z.translations')
@@ -19,7 +22,7 @@ class TranslationManager(ManagerBase):
     def remove_for(self, obj, locale):
         """Remove a locale for the given object."""
         ids = [getattr(obj, f.attname) for f in obj._meta.translated_fields]
-        qs = Translation.objects.filter(id__in=filter(None, ids),
+        qs = Translation.objects.filter(id__in=[_f for _f in ids if _f],
                                         locale=locale)
         qs.update(localized_string=None, localized_string_clean=None)
 
@@ -45,7 +48,7 @@ class Translation(ModelBase):
         unique_together = ('id', 'locale')
 
     def __unicode__(self):
-        return self.localized_string and unicode(self.localized_string) or ''
+        return self.localized_string and six.text_type(self.localized_string) or ''
 
     def __nonzero__(self):
         # __nonzero__ is called to evaluate an object in a boolean context.  We
@@ -187,13 +190,13 @@ class PurifiedTranslation(Translation):
     def __unicode__(self):
         if not self.localized_string_clean:
             self.clean()
-        return unicode(self.localized_string_clean)
+        return six.text_type(self.localized_string_clean)
 
     def __html__(self):
-        return unicode(self)
+        return six.text_type(self)
 
     def __truncate__(self, length, killwords, end):
-        return utils.truncate(unicode(self), length, killwords, end)
+        return utils.truncate(six.text_type(self), length, killwords, end)
 
     def clean(self):
         from olympia.amo.utils import clean_nl

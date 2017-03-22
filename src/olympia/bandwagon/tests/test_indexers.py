@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia.amo.tests import TestCase
 from olympia.bandwagon.tasks import attach_translations
 from olympia.bandwagon.indexers import CollectionIndexer

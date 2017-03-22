@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 import urlparse
 
@@ -25,6 +26,9 @@ from olympia.tags.models import AddonTag, Tag
 from olympia.users.models import UserProfile
 from olympia.versions.compare import (
     num as vnum, version_int as vint, MAXVERSION)
+import six
+from six.moves import range
+from six.moves import zip
 
 
 pytestmark = pytest.mark.django_db
@@ -92,7 +96,7 @@ class SearchBase(ESTestCaseWithAddons):
         if sort_by:
             results = response.context['pager'].object_list
             if sort_by == 'name':
-                expected = sorted(results, key=lambda x: unicode(x.name))
+                expected = sorted(results, key=lambda x: six.text_type(x.name))
             else:
                 expected = sorted(results, key=lambda x: getattr(x, sort_by),
                                   reverse=reverse)
@@ -239,7 +243,7 @@ class TestESSearch(SearchBase):
         plats = r.context['platforms']
         for idx, plat in enumerate(plats):
             name, selected = expected[idx]
-            label = unicode(plat.text)
+            label = six.text_type(plat.text)
             assert label == name
             assert plat.selected == selected
 
@@ -292,7 +296,7 @@ class TestESSearch(SearchBase):
     def test_platform_legacy_params(self):
         ALL = (amo.PLATFORM_ALL, amo.PLATFORM_ANY)
         listed = ALL + (amo.PLATFORM_LINUX, amo.PLATFORM_MAC, amo.PLATFORM_WIN)
-        for idx, platform in amo.PLATFORMS.iteritems():
+        for idx, platform in six.iteritems(amo.PLATFORMS):
             expected = [
                 ('All Systems', platform in ALL),
                 ('Linux', platform == amo.PLATFORM_LINUX),
@@ -319,7 +323,7 @@ class TestESSearch(SearchBase):
                                    {'appver': floor_version(appver)}, facets)
 
         all_ = versions.pop(0)
-        assert all_.text == 'Any %s' % unicode(request.APP.pretty)
+        assert all_.text == 'Any %s' % six.text_type(request.APP.pretty)
         assert not all_.selected == expected
 
         return [v.__dict__ for v in versions]
@@ -433,7 +437,7 @@ class TestESSearch(SearchBase):
         expected = [
             ('All Add-ons', self.url),
             ('Extensions', urlparams(self.url, atype=amo.ADDON_EXTENSION)),
-            (unicode(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
+            (six.text_type(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
                                           cat=cat.id)),
         ]
         amo.tests.check_links(expected, links, selected, verify=False)
@@ -455,7 +459,7 @@ class TestESSearch(SearchBase):
     def test_listed_cat(self):
         cat = self.addons[0].all_categories[0]
         self.check_cat_filters(dict(atype=amo.ADDON_EXTENSION, cat=cat.id),
-                               selected=unicode(cat.name))
+                               selected=six.text_type(cat.name))
 
     def test_cat_facet_stale(self):
         AddonCategory.objects.all().delete()
@@ -756,7 +760,7 @@ class TestPersonaSearch(SearchBase):
             assert r.status_code == 200
             results = list(r.context['pager'].object_list)
             first = results[0]
-            assert unicode(first.name) == expected_name, (
+            assert six.text_type(first.name) == expected_name, (
                 'Was not first result for %r. Results: %s' % (sort, results))
             assert first.persona.popularity == expected_popularity, (
                 'Incorrect popularity for %r. Got %r. Expected %r.' % (
@@ -809,7 +813,7 @@ class TestCollectionSearch(SearchBase):
         # Add some public collections.
         count = 3
         self.public_collections = []
-        for x in xrange(count):
+        for x in range(count):
             collection = amo.tests.collection_factory(name='Collection %s' % x)
             collection.update(modified=self.days_ago(x - count))
             self.all_collections.append(collection)
@@ -997,7 +1001,7 @@ class TestCollectionSearch(SearchBase):
             results = list(r.context['pager'].object_list)
             assert len(results) == len(webdev_collections)
             for coll, expected in zip(results, sorted_webdev_collections):
-                assert unicode(coll.name) == expected[0], (
+                assert six.text_type(coll.name) == expected[0], (
                     'Wrong order for sort %r.' % sort)
                 assert coll.subscribers == expected[1], (
                     'Incorrect subscribers for sort %r.' % sort)
@@ -1105,7 +1109,7 @@ class TestAjaxSearch(ESTestCaseWithAddons):
         for got, expected in zip(data, addons):
             expected.reload()
             assert int(got['id']) == expected.id
-            assert got['name'] == unicode(expected.name)
+            assert got['name'] == six.text_type(expected.name)
             expected_url = expected.get_url_path()
             if src:
                 expected_url += '?src=ss'
@@ -1171,7 +1175,7 @@ class TestGenericAjaxSearch(TestAjaxSearch):
         )
         self._addons.append(addon)
         self.refresh()
-        self.search_addons('q=' + unicode(addon.name), [addon])
+        self.search_addons('q=' + six.text_type(addon.name), [addon])
 
     def test_ajax_search_by_bad_name(self):
         self.search_addons('q=some+filthy+bad+word', [])
@@ -1210,7 +1214,7 @@ class TestSearchSuggestions(TestAjaxSearch):
         assert len(data) == len(apps)
         for got, expected in zip(data, apps):
             assert int(got['id']) == expected.id
-            assert got['name'] == '%s Add-ons' % unicode(expected.pretty)
+            assert got['name'] == '%s Add-ons' % six.text_type(expected.pretty)
             assert got['url'] == locale_url(expected.short)
             assert got['cls'] == 'app ' + expected.short
 

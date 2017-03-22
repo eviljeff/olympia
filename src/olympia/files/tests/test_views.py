@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import absolute_import
 import json
 import os
 import shutil
@@ -21,6 +22,7 @@ from olympia.addons.models import Addon
 from olympia.files.helpers import DiffHelper, FileViewer
 from olympia.files.models import File
 from olympia.users.models import UserProfile
+import six
 
 dictionary = 'src/olympia/files/fixtures/files/dictionary-test.xpi'
 unicode_filenames = 'src/olympia/files/fixtures/files/unicode-filenames.xpi'
@@ -443,7 +445,7 @@ class TestFileViewer(FilesBase, TestCase):
         res = self.client.get(self.file_url(u'\u1109\u1161\u11a9'))
         assert res.status_code == 200
 
-    @override_settings(TMP_PATH=unicode(settings.TMP_PATH))
+    @override_settings(TMP_PATH=six.text_type(settings.TMP_PATH))
     def test_unicode_fails_with_wrong_configured_basepath(self):
         file_viewer = FileViewer(self.file)
         file_viewer.src = unicode_filenames

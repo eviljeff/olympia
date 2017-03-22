@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import codecs
 from datetime import datetime, timedelta
 from optparse import make_option
@@ -129,7 +130,7 @@ class Command(BaseCommand):
                     if id_or_slug in files_to_addon:
                         addon_id = files_to_addon[id_or_slug]
                     # Maybe it's an add-on ?
-                    elif id_or_slug in files_to_addon.values():
+                    elif id_or_slug in list(files_to_addon.values()):
                         addon_id = id_or_slug
                     else:
                         # It's an integer we don't recognize, ignore the row.
@@ -157,7 +158,7 @@ class Command(BaseCommand):
                 dc.sources = update_inc(dc.sources, src, counter)
 
         # Create in bulk: this is much faster.
-        DownloadCount.objects.bulk_create(download_counts.values(), 100)
+        DownloadCount.objects.bulk_create(list(download_counts.values()), 100)
         for download_count in download_counts.values():
             save_stats_to_file(download_count)
         log.info('Processed a total of %s lines' % (index + 1))

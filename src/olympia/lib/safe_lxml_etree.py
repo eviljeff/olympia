@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from lxml.etree import *  # noqa
 from lxml.etree import XMLParser as _XMLParser
 from lxml.etree import _ElementTree, _Comment, _Element  # noqa

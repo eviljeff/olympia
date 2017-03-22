@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django import http
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 

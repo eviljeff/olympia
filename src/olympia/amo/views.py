@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 
@@ -14,6 +15,7 @@ from olympia import amo, legacy_api
 from olympia.amo.utils import render
 
 from . import monitors
+import six
 
 
 @never_cache
@@ -81,7 +83,7 @@ def handler403(request):
 def handler404(request):
     if request.path_info.startswith('/api/v3/'):
         return JsonResponse(
-            {'detail': unicode(NotFound.default_detail)}, status=404)
+            {'detail': six.text_type(NotFound.default_detail)}, status=404)
     elif request.path_info.startswith('/api/'):
         # Pass over to handler404 view in api if api was targeted.
         return legacy_api.views.handler404(request)

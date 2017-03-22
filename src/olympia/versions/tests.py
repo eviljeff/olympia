@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import hashlib
 import os
 
@@ -36,6 +37,7 @@ from olympia.versions.models import (
     Version, ApplicationsVersions, source_upload_path)
 from olympia.versions.compare import (
     MAXVERSION, version_int, dict_from_int, version_dict)
+import six
 
 
 pytestmark = pytest.mark.django_db
@@ -540,7 +542,7 @@ class TestVersion(TestCase):
             ViewPendingQueue: amo.STATUS_PUBLIC
         }
 
-        for queue, status in queue_to_status.iteritems():  # Listed queues.
+        for queue, status in six.iteritems(queue_to_status):  # Listed queues.
             self.version.addon.update(status=status)
             assert self.version.current_queue == queue
 
@@ -819,7 +821,7 @@ class TestFeeds(TestCase):
         assert relations.pop('first').endswith('format:rss')
 
         assert len(relations) == len(page_relations)
-        for rel, href in relations.iteritems():
+        for rel, href in six.iteritems(relations):
             page = page_relations[rel]
             assert href.endswith('format:rss' if page == 1 else
                                  'format:rss?page=%s' % page)
@@ -1170,11 +1172,11 @@ class TestDownloadSource(TestCase):
         assert response[settings.XSENDFILE_HEADER]
         assert 'Content-Disposition' in response
         filename = self.filename
-        if not isinstance(filename, unicode):
+        if not isinstance(filename, six.text_type):
             filename = filename.decode('utf8')
         assert filename in response['Content-Disposition'].decode('utf8')
         path = self.version.source.path
-        if not isinstance(path, unicode):
+        if not isinstance(path, six.text_type):
             path = path.decode('utf8')
         assert response[settings.XSENDFILE_HEADER].decode('utf8') == path
 
@@ -1197,11 +1199,11 @@ class TestDownloadSource(TestCase):
         assert response[settings.XSENDFILE_HEADER]
         assert 'Content-Disposition' in response
         filename = self.filename
-        if not isinstance(filename, unicode):
+        if not isinstance(filename, six.text_type):
             filename = filename.decode('utf8')
         assert filename in response['Content-Disposition'].decode('utf8')
         path = self.version.source.path
-        if not isinstance(path, unicode):
+        if not isinstance(path, six.text_type):
             path = path.decode('utf8')
         assert response[settings.XSENDFILE_HEADER].decode('utf8') == path
 
@@ -1579,4 +1581,4 @@ class TestApplicationsVersions(TestCase):
         addon = addon_factory(version_kw=dict(min_app_version=u'ك',
                                               max_app_version=u'ك'))
         version = addon.current_version
-        assert unicode(version.apps.all()[0]) == u'Firefox ك - ك'
+        assert six.text_type(version.apps.all()[0]) == u'Firefox ك - ك'

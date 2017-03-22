@@ -2,6 +2,7 @@
 This middleware will handle marking users into certain groups and loading
 their ACLs into the request.
 """
+from __future__ import absolute_import
 from functools import partial
 
 import olympia.core.logger

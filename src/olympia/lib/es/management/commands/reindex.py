@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 import sys
@@ -19,6 +20,7 @@ from olympia.stats import search as stats_search
 from olympia.lib.es.utils import (
     is_reindexing_amo, unflag_reindexing_amo, flag_reindexing_amo,
     timestamp_index)
+from six.moves import input
 
 logger = olympia.core.logger.getLogger('z.elasticsearch')
 time_limits = settings.CELERY_TIME_LIMITS[
@@ -145,11 +147,11 @@ class Command(BaseCommand):
             skip_confirmation = kwargs.get('noinput', False)
             confirm = ''
             if not skip_confirmation:
-                confirm = raw_input('Are you sure you want to wipe all AMO '
+                confirm = input('Are you sure you want to wipe all AMO '
                                     'Elasticsearch indexes? (yes/no): ')
 
                 while confirm not in ('yes', 'no'):
-                    confirm = raw_input('Please enter either "yes" or "no": ')
+                    confirm = input('Please enter either "yes" or "no": ')
 
             if (confirm == 'yes' or skip_confirmation):
                 unflag_database(stdout=self.stdout)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import datetime
 import os
 
@@ -27,6 +28,7 @@ from olympia.translations.fields import (
 from olympia.users.models import UserProfile
 
 from .compare import version_dict, version_int
+import six
 
 log = olympia.core.logger.getLogger('z.versions')
 
@@ -233,7 +235,7 @@ class Version(OnChangeMixin, ModelBase):
             new_plats = []
             for platform in platforms:
                 if platform == amo.PLATFORM_ALL.id:
-                    plats = amo.DESKTOP_PLATFORMS.keys()
+                    plats = list(amo.DESKTOP_PLATFORMS.keys())
                     plats.remove(amo.PLATFORM_ALL.id)
                     new_plats.extend(plats)
                 else:
@@ -323,7 +325,7 @@ class Version(OnChangeMixin, ModelBase):
 
     @amo.cached_property
     def compatible_apps_ordered(self):
-        apps = self.compatible_apps.items()
+        apps = list(self.compatible_apps.items())
         return sorted(apps, key=lambda v: v[0].short)
 
     def compatible_platforms(self):
@@ -456,8 +458,7 @@ class Version(OnChangeMixin, ModelBase):
 
     @property
     def is_unreviewed(self):
-        return filter(lambda f: f.status in amo.UNREVIEWED_FILE_STATUSES,
-                      self.all_files)
+        return [f for f in self.all_files if f.status in amo.UNREVIEWED_FILE_STATUSES]
 
     @property
     def is_all_unreviewed(self):
@@ -699,7 +700,7 @@ class License(ModelBase):
         db_table = 'licenses'
 
     def __unicode__(self):
-        return unicode(self.name)
+        return six.text_type(self.name)
 
 
 models.signals.pre_save.connect(
@@ -737,7 +738,7 @@ class ApplicationsVersions(caching.base.CachingMixin, models.Model):
         unique_together = (("application", "version"),)
 
     def get_application_display(self):
-        return unicode(amo.APPS_ALL[self.application].pretty)
+        return six.text_type(amo.APPS_ALL[self.application].pretty)
 
     def __unicode__(self):
         if (self.version.is_compatible[0] and

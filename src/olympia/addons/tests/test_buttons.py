@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import datetime
 import json
 
@@ -13,6 +14,7 @@ from olympia.amo.tests import TestCase
 from olympia.amo.urlresolvers import reverse
 from olympia.addons.buttons import (
     big_install_button, install_button, mobile_install_button)
+from six.moves import map
 
 
 def setup():
@@ -57,7 +59,7 @@ class ButtonTest(TestCase):
         v.all_files = [self.beta_file]
 
         self.platforms = amo.PLATFORM_MAC.id, amo.PLATFORM_LINUX.id
-        self.platform_files = map(self.get_file, self.platforms)
+        self.platform_files = list(map(self.get_file, self.platforms))
 
         self.request = Mock()
         self.request.APP = amo.FIREFOX

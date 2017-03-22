@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import hashlib
 import re
 import hmac
@@ -15,6 +16,7 @@ from django.utils.encoding import force_bytes
 from django.utils.translation.trans_real import parse_accept_lang_header
 
 from olympia import amo
+import six
 
 # Get a pointer to Django's reverse and resolve because we're going to hijack
 # them after we define our own.
@@ -236,7 +238,7 @@ def linkify_escape(text):
         # Parameters are already escaped.
         return u'<a href="{0}">{0}</a>'.format(match.group(0))
 
-    return URL_RE.sub(linkify, unicode(jinja2.escape(text)))
+    return URL_RE.sub(linkify, six.text_type(jinja2.escape(text)))
 
 
 def linkify_with_outgoing(text, nofollow=True, only_full=False):
@@ -245,7 +247,7 @@ def linkify_with_outgoing(text, nofollow=True, only_full=False):
     callbacks.append(linkify_bounce_url_callback)
     if nofollow:
         callbacks.append(bleach.callbacks.nofollow)
-    return bleach.linkify(unicode(text), callbacks=callbacks)
+    return bleach.linkify(six.text_type(text), callbacks=callbacks)
 
 
 def lang_from_accept_header(header):

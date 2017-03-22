@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import defaultdict
 
 from django.db.models import Count, Max
@@ -17,6 +18,7 @@ from olympia.versions.compare import version_int as vint
 from olympia.lib.es.utils import get_indices
 
 from .models import AppCompat, CompatReport, CompatTotals
+import six
 
 log = olympia.core.logger.getLogger('z.compat')
 
@@ -36,7 +38,7 @@ def compatibility_report(index=None):
                                     date=latest)
 
     updates = dict(qs.values_list('addon', 'count'))
-    for chunk in chunked(updates.items(), 50):
+    for chunk in chunked(list(updates.items()), 50):
         chunk = dict(chunk)
         for addon in Addon.objects.filter(id__in=chunk):
             if amo.FIREFOX not in addon.compatible_apps:
@@ -51,7 +53,7 @@ def compatibility_report(index=None):
             doc = docs[addon.id]
             doc.update(id=addon.id, slug=addon.slug, guid=addon.guid,
                        binary=addon.binary_components,
-                       name=unicode(addon.name), created=addon.created,
+                       name=six.text_type(addon.name), created=addon.created,
                        current_version=current_version)
             doc['count'] = chunk[addon.id]
             doc['usage'] = updates[addon.id]
@@ -96,7 +98,7 @@ def compatibility_report(index=None):
 
     # Figure out which add-ons are in the top 95%.
     running_total = 0
-    for addon, count in sorted(updates.items(), key=lambda x: x[1],
+    for addon, count in sorted(list(updates.items()), key=lambda x: x[1],
                                reverse=True):
         # Ignore the updates we skipped because of bad app compatibility.
         if addon in docs:

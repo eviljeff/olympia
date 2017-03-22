@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import os
 import tempfile
 
@@ -17,6 +18,7 @@ from olympia.addons.models import Addon, Category
 from olympia.files.helpers import copyfileobj
 from olympia.tags.models import Tag, AddonTag
 from olympia.users.models import UserProfile
+from six.moves import range
 
 
 class TestAddonFormSupport(TestCase):

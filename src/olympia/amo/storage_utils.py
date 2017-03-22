@@ -6,6 +6,7 @@ require leading directories to exist. The default Django file system storage
 *will* sometimes require leading directories to exist.
 """
 
+from __future__ import absolute_import
 from django.core.files.storage import default_storage
 from django.utils.encoding import force_bytes
 

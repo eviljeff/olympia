@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.core.management.base import BaseCommand, CommandError
 
 import olympia.core.logger
@@ -6,6 +7,7 @@ from olympia import amo
 from olympia.addons.models import Addon
 from olympia.amo.utils import chunked
 from olympia.editors.helpers import ReviewHelper
+from six.moves import input
 
 log = olympia.core.logger.getLogger('z.addons')
 
@@ -19,7 +21,7 @@ class Command(BaseCommand):
             raise CommandError(
                 u'Please provide at least one add-on guid to approve.')
 
-        confirm = raw_input(
+        confirm = input(
             u'Are you sure you want to bulk approve and sign all those {0} '
             u'addons? (yes/no)'.format(len(args)))
         if confirm != 'yes':

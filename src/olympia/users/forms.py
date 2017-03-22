@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import re
 
@@ -22,6 +23,7 @@ from .models import (
 from .widgets import (
     NotificationsSelectMultiple, RequiredCheckboxInput, RequiredEmailInput,
     RequiredTextarea)
+import six
 
 
 log = olympia.core.logger.getLogger('z.users')
@@ -190,7 +192,7 @@ class UserEditForm(happyforms.ModelForm):
 
     def clean_bio(self):
         bio = self.cleaned_data['bio']
-        normalized = clean_nl(unicode(bio))
+        normalized = clean_nl(six.text_type(bio))
         if has_links(normalized):
             # There's some links, we don't want them.
             raise forms.ValidationError(_('No links are allowed.'))

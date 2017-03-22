@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from collections import Counter
 
 from django.conf import settings
@@ -14,6 +15,7 @@ from olympia.editors.views import (
     clear_reviewing_cache, get_reviewing_cache, set_reviewing_cache)
 from olympia.versions.models import Version
 from olympia.zadmin.models import get_config
+import six
 
 
 log = olympia.core.logger.getLogger('z.editors.auto_approve')
@@ -84,14 +86,14 @@ class Command(BaseCommand):
 
             try:
                 log.info('Processing %s version %s...',
-                         unicode(version.addon.name), unicode(version.version))
+                         six.text_type(version.addon.name), six.text_type(version.version))
                 summary, info = AutoApprovalSummary.create_summary_for_version(
                     version, max_average_daily_users=max_average_daily_users,
                     min_approved_updates=min_approved_updates,
                     dry_run=dry_run)
                 log.info('Auto Approval for %s version %s: %s',
-                         unicode(version.addon.name),
-                         unicode(version.version),
+                         six.text_type(version.addon.name),
+                         six.text_type(version.version),
                          summary.get_verdict_display())
                 stats.update({k: int(v) for k, v in info.items()})
                 if summary.verdict == successful_verdict:

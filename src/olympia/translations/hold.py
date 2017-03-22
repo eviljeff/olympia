@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from threading import local
 
 from django.core.signals import request_finished

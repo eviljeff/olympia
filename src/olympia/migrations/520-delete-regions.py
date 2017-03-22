@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
 from celeryutils import task
 
 from mkt.webapps.models import AddonExcludedRegion

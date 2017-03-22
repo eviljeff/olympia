@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 
 from django.utils import translation
@@ -35,7 +36,7 @@ def extract_webext_permissions(ids, **kw):
                          (len(permissions), file_.pk))
                 WebextPermission.objects.update_or_create(
                     defaults={'permissions': permissions}, file=file_)
-        except Exception, err:
+        except Exception as err:
             log.error('Failed to extract: %s, error: %s' % (file_.pk, err))
 
 

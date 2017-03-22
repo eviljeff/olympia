@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import mock
 
 from olympia.amo.tests import TestCase
 from olympia.users.models import UserProfile
 
 from ..models import APIKey, SYMMETRIC_JWT_TYPE
+from six.moves import range
 
 
 class TestAPIKey(TestCase):

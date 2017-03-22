@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.utils.http import urlsafe_base64_encode
 
 from mock import Mock, patch

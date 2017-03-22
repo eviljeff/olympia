@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
@@ -32,6 +33,7 @@ from olympia.stats.models import Contribution
 from olympia.users.helpers import users_list
 from olympia.users.models import UserProfile
 from olympia.versions.models import ApplicationsVersions, AppVersion, Version
+import six
 
 
 def norm(s):
@@ -66,7 +68,7 @@ def _test_hovercards(self, doc, addons, src=''):
         hc = btn.parents('.addon.hovercard')
         assert hc.find('a').attr('href') == (
             urlparams(addon.get_url_path(), src=src))
-        assert hc.find('h3').text() == unicode(addon.name)
+        assert hc.find('h3').text() == six.text_type(addon.name)
 
 
 class TestHomepage(TestCase):
@@ -143,7 +145,7 @@ class TestHomepageFeatures(TestCase):
             '#featured-themes': browse_personas,
             '#featured-collections': browse_collections + '?sort=featured',
         }
-        for id_, url in sections.iteritems():
+        for id_, url in six.iteritems(sections):
             # Check that the "See All" link points to the correct page.
             assert doc.find('%s .seeall' % id_).attr('href') == url
 
@@ -692,9 +694,9 @@ class TestDetailPage(TestCase):
         For add-ons incompatible with the current app, redirect to one
         that's supported.
         """
-        comp_app = self.addon.compatible_apps.keys()[0]
+        comp_app = list(self.addon.compatible_apps.keys())[0]
         not_comp_app = [a for a in amo.APP_USAGE
-                        if a not in self.addon.compatible_apps.keys()][0]
+                        if a not in list(self.addon.compatible_apps.keys())][0]
 
         # no SeaMonkey version => redirect
         prefixer = amo.urlresolvers.get_url_prefix()
@@ -1148,7 +1150,7 @@ class TestImpalaDetailPage(TestCase):
         cache.clear()
         d = self.get_pq()('.dependencies .hovercard')
         assert d.length == 1
-        assert d.find('h3').text() == unicode(req.name)
+        assert d.find('h3').text() == six.text_type(req.name)
         assert d.find('a').attr('href').endswith('?src=dp-dl-dependencies')
         assert d.find('.install-button a').attr('href').endswith(
             '?src=dp-hc-dependencies')
@@ -1215,7 +1217,7 @@ class TestImpalaDetailPage(TestCase):
 
     def test_categories(self):
         links = self.get_more_pq()('#related ul:first').find('a')
-        expected = [(unicode(c.name), c.get_url_path())
+        expected = [(six.text_type(c.name), c.get_url_path())
                     for c in self.addon.categories.filter(
                         application=amo.FIREFOX.id)]
         amo.tests.check_links(expected, links)

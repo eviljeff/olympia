@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django import http
 from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
@@ -101,7 +102,7 @@ def flag(request, addon, review_id):
         instance = ReviewFlag.objects.get(**d)
     except ReviewFlag.DoesNotExist:
         instance = None
-    data = dict(request.POST.items(), **d)
+    data = dict(list(request.POST.items()), **d)
     form = forms.ReviewFlagForm(data, instance=instance)
     if form.is_valid():
         form.save()

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 
 from django.core.mail import EmailMessage, EmailMultiAlternatives
@@ -48,7 +49,7 @@ def set_modified_on_object(obj, **kw):
         log.info('Setting modified on object: %s, %s' %
                  (obj.__class__.__name__, obj.pk))
         obj.update(modified=datetime.datetime.now())
-    except Exception, e:
+    except Exception as e:
         log.error('Failed to set modified on: %s, %s - %s' %
                   (obj.__class__.__name__, obj.pk, e))
 

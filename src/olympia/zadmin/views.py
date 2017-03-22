@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import csv
 import json
 from decimal import Decimal
@@ -53,6 +54,7 @@ from .forms import (
 from .models import (
     EmailPreviewTopic, ValidationJob, ValidationResultMessage,
     ValidationResultAffectedAddon)
+import six
 
 log = olympia.core.logger.getLogger('z.zadmin')
 
@@ -353,7 +355,7 @@ def compat(request):
     data = {'appver': '%s' % FIREFOX_COMPAT[0]['main'],
             'minimum': minimum, 'ratio': ratio, 'type': 'all'}
     version = data['appver']
-    data.update(request.GET.items())
+    data.update(list(request.GET.items()))
 
     form = CompatForm(data)
     if request.GET and form.is_valid():
@@ -417,7 +419,7 @@ def es_collections_json(request):
     data = []
     for c in qs[:7]:
         data.append({'id': c.id,
-                     'name': unicode(c.name),
+                     'name': six.text_type(c.name),
                      'all_personas': c.all_personas,
                      'url': c.get_url_path()})
     return data

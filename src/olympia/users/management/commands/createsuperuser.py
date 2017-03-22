@@ -4,6 +4,7 @@ Management utility to create superusers.
 Inspired by django.contrib.auth.management.commands.createsuperuser.
 (http://bit.ly/2cTgsNV)
 """
+from __future__ import absolute_import
 import json
 from datetime import datetime
 
@@ -15,8 +16,8 @@ from django.contrib.auth.management.commands.createsuperuser import (
     Command as CreateSuperUserCommand)
 from django.core import exceptions
 from django.core.management.base import CommandError
-from django.utils.six.moves import input
 from django.utils.text import capfirst
+from six.moves import input
 
 
 class Command(CreateSuperUserCommand):

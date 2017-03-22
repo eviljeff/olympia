@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import random
 
@@ -7,6 +8,7 @@ from aesfield.field import AESField
 
 from olympia.amo.models import ModelBase
 from olympia.users.models import UserProfile
+from six.moves import zip
 
 
 # These are identifiers for the type of API keys that can be stored
@@ -25,7 +27,8 @@ class APIKey(ModelBase):
     user = models.ForeignKey(UserProfile, related_name='api_keys')
     is_active = models.BooleanField(default=True)
     type = models.PositiveIntegerField(
-        choices=dict(zip(API_KEY_TYPES, API_KEY_TYPES)).items(), default=0)
+        choices=list(dict(list(zip(API_KEY_TYPES, API_KEY_TYPES))).items()),
+        default=0)
     key = models.CharField(max_length=255, db_index=True, unique=True)
     # TODO: use RSA public keys instead? If we were to use JWT RSA keys
     # then we'd only need to store the public key.

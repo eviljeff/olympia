@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 import os
 import re
@@ -36,6 +37,8 @@ from olympia.users.utils import get_task_user
 from olympia.versions.models import License, Version
 from olympia.zadmin.models import (
     EmailPreviewTopic, ValidationJob, ValidationResult)
+import six
+from six.moves import map
 
 log = olympia.core.logger.getLogger('z.task')
 
@@ -248,7 +251,7 @@ def _completed_versions(job, prefix=''):
         return filter
 
     res = {}
-    for k, v in filter.iteritems():
+    for k, v in six.iteritems(filter):
         res['%s__%s' % (prefix, k)] = v
     return res
 
@@ -329,7 +332,7 @@ def notify_compatibility(job, params):
 
         log.info('[%d@%d] Notifying %d authors about %d addons for '
                  'validation job %d'
-                 % (len(chunk), total, len(users), len(addons.keys()), job.pk))
+                 % (len(chunk), total, len(users), len(list(addons.keys())), job.pk))
 
         for u in users:
             addons = users_addons[u.pk]
@@ -381,7 +384,7 @@ def notify_compatibility_chunk(users, job, data, **kw):
                                  task_error[0], task_error[1]), exc_info=False)
 
             context = Context({
-                'APPLICATION': unicode(amo.APP_IDS[job.application].pretty),
+                'APPLICATION': six.text_type(amo.APP_IDS[job.application].pretty),
                 'VERSION': job.target_version.version,
                 'PASSING_ADDONS': user.passing_addons,
                 'FAILING_ADDONS': user.failing_addons,
@@ -444,7 +447,7 @@ def fetch_langpacks(path, **kw):
     try:
         req = requests.get(list_url,
                            verify=settings.CA_CERT_BUNDLE_PATH)
-    except Exception, e:
+    except Exception as e:
         log.error('[@None] Error fetching language pack list {0}: {1}'
                   .format(path, e))
         return
@@ -491,7 +494,7 @@ def fetch_langpack(url, xpi, **kw):
             if size > settings.LANGPACK_MAX_SIZE:
                 raise Exception('Response to big')
             chunks.append(chunk)
-    except Exception, e:
+    except Exception as e:
         log.error('[@None] Error fetching "{0}" language pack: {1}'
                   .format(xpi, e))
         return
@@ -510,7 +513,7 @@ def fetch_langpack(url, xpi, **kw):
             allowed_guid = re.compile(r'^langpack-{0}@'
                                       r'[a-z]+\.mozilla\.org$'.format(lang))
             assert allowed_guid.match(data['guid']), 'Unexpected GUID'
-        except Exception, e:
+        except Exception as e:
             log.error('[@None] Error parsing "{0}" language pack: {1}'
                       .format(xpi, e),
                       exc_info=sys.exc_info())
@@ -524,7 +527,7 @@ def fetch_langpack(url, xpi, **kw):
         try:
             # Parse again now that we have the add-on.
             data = parse_addon(upload, addon)
-        except Exception, e:
+        except Exception as e:
             log.error('[@None] Error parsing "{0}" language pack: {1}'
                       .format(xpi, e),
                       exc_info=sys.exc_info())

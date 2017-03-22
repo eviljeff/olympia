@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import StringIO
 import threading
 import time
@@ -10,6 +11,7 @@ from olympia.amo.tests import addon_factory, ESTestCase
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import urlparams
 from olympia.lib.es.utils import is_reindexing_amo, unflag_reindexing_amo
+from six.moves import range
 
 
 class TestIndexCommand(ESTestCase):
@@ -22,7 +24,7 @@ class TestIndexCommand(ESTestCase):
 
         # We store previously existing indices in order to delete the ones
         # created during this test run.
-        self.indices = self.es.indices.status()['indices'].keys()
+        self.indices = list(self.es.indices.status()['indices'].keys())
 
     # Since this test plays with transactions, but we don't have (and don't
     # really want to have) a ESTransactionTestCase class, use the fixture setup
@@ -34,7 +36,7 @@ class TestIndexCommand(ESTestCase):
         return TransactionTestCase._fixture_teardown(self)
 
     def tearDown(self):
-        current_indices = self.es.indices.status()['indices'].keys()
+        current_indices = list(self.es.indices.status()['indices'].keys())
         for index in current_indices:
             if index not in self.indices:
                 self.es.indices.delete(index, ignore=404)
@@ -73,7 +75,7 @@ class TestIndexCommand(ESTestCase):
     def get_indices_aliases(cls):
         """Return the test indices with an alias."""
         indices = cls.es.indices.get_aliases()
-        items = [(index, aliases['aliases'].keys()[0])
+        items = [(index, list(aliases['aliases'].keys())[0])
                  for index, aliases in indices.items()
                  if len(aliases['aliases']) > 0 and index.startswith('test_')]
         items.sort()

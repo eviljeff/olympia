@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 import json
 import mock
@@ -23,6 +24,7 @@ from olympia.editors.models import (
     send_notifications, ViewFullReviewQueue, ViewPendingQueue,
     ViewUnlistedAllList)
 from olympia.users.models import UserProfile
+from six.moves import range
 
 
 def create_search_ext(name, version_str, addon_status, file_status,

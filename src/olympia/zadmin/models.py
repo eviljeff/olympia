@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from decimal import Decimal
 import json
 import hashlib
@@ -13,6 +14,7 @@ from olympia.amo.models import ModelBase
 from olympia.amo.urlresolvers import reverse
 from olympia.applications.models import AppVersion
 from olympia.files.models import File
+from six.moves import zip
 
 
 class Config(caching.base.CachingMixin, models.Model):
@@ -265,7 +267,7 @@ class SiteEvent(models.Model):
     """Information records about downtime, releases, and other pertinent
        events on the site."""
 
-    SITE_EVENT_CHOICES = amo.SITE_EVENT_CHOICES.items()
+    SITE_EVENT_CHOICES = list(amo.SITE_EVENT_CHOICES.items())
 
     start = models.DateField(db_index=True,
                              help_text='The time at which the event began.')

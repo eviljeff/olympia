@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+from __future__ import print_function
 from celeryutils import task
 
 from amo.utils import chunked
@@ -17,7 +19,7 @@ def reindex_reviews(addon_id, **kw):
         Addon.objects.get(id=addon_id).reviews[0].save()
     except IndexError:
         # It's possible that `total_reviews` was wrong.
-        print 'No reviews found for %s' % addon_id
+        print('No reviews found for %s' % addon_id)
 
 
 def run():

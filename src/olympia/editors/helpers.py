@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 
 from django.conf import settings
@@ -31,6 +32,7 @@ from olympia.editors.models import (
 from olympia.lib.crypto.packaged import sign_file
 from olympia.users.models import UserProfile
 from olympia.versions.models import Version
+import six
 
 
 @register.function
@@ -63,7 +65,7 @@ def file_review_status(addon, file):
 def version_status(addon, version):
     if version.deleted:
         return _(u'Deleted')
-    return ','.join(unicode(s) for s in version.status)
+    return ','.join(six.text_type(s) for s in version.status)
 
 
 @register.function
@@ -140,7 +142,7 @@ def all_distinct_files(context, version):
             hashes_to_file[file_.hash] = [file_, display_name]
     return new_context(dict(
         # We don't need the hashes in the template.
-        distinct_files=hashes_to_file.values(),
+        distinct_files=list(hashes_to_file.values()),
         amo=context.get('amo'),
         addon=context.get('addon'),
         show_diff=context.get('show_diff'),

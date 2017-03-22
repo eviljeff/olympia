@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf import settings
 from django.utils import translation
 from django.utils.translation.trans_real import to_language
@@ -8,6 +9,8 @@ import jinja2
 import jingo
 
 from olympia.amo.utils import clean_nl
+from six.moves import map
+import six
 
 jingo.register.filter(to_language)
 
@@ -23,7 +26,7 @@ def locale_html(translatedfield):
     if locale == site_locale:
         return ''
     else:
-        rtl_locales = map(translation.to_locale, settings.RTL_LANGUAGES)
+        rtl_locales = list(map(translation.to_locale, settings.RTL_LANGUAGES))
         textdir = 'rtl' if locale in rtl_locales else 'ltr'
         return jinja2.Markup(' lang="%s" dir="%s"' % (
             jinja2.escape(translatedfield.locale), textdir))
@@ -52,7 +55,7 @@ def l10n_menu(context, default_locale='en-us', remove_locale_url=''):
     """Generates the locale menu for zamboni l10n."""
     default_locale = default_locale.lower()
     languages = dict((i.lower(), j) for i, j in settings.LANGUAGES.items())
-    c = dict(context.items())
+    c = dict(list(context.items()))
     if 'addon' in c:
         remove_locale_url = c['addon'].get_dev_url('remove-locale')
     c.update({'languages': languages, 'default_locale': default_locale,
@@ -75,7 +78,7 @@ def all_locales(addon, field_name, nl2br=False, prettify_empty=False):
 
 @jingo.register.filter
 def clean(string):
-    return jinja2.Markup(clean_nl(bleach.clean(unicode(string))).strip())
+    return jinja2.Markup(clean_nl(bleach.clean(six.text_type(string))).strip())
 
 
 @jingo.register.filter

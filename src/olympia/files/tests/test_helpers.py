@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import os
 import mimetypes
 import shutil
@@ -236,7 +237,7 @@ class TestFileViewer(TestCase):
         os.mkdir(subdir)
         open(os.path.join(subdir, 'foo'), 'w')
         cache.clear()
-        files = self.viewer.get_files().keys()
+        files = list(self.viewer.get_files().keys())
         rt = files.index(u'chrome')
         assert files[rt:rt + 3] == [u'chrome', u'chrome/foo', u'dictionaries']
 

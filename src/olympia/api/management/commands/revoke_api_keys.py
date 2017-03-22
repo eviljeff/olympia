@@ -1,16 +1,18 @@
+from __future__ import absolute_import
 import csv
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from olympia.api.models import APIKey
+import six
 
 
 class Command(BaseCommand):
     help = 'Revoke the API (secret, key) tuples from specified csv file.'
 
     def add_arguments(self, parser):
-        parser.add_argument('csv_file', type=unicode)
+        parser.add_argument('csv_file', type=six.text_type)
 
     def handle(self, *args, **options):
         revoked_count = 0

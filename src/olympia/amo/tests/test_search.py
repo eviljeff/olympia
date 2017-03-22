@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 from django.core import paginator
 
 import mock
@@ -68,7 +69,7 @@ class TestES(ESTestCaseWithAddons):
         filters = qs._build_query()['query']['filtered']['filter']
         # Filters:
         # {'and': [{'term': {'type': 1}}, {'in': {'category': [1, 2]}}]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'term': {'type': 1}} in filters['and']
         assert {'in': {'category': [1, 2]}} in filters['and']
 
@@ -88,8 +89,8 @@ class TestES(ESTestCaseWithAddons):
         # Query:
         # {'bool': {'must': [{'term': {'type': 1}},
         #                    {'range': {'status': {'gte': 1}}}, ]}}
-        assert query.keys() == ['bool']
-        assert query['bool'].keys() == ['must']
+        assert list(query.keys()) == ['bool']
+        assert list(query['bool'].keys()) == ['must']
         assert {'term': {'type': 1}} in query['bool']['must']
         assert {'range': {'status': {'gte': 1}}} in query['bool']['must']
 
@@ -99,8 +100,8 @@ class TestES(ESTestCaseWithAddons):
         # Query:
         # {'bool': {'should': [{'term': {'type': 1}},
         #                      {'range': {'status': {'gte': 2}}}, ]}}
-        assert query.keys() == ['bool']
-        assert query['bool'].keys() == ['should']
+        assert list(query.keys()) == ['bool']
+        assert list(query['bool'].keys()) == ['should']
         assert {'term': {'type': 1}} in query['bool']['should']
         assert {'range': {'status': {'gte': 2}}} in query['bool']['should']
 
@@ -112,12 +113,12 @@ class TestES(ESTestCaseWithAddons):
         #                    {'bool': {'should': [
         #                        {'term': {'type': 1}},
         #                        {'range': {'status': {'gte': 2}}}, ]}}]}})
-        assert query.keys() == ['bool']
-        assert query['bool'].keys() == ['must']
+        assert list(query.keys()) == ['bool']
+        assert list(query['bool'].keys()) == ['must']
         assert {'term': {'category': 2}} in query['bool']['must']
         sub_clause = sorted(query['bool']['must'])[0]
-        assert sub_clause.keys() == ['bool']
-        assert sub_clause['bool'].keys() == ['should']
+        assert list(sub_clause.keys()) == ['bool']
+        assert list(sub_clause['bool'].keys()) == ['should']
         assert (
             {'range': {'status': {'gte': 2}}} in sub_clause['bool']['should'])
         assert {'term': {'type': 1}} in sub_clause['bool']['should']
@@ -129,8 +130,8 @@ class TestES(ESTestCaseWithAddons):
         # Query:
         # {'bool': {'should': [{'fuzzy': {'status': fuzz}},
         #                      {'term': {'type': 1}}, ]}})
-        assert query.keys() == ['bool']
-        assert query['bool'].keys() == ['should']
+        assert list(query.keys()) == ['bool']
+        assert list(query['bool'].keys()) == ['should']
         assert {'term': {'type': 1}} in query['bool']['should']
         assert {'fuzzy': {'status': fuzz}} in query['bool']['should']
 
@@ -159,10 +160,10 @@ class TestES(ESTestCaseWithAddons):
         #     {'term': {'type': 1}},
         #     {'or': [{'term': {'status': 1}}, {'term': {'app': 2}}]},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'term': {'type': 1}} in filters['and']
         or_clause = sorted(filters['and'])[0]
-        assert or_clause.keys() == ['or']
+        assert list(or_clause.keys()) == ['or']
         assert {'term': {'status': 1}} in or_clause['or']
         assert {'term': {'app': 2}} in or_clause['or']
 
@@ -173,10 +174,10 @@ class TestES(ESTestCaseWithAddons):
         #     {'term': {'type': 1}},
         #     {'or': [{'term': {'status': 1}}, {'term': {'app': 2}}]},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'term': {'type': 1}} in filters['and']
         or_clause = sorted(filters['and'])[0]
-        assert or_clause.keys() == ['or']
+        assert list(or_clause.keys()) == ['or']
         assert {'term': {'status': 1}} in or_clause['or']
         assert {'term': {'app': 2}} in or_clause['or']
 
@@ -218,7 +219,7 @@ class TestES(ESTestCaseWithAddons):
         #     {'in': {'type': [1, 2]}},
         #     {'range': {'status': {'gte': 4}}},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'in': {'type': [1, 2]}} in filters['and']
         assert {'range': {'status': {'gte': 4}}} in filters['and']
 
@@ -230,7 +231,7 @@ class TestES(ESTestCaseWithAddons):
         #     {'in': {'type': [1, 2]}},
         #     {'range': {'status': {'lte': 4}}},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'in': {'type': [1, 2]}} in filters['and']
         assert {'range': {'status': {'lte': 4}}} in filters['and']
 
@@ -242,7 +243,7 @@ class TestES(ESTestCaseWithAddons):
         #     {'in': {'type': [1, 2]}},
         #     {'range': {'status': {'gt': 4}}},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'in': {'type': [1, 2]}} in filters['and']
         assert {'range': {'status': {'gt': 4}}} in filters['and']
 
@@ -254,7 +255,7 @@ class TestES(ESTestCaseWithAddons):
         #     {'range': {'status': {'lt': 4}}},
         #     {'in': {'type': [1, 2]}},
         # ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'range': {'status': {'lt': 4}}} in filters['and']
         assert {'in': {'type': [1, 2]}} in filters['and']
 
@@ -299,7 +300,7 @@ class TestES(ESTestCaseWithAddons):
         qs = Addon.search().values_dict()
         # Look for some of the keys we expect.
         for key in ('id', 'name', 'status', 'app'):
-            assert key in qs[0].keys(), qs[0].keys()
+            assert key in list(qs[0].keys()), list(qs[0].keys())
 
     def test_object_result(self):
         qs = Addon.search().filter(id=self._addons[0].id)[:1]
@@ -357,7 +358,7 @@ class TestES(ESTestCaseWithAddons):
         filters = qs._build_query()['query']['filtered']['filter']
         # Filters:
         # {'and': [{'term': {'type': 1}}, {'in': {'category': [1, 2]}}, ]}
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'term': {'type': 1}} in filters['and']
         assert {'in': {'category': [1, 2]}} in filters['and']
 
@@ -367,7 +368,7 @@ class TestES(ESTestCaseWithAddons):
         # Filters:
         # [{'or': [{'term': {'status': 1}}, {'term': {'app': 2}}]}])
         assert len(filters) == 1
-        assert filters[0].keys() == ['or']
+        assert list(filters[0].keys()) == ['or']
         assert {'term': {'status': 1}} in filters[0]['or']
         assert {'term': {'app': 2}} in filters[0]['or']
 
@@ -377,10 +378,10 @@ class TestES(ESTestCaseWithAddons):
         # Filters:
         # {'and': [{'term': {'type': 1}},
         #          {'or': [{'term': {'status': 1}}, {'term': {'app': 2}}]}]})
-        assert filters.keys() == ['and']
+        assert list(filters.keys()) == ['and']
         assert {'term': {'type': 1}} in filters['and']
         or_clause = sorted(filters['and'])[0]
-        assert or_clause.keys() == ['or']
+        assert list(or_clause.keys()) == ['or']
         assert {'term': {'status': 1}} in or_clause['or']
         assert {'term': {'app': 2}} in or_clause['or']
 

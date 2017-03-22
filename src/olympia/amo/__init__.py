@@ -1,6 +1,7 @@
 """
 Miscellaneous helpers that make Django compatible with AMO.
 """
+from __future__ import absolute_import
 from product_details import product_details
 
 import olympia.core.logger

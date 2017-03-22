@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 
 from django.conf import settings
@@ -16,6 +17,7 @@ from olympia.amo.utils import get_locale_from_lang, send_mail_jinja
 from olympia.zadmin.models import DownloadSource
 
 from .db import LargeStatsDictField, StatsDictField
+import six
 
 
 def update_inc(initial, key, count):
@@ -241,7 +243,7 @@ class Contribution(amo.models.ModelBase):
         # Send the email.
         send_mail_jinja(
             subject, 'stats/contribution-thankyou-email.ltxt',
-            {'thankyou_note': bleach.clean(unicode(self.addon.thankyou_note),
+            {'thankyou_note': bleach.clean(six.text_type(self.addon.thankyou_note),
                                            strip=True),
              'addon_name': self.addon.name,
              'learn_url': '%s%s?src=emailinfo' % (settings.SITE_URL,

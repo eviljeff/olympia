@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from optparse import make_option
 
 from django.conf import settings

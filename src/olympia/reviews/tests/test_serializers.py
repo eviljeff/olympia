@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from mock import Mock
 from rest_framework.test import APIRequestFactory
 
@@ -6,6 +7,7 @@ from olympia.amo.helpers import absolutify
 from olympia.amo.tests import addon_factory, TestCase, user_factory
 from olympia.reviews.models import Review
 from olympia.reviews.serializers import ReviewSerializer
+import six
 
 
 class TestBaseReviewSerializer(TestCase):
@@ -38,17 +40,17 @@ class TestBaseReviewSerializer(TestCase):
             'id': addon.pk,
             'slug': addon.slug,
         }
-        assert result['body'] == unicode(self.review.body)
+        assert result['body'] == six.text_type(self.review.body)
         assert result['created'] == (
             self.review.created.replace(microsecond=0).isoformat() + 'Z')
-        assert result['title'] == unicode(self.review.title)
+        assert result['title'] == six.text_type(self.review.title)
         assert result['previous_count'] == int(self.review.previous_count)
         assert result['is_latest'] == self.review.is_latest
         assert result['rating'] == int(self.review.rating)
         assert result['reply'] is None
         assert result['user'] == {
             'id': self.user.pk,
-            'name': unicode(self.user.name),
+            'name': six.text_type(self.user.name),
             'url': absolutify(self.user.get_url_path()),
         }
         assert result['version'] == {
@@ -105,13 +107,13 @@ class TestBaseReviewSerializer(TestCase):
         assert 'rating' not in result['reply']
         assert 'reply' not in result['reply']
         assert result['reply']['id'] == reply.pk
-        assert result['reply']['body'] == unicode(reply.body)
+        assert result['reply']['body'] == six.text_type(reply.body)
         assert result['reply']['created'] == (
             reply.created.replace(microsecond=0).isoformat() + 'Z')
-        assert result['reply']['title'] == unicode(reply.title)
+        assert result['reply']['title'] == six.text_type(reply.title)
         assert result['reply']['user'] == {
             'id': reply_user.pk,
-            'name': unicode(reply_user.name),
+            'name': six.text_type(reply_user.name),
             'url': absolutify(reply_user.get_url_path()),
         }
 
@@ -148,13 +150,13 @@ class TestBaseReviewSerializer(TestCase):
         assert 'rating' not in result['reply']
         assert 'reply' not in result['reply']
         assert result['reply']['id'] == reply.pk
-        assert result['reply']['body'] == unicode(reply.body)
+        assert result['reply']['body'] == six.text_type(reply.body)
         assert result['reply']['created'] == (
             reply.created.replace(microsecond=0).isoformat() + 'Z')
-        assert result['reply']['title'] == unicode(reply.title)
+        assert result['reply']['title'] == six.text_type(reply.title)
         assert result['reply']['user'] == {
             'id': reply_user.pk,
-            'name': unicode(reply_user.name),
+            'name': six.text_type(reply_user.name),
             'url': absolutify(reply_user.get_url_path()),
         }
 

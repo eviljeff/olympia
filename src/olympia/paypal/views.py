@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import random
 import re
 from decimal import Decimal
@@ -36,7 +37,7 @@ def paypal(request):
     """
     try:
         return _paypal(request)
-    except Exception, e:
+    except Exception as e:
         paypal_log.error('%s\n%s' % (e, request), exc_info=True)
         if settings.IN_TEST_SUITE:
             raise

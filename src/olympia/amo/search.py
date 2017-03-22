@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf import settings as dj_settings
 
 from django_statsd.clients import statsd
@@ -55,13 +56,13 @@ class ES(object):
         return self._clone(next_step=('order_by', fields))
 
     def query(self, **kw):
-        return self._clone(next_step=('query', kw.items()))
+        return self._clone(next_step=('query', list(kw.items())))
 
     def filter(self, **kw):
-        return self._clone(next_step=('filter', kw.items()))
+        return self._clone(next_step=('filter', list(kw.items())))
 
     def aggregate(self, **kw):
-        return self._clone(next_step=('aggregate', kw.items()))
+        return self._clone(next_step=('aggregate', list(kw.items())))
 
     def source(self, *fields):
         return self._clone(next_step=('source', fields))
@@ -72,7 +73,7 @@ class ES(object):
         for key, vals in kw.items():
             assert key in actions
             if hasattr(vals, 'items'):
-                new.steps.append((key, vals.items()))
+                new.steps.append((key, list(vals.items())))
             else:
                 new.steps.append((key, vals))
         return new
@@ -204,7 +205,7 @@ class ES(object):
                 from_, to = val
                 rv.append({'range': {key: {'gte': from_, 'lte': to}}})
         if or_:
-            rv.append({'or': self._process_filters(or_.items())})
+            rv.append({'or': self._process_filters(list(or_.items()))})
         return rv
 
     def _process_queries(self, value):
@@ -224,7 +225,8 @@ class ES(object):
             elif field_action == 'fuzzy':
                 rv.append({'fuzzy': {key: val}})
         if or_:
-            rv.append({'bool': {'should': self._process_queries(or_.items())}})
+            rv.append({'bool': {'should': self._process_queries(
+                list(or_.items()))}})
         return rv
 
     def _do_search(self):

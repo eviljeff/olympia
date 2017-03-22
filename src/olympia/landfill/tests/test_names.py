@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia.amo.tests import TestCase
 from olympia.landfill.names import generate_names
 

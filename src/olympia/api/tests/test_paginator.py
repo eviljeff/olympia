@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from mock import MagicMock
 
 from django.core.paginator import EmptyPage, InvalidPage, PageNotAnInteger
@@ -10,6 +11,7 @@ from rest_framework.test import APIRequestFactory
 from olympia.amo.tests import TestCase
 from olympia.api.paginator import (
     CustomPageNumberPagination, ESPaginator, Paginator)
+from six.moves import range
 
 
 class TestSearchPaginator(TestCase):
@@ -58,7 +60,7 @@ class TestCustomPageNumberPagination(TestCase):
         self.factory = APIRequestFactory()
         self.view = generics.ListAPIView.as_view(
             serializer_class=PassThroughSerializer,
-            queryset=range(1, 101),
+            queryset=list(range(1, 101)),
             pagination_class=CustomPageNumberPagination
         )
 
@@ -68,7 +70,7 @@ class TestCustomPageNumberPagination(TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data == {
             'page_size': 10,
-            'results': range(11, 21),
+            'results': list(range(11, 21)),
             'previous': 'http://testserver/?page_size=10',
             'next': 'http://testserver/?page=3&page_size=10',
             'count': 100
@@ -80,7 +82,7 @@ class TestCustomPageNumberPagination(TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data == {
             'page_size': 25,
-            'results': range(1, 26),
+            'results': list(range(1, 26)),
             'previous': None,
             'next': 'http://testserver/?page=2',
             'count': 100

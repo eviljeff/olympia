@@ -1,6 +1,9 @@
+from __future__ import absolute_import
 from operator import attrgetter
 
 from olympia.amo.indexers import BaseSearchIndexer
+import six
+from six.moves import zip
 
 
 class CollectionIndexer(BaseSearchIndexer):
@@ -48,7 +51,7 @@ class CollectionIndexer(BaseSearchIndexer):
         attrs = ('id', 'created', 'modified', 'slug', 'author_username',
                  'subscribers', 'weekly_subscribers', 'monthly_subscribers',
                  'rating', 'listed', 'type', 'application')
-        data = dict(zip(attrs, attrgetter(*attrs)(obj)))
+        data = dict(list(zip(attrs, attrgetter(*attrs)(obj))))
         data['app'] = data.pop('application')
 
         # Boost by the number of subscribers.
@@ -65,6 +68,6 @@ class CollectionIndexer(BaseSearchIndexer):
 
         # Finally, add the special sort field, coercing the current translation
         # into an unicode object first.
-        data['name_sort'] = unicode(obj.name).lower()
+        data['name_sort'] = six.text_type(obj.name).lower()
 
         return data

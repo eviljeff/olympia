@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import cStringIO
 import csv
 import itertools
@@ -42,6 +43,10 @@ from olympia.zadmin.models import SiteEvent
 
 from .models import (
     CollectionCount, Contribution, DownloadCount, ThemeUserCount, UpdateCount)
+from six.moves import map
+import six
+from six.moves import range
+from six.moves import zip
 
 
 logger = olympia.core.logger.getLogger('z.apps.stats.views')
@@ -290,7 +295,7 @@ def flatten_applications(series):
                 if not app:
                     continue
                 # unicode() to decode the gettext proxy.
-                appname = unicode(app.pretty)
+                appname = six.text_type(app.pretty)
                 for ver, count in versions.items():
                     key = ' '.join([appname, ver])
                     new[key] = count
@@ -418,7 +423,7 @@ def site_events(request, start, end):
 
     events = list(site_event_format(request, qs))
 
-    type_pretty = unicode(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
+    type_pretty = six.text_type(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
 
     releases = product_details.firefox_history_major_releases
 
@@ -437,7 +442,7 @@ def site_event_format(request, events):
         yield {
             'start': e.start.isoformat(),
             'end': e.end.isoformat() if e.end else None,
-            'type_pretty': unicode(amo.SITE_EVENT_CHOICES[e.event_type]),
+            'type_pretty': six.text_type(amo.SITE_EVENT_CHOICES[e.event_type]),
             'type': e.event_type,
             'description': e.description,
             'url': e.more_info_url,
@@ -507,7 +512,7 @@ def _site_query(period, start, end, field=None, request=None):
            "GROUP BY %s(date), name "
            "ORDER BY %s(date) DESC;"
            % (', '.join(['%s' for key in _KEYS.keys()]), period, period))
-    cursor.execute(sql, [start, end] + _KEYS.keys())
+    cursor.execute(sql, [start, end] + list(_KEYS.keys()))
 
     # Process the results into a format that is friendly for render_*.
     default = dict([(k, 0) for k in _CACHED_KEYS])
@@ -520,7 +525,7 @@ def _site_query(period, start, end, field=None, request=None):
             result[date_]['data'] = {}
         result[date_]['data'][_KEYS[name]] = int(count)
 
-    return result.values(), _CACHED_KEYS
+    return list(result.values()), _CACHED_KEYS
 
 
 @non_atomic_requests
@@ -654,15 +659,15 @@ class UnicodeCSVDictWriter(csv.DictWriter):
         self.stream = stream
 
     def writeheader(self):
-        self.writerow(dict(zip(self.fieldnames, self.fieldnames)))
+        self.writerow(dict(list(zip(self.fieldnames, self.fieldnames))))
 
     def try_encode(self, obj):
-        return obj.encode('utf-8') if isinstance(obj, unicode) else obj
+        return obj.encode('utf-8') if isinstance(obj, six.text_type) else obj
 
     def writerow(self, rowdict):
         row = self._dict_to_list(rowdict)
         # Write to the buffer as ascii.
-        self.writer.writerow(map(self.try_encode, row))
+        self.writer.writerow(list(map(self.try_encode, row)))
         # Dump the buffer to the real stream as utf-8.
         self.stream.write(self.buffer.getvalue().decode('utf-8'))
         # Clear the buffer.

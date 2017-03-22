@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 
 from django import forms
@@ -17,6 +18,9 @@ from olympia.users.models import DeniedName, UserProfile
 
 from .models import Collection, CollectionUser
 from . import tasks
+import six
+from six.moves import map
+from six.moves import zip
 
 privacy_choices = (
     (False, _lazy(u'Only I can view this collection.')),
@@ -24,7 +28,7 @@ privacy_choices = (
 
 apps = (('', None),) + tuple((a.id, a.pretty) for a in amo.APP_USAGE)
 collection_types = (
-    (k, v) for k, v in amo.COLLECTION_CHOICES.iteritems()
+    (k, v) for k, v in six.iteritems(amo.COLLECTION_CHOICES)
     if k not in (amo.COLLECTION_ANONYMOUS, amo.COLLECTION_RECOMMENDED))
 
 
@@ -63,7 +67,7 @@ class AddonsForm(happyforms.Form):
     def clean_addon_comment(self):
         fields = 'addon', 'addon_comment'
         rv = {}
-        for addon, comment in zip(*map(self.data.getlist, fields)):
+        for addon, comment in zip(*list(map(self.data.getlist, fields))):
             try:
                 rv[int(addon)] = comment
             except ValueError:

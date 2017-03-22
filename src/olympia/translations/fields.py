@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django import forms
 from django.conf import settings
 from django.db import models
@@ -9,6 +10,8 @@ from .hold import add_translation, make_key, save_translations
 from .models import (Translation, PurifiedTranslation, LinkifiedTranslation,
                      NoLinksTranslation, NoLinksNoMarkupTranslation)
 from .widgets import TransInput, TransTextarea
+import six
+from six.moves import zip
 
 
 class TranslatedField(models.ForeignKey):
@@ -142,7 +145,7 @@ class TranslationDescriptor(related.ReverseSingleRelatedObjectDescriptor):
 
     def __set__(self, instance, value):
         lang = translation_utils.get_language()
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             value = self.translation_from_string(instance, lang, value)
         elif hasattr(value, 'items'):
             value = self.translation_from_dict(instance, lang, value)
@@ -243,7 +246,7 @@ class _TransField(object):
                 if self.default_locale.lower() == locale:
                     super(_TransField, self).validate(val)
                 super(_TransField, self).run_validators(val)
-            except forms.ValidationError, e:
+            except forms.ValidationError as e:
                 errors.extend(e.messages, locale)
 
         if errors:
@@ -317,7 +320,7 @@ class LocaleList(dict):
         return item in self.seq
 
     def zip(self):
-        return zip(self.locales, self.seq)
+        return list(zip(self.locales, self.seq))
 
 
 def save_signal(sender, instance, **kw):

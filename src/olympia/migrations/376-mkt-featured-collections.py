@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia import amo
 from bandwagon.models import Collection
 from users.models import UserProfile

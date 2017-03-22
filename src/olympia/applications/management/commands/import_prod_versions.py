@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 from django.core.management.base import BaseCommand
 
 from pyquery import PyQuery
 
 from olympia.applications.models import AppVersion
 from olympia.constants.applications import APP_GUIDS
+from six.moves import range
 
 
 class Command(BaseCommand):

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import functools
 import hashlib
 import os
@@ -42,7 +43,7 @@ log = olympia.core.logger.getLogger('z.collections')
 
 @non_atomic_requests
 def get_collection(request, username, slug):
-    if (slug in SPECIAL_SLUGS.values() and request.user.is_authenticated() and
+    if (slug in list(SPECIAL_SLUGS.values()) and request.user.is_authenticated() and
             request.user.username == username):
         return getattr(request.user, slug + '_collection')()
     else:
@@ -476,7 +477,7 @@ def edit(request, collection, username, slug):
           .filter(collection=collection))
     meta = dict((c.addon_id, c) for c in qs)
     addons = collection.addons.no_cache().all()
-    comments = get_notes(collection, raw=True).next()
+    comments = next(get_notes(collection, raw=True))
 
     if is_admin:
         initial = dict(type=collection.type,

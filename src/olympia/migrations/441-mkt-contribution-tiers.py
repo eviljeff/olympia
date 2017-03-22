@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from olympia import amo
 from market.models import Price
 from stats.models import Contribution
@@ -17,5 +19,5 @@ def run():
                 price_tier=Price.objects.get(price=abs(contrib.amount))
             )
         except (AttributeError, Price.DoesNotExist) as e:
-            print str(e)
+            print(str(e))
             continue

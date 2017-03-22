@@ -20,6 +20,7 @@ wrapped around each callback in the urlconf as if you had @decorator above the
 function.
 
 """
+from __future__ import absolute_import
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 
 

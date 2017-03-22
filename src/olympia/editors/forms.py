@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 from datetime import timedelta
 
@@ -18,6 +19,7 @@ from olympia.applications.models import AppVersion
 from olympia.editors.models import CannedResponse, ReviewerScore, ThemeLock
 from olympia.editors.tasks import approve_rereview, reject_rereview, send_mail
 from olympia.lib import happyforms
+import six
 
 
 log = olympia.core.logger.getLogger('z.reviewers.forms')
@@ -314,7 +316,7 @@ class ReviewForm(happyforms.Form):
         responses = CannedResponse.objects.filter(type=self.type)
 
         # Loop through the actions (public, etc).
-        for k, action in self.helper.actions.iteritems():
+        for k, action in six.iteritems(self.helper.actions):
             action_choices = [[c.response, c.name] for c in responses
                               if c.sort_group and k in c.sort_group.split(',')]
 
@@ -355,13 +357,13 @@ class ThemeReviewForm(happyforms.Form):
     theme = forms.ModelChoiceField(queryset=Persona.objects.all(),
                                    widget=forms.HiddenInput())
     action = forms.TypedChoiceField(
-        choices=rvw.REVIEW_ACTIONS.items(),
+        choices=list(rvw.REVIEW_ACTIONS.items()),
         widget=forms.HiddenInput(attrs={'class': 'action'}),
         coerce=int, empty_value=None
     )
     # Duplicate is the same as rejecting but has its own flow.
     reject_reason = forms.TypedChoiceField(
-        choices=rvw.THEME_REJECT_REASONS.items() + [('duplicate', '')],
+        choices=list(rvw.THEME_REJECT_REASONS.items()) + [('duplicate', '')],
         widget=forms.HiddenInput(attrs={'class': 'reject-reason'}),
         required=False, coerce=int, empty_value=None)
     comment = forms.CharField(

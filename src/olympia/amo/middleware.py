@@ -3,6 +3,7 @@ Borrowed from: http://code.google.com/p/django-localeurl
 
 Note: didn't make sense to use localeurl since we need to capture app as well
 """
+from __future__ import absolute_import
 import contextlib
 import re
 import socket

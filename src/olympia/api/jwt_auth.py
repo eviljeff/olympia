@@ -12,6 +12,7 @@ AMO uses JWT tokens in a different way. Notes:
 
 See https://github.com/GetBlimp/django-rest-framework-jwt/ for more info.
 """
+from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -46,7 +47,7 @@ def jwt_decode_handler(token, get_api_key=APIKey.get_jwt_key):
 
     try:
         api_key = get_api_key(key=token_data['iss'])
-    except ObjectDoesNotExist, exc:
+    except ObjectDoesNotExist as exc:
         log.info('No API key for JWT issuer: {}'.format(token_data['iss']))
         raise exceptions.AuthenticationFailed(
             detail='Unknown JWT iss (issuer).')
@@ -71,18 +72,18 @@ def jwt_decode_handler(token, get_api_key=APIKey.get_jwt_key):
             leeway=api_settings.JWT_LEEWAY,
             algorithms=[api_settings.JWT_ALGORITHM]
         )
-    except jwt.MissingRequiredClaimError, exc:
+    except jwt.MissingRequiredClaimError as exc:
         log.info(u'Missing required claim during JWT authentication: '
                  u'{e.__class__.__name__}: {e}'.format(e=exc))
         raise exceptions.AuthenticationFailed(
             detail=u'Invalid JWT: {}.'.format(exc))
-    except jwt.InvalidIssuedAtError, exc:
+    except jwt.InvalidIssuedAtError as exc:
         log.info(u'Invalid iat during JWT authentication: '
                  u'{e.__class__.__name__}: {e}'.format(e=exc))
         raise exceptions.AuthenticationFailed(
             detail='JWT iat (issued at time) is invalid. Make sure your '
                    'system clock is synchronized with something like TLSdate.')
-    except Exception, exc:
+    except Exception as exc:
         log.warning(u'Unhandled exception during JWT authentication: '
                     u'{e.__class__.__name__}: {e}'.format(e=exc))
         raise

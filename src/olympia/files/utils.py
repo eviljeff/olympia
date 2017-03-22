@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 import contextlib
 import glob
@@ -36,6 +37,8 @@ from olympia.amo.utils import rm_local_tmp_dir, find_language, decode_json
 from olympia.applications.models import AppVersion
 from olympia.versions.compare import version_int as vint
 from olympia.lib.safe_xml import lxml
+import six
+from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.files.utils')
@@ -74,7 +77,7 @@ def get_filepath(fileorpath):
     This supports various input formats, a path, a django `File` object,
     `olympia.files.File`, a `FileUpload` or just a regular file-like object.
     """
-    if isinstance(fileorpath, basestring):
+    if isinstance(fileorpath, six.string_types):
         return fileorpath
     elif isinstance(fileorpath, DjangoFile):
         return fileorpath
@@ -237,7 +240,7 @@ class RDFExtractor(object):
         if list(self.rdf.triples((manifest, None, None))):
             self.root = manifest
         else:
-            self.root = self.rdf.subjects(None, self.manifest).next()
+            self.root = next(self.rdf.subjects(None, self.manifest))
 
     def find(self, name, ctx=None):
         """Like $() for install.rdf, where name is the selector."""
@@ -247,7 +250,7 @@ class RDFExtractor(object):
         match = list(self.rdf.objects(ctx, predicate=self.uri(name)))
         # These come back as rdflib.Literal, which subclasses unicode.
         if match:
-            return unicode(match[0])
+            return six.text_type(match[0])
 
     def apps(self):
         rv = []
@@ -616,7 +619,7 @@ def extract_xpi(xpi, path, expand=False, verify=True):
     all_files = get_all_files(tempdir)
 
     if expand:
-        for x in xrange(0, 10):
+        for x in range(0, 10):
             flag = False
             for root, dirs, files in os.walk(tempdir):
                 for name in files:
@@ -1025,7 +1028,7 @@ def resolve_i18n_message(message, messages, locale, default_locale=None):
     :param messages: A dictionary of messages, e.g the return value
                      of `extract_translations`.
     """
-    if not message or not isinstance(message, basestring):
+    if not message or not isinstance(message, six.string_types):
         # Don't even attempt to extract invalid data.
         # See https://github.com/mozilla/addons-server/issues/3067
         # for more details

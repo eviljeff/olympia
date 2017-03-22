@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import os
 
@@ -8,6 +9,7 @@ from django.core.files.storage import default_storage as storage
 import olympia.core.logger
 from olympia import amo
 from olympia.applications.models import AppVersion
+import six
 
 log = olympia.core.logger.getLogger('z.cron')
 
@@ -21,7 +23,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kw):
         apps = {}
-        for id, app in amo.APP_IDS.iteritems():
+        for id, app in six.iteritems(amo.APP_IDS):
             apps[id] = dict(guid=app.guid, versions=[],
                             name=amo.APPS_ALL[id].short)
         versions = (AppVersion.objects.values_list('application', 'version')

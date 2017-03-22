@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import codecs
 import json
 import re
@@ -14,6 +15,7 @@ from olympia.addons.models import Addon
 from olympia.stats.models import update_inc, UpdateCount
 
 from . import get_date_from_file, save_stats_to_file
+import six
 
 
 log = olympia.core.logger.getLogger('adi.updatecountsfromfile')
@@ -25,7 +27,7 @@ LOCALE_REGEX = re.compile(r"""^[a-z]{2,3}      # General: fr, en, dsb,...
                           """, re.VERBOSE)
 VALID_STATUSES = ["userDisabled,incompatible", "userEnabled", "Unknown",
                   "userDisabled", "userEnabled,incompatible"]
-VALID_APP_GUIDS = amo.APP_GUIDS.keys()
+VALID_APP_GUIDS = list(amo.APP_GUIDS.keys())
 APPVERSION_REGEX = re.compile(
     r"""^[0-9]{1,3}                # Major version: 2, 35
         \.[0-9]{1,3}([ab][0-9])?   # Minor version + alpha or beta: .0a1, .0b2
@@ -190,12 +192,12 @@ class Command(BaseCommand):
         # The database field (TEXT), can hold up to 2^16 = 64k characters.
         # If the field is longer than that, we we drop the least used items
         # (with the lower count) until the field fits.
-        for addon_guid, update_count in update_counts.iteritems():
+        for addon_guid, update_count in six.iteritems(update_counts):
             self.trim_field(update_count.locales)
             self.trim_field(update_count.versions)
 
         # Create in bulk: this is much faster.
-        UpdateCount.objects.bulk_create(update_counts.values(), 100)
+        UpdateCount.objects.bulk_create(list(update_counts.values()), 100)
         for udate_count in update_counts.values():
             save_stats_to_file(update_count)
         log.info('Processed a total of %s lines' % (index + 1))
@@ -270,7 +272,7 @@ class Command(BaseCommand):
         if fits(field):
             return
         # Order by count (desc), for a dict like {'<locale>': <count>}.
-        values = list(reversed(sorted(field.items(), key=lambda v: v[1])))
+        values = list(reversed(sorted(list(field.items()), key=lambda v: v[1])))
         while not fits(field):
             key, count = values.pop()  # Remove the least used (the last).
             del field[key]  # Remove this entry from the dict.

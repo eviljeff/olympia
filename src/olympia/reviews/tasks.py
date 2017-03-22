@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db.models import Count, Avg, F
 
 import caching.base as caching
@@ -8,6 +9,7 @@ from olympia.amo.celery import task
 from olympia.amo.decorators import write
 
 from .models import Review, GroupedRating
+import six
 
 log = olympia.core.logger.getLogger('z.task')
 
@@ -39,7 +41,7 @@ def update_denorm(*pairs, **kw):
 @task
 @write
 def addon_review_aggregates(addons, **kw):
-    if isinstance(addons, (int, long)):  # Got passed a single addon id.
+    if isinstance(addons, six.integer_types):  # Got passed a single addon id.
         addons = [addons]
     log.info('[%s@%s] Updating total reviews and average ratings.' %
              (len(addons), addon_review_aggregates.rate_limit))

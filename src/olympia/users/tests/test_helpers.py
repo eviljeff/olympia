@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import re
 import urlparse
 
@@ -14,6 +15,7 @@ from olympia.users.helpers import (
     addon_users_list, emaillink, manage_fxa_link, user_data, user_link,
     users_list)
 from olympia.users.models import UserProfile
+import six
 
 
 pytestmark = pytest.mark.django_db
@@ -21,7 +23,7 @@ pytestmark = pytest.mark.django_db
 
 def test_emaillink():
     email = 'me@example.com'
-    obfuscated = unicode(emaillink(email))
+    obfuscated = six.text_type(emaillink(email))
 
     # remove junk
     m = re.match(r'<a href="#"><span class="emaillink">(.*?)'
@@ -33,7 +35,7 @@ def test_emaillink():
     assert email == obfuscated
 
     title = 'E-mail your question'
-    obfuscated = unicode(emaillink(email, title))
+    obfuscated = six.text_type(emaillink(email, title))
     m = re.match(r'<a href="#">(.*)</a>'
                  r'<span class="emaillink js-hidden">(.*?)'
                  r'<span class="i">null</span>(.*)</span>', obfuscated)

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf import settings
 from django.core import signing
 from django.utils.crypto import constant_time_compare
@@ -161,7 +162,7 @@ class JWTKeyAuthentication(JSONWebTokenAuthentication):
 
         try:
             payload = jwt_auth.jwt_decode_handler(jwt_value)
-        except Exception, exc:
+        except Exception as exc:
             try:
                 # Log all exceptions
                 log.info('JWTKeyAuthentication failed; '

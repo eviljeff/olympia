@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db.transaction import non_atomic_requests
 from django.utils.translation import (
     ugettext as _, ugettext_lazy as _lazy, pgettext_lazy)
@@ -9,6 +10,7 @@ from olympia import amo
 from olympia.amo.helpers import urlparams
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import render
+import six
 
 
 @jinja2.contextfunction
@@ -214,7 +216,7 @@ class PersonaInstallButton(InstallButton):
     install_class = ['persona']
 
     def links(self):
-        return [Link(_(u'Add to {0}').format(unicode(self.app.pretty)),
+        return [Link(_(u'Add to {0}').format(six.text_type(self.app.pretty)),
                      reverse('addons.detail', args=[amo.PERSONAS_ADDON_ID]))]
 
     def attrs(self):

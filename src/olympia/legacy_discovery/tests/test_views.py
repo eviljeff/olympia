@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.cache import cache
 from django.test.utils import override_settings
 from django.utils.encoding import smart_text
@@ -18,6 +19,7 @@ from olympia.legacy_discovery.forms import DiscoveryModuleForm
 from olympia.legacy_discovery.models import DiscoveryModule
 from olympia.legacy_discovery.modules import registry
 from olympia.users.models import UserProfile
+import six
 
 
 class TestModuleAdmin(TestCase):
@@ -128,9 +130,9 @@ class TestPromos(TestCase):
         assert response.status_code == 200
         assert response.content
         content = smart_text(response.content)
-        assert unicode(self.addon1.name) in content
-        assert unicode(self.addon2.name) in content
-        assert unicode(self.addon3.name) in content
+        assert six.text_type(self.addon1.name) in content
+        assert six.text_type(self.addon2.name) in content
+        assert six.text_type(self.addon3.name) in content
 
     def test_no_params(self):
         response = self.client.get(self.get_home_url())
@@ -180,9 +182,9 @@ class TestPromos(TestCase):
         assert response.status_code == 200
         assert response.content
         content = smart_text(response.content)
-        assert unicode(self.addon1.name) not in content
-        assert unicode(self.addon2.name) in content
-        assert unicode(self.addon3.name) in content
+        assert six.text_type(self.addon1.name) not in content
+        assert six.text_type(self.addon2.name) in content
+        assert six.text_type(self.addon3.name) in content
 
         # Make sure aliases are working.
         response_mac = self.client.get(self.get_disco_url('10.0', 'mac'))
@@ -288,7 +290,7 @@ class TestPane(TestCase):
         url = reverse('discovery.addons.detail', args=[7661])
         assert a.attr('href').endswith(url + '?src=discovery-featured'), (
             'Unexpected add-on details URL')
-        assert li.find('h3').text() == unicode(addon.name)
+        assert li.find('h3').text() == six.text_type(addon.name)
         assert li.find('img').attr('src') == addon.icon_url
 
         addon = Addon.objects.get(id=2464)
@@ -298,7 +300,7 @@ class TestPane(TestCase):
         url = reverse('discovery.addons.detail', args=[2464])
         assert a.attr('href').endswith(url + '?src=discovery-featured'), (
             'Unexpected add-on details URL')
-        assert li.find('h3').text() == unicode(addon.name)
+        assert li.find('h3').text() == six.text_type(addon.name)
         assert li.find('img').attr('src') == addon.icon_url
 
     def test_featured_personas_section(self):
@@ -330,7 +332,7 @@ class TestPane(TestCase):
         assert a.attr('href').endswith(url + '?src=discovery-featured'), (
             'Unexpected add-on details URL')
         assert a.attr('target') == '_self'
-        assert featured.find('.addon-title').text() == unicode(addon.name)
+        assert featured.find('.addon-title').text() == six.text_type(addon.name)
 
 
 class TestDetails(TestCase):
@@ -382,7 +384,7 @@ class TestDetails(TestCase):
         d = pq(self.client.get(self.detail_url).content)('.dependencies')
         assert d.length == 1
         a = d.find('ul a')
-        assert a.text() == unicode(req.name)
+        assert a.text() == six.text_type(req.name)
         assert a.attr('href').endswith('?src=discovery-dependencies')
 
 
@@ -527,7 +529,7 @@ class TestMonthlyPick(TestCase):
         assert a.attr('href').endswith(url + '?src=discovery-promo'), (
             'Unexpected add-on details URL: %s' % url)
         assert a.attr('target') == '_self'
-        assert a.text() == unicode(self.addon.name)
+        assert a.text() == six.text_type(self.addon.name)
         assert pick.find('img').attr('src') == 'http://mozilla.com'
         assert pick.find('.wrap > div > div > p').text() == 'BOOP'
         assert pick.find('p.install-button a').attr('href').endswith(

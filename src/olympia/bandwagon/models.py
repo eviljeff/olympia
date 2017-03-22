@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import re
 import time
@@ -20,6 +21,9 @@ from olympia.amo.utils import sorted_groupby
 from olympia.translations.fields import (
     LinkifiedField, save_signal, NoLinksNoMarkupField, TranslatedField)
 from olympia.users.models import UserProfile
+import six
+from six.moves import map
+from six.moves import range
 
 
 SPECIAL_SLUGS = amo.COLLECTION_SPECIAL_SLUGS
@@ -87,7 +91,7 @@ class CollectionManager(ManagerBase):
 
 
 class Collection(ModelBase):
-    TYPE_CHOICES = amo.COLLECTION_CHOICES.items()
+    TYPE_CHOICES = list(amo.COLLECTION_CHOICES.items())
 
     # TODO: Use models.UUIDField but it uses max_length=32 hex (no hyphen)
     # uuids so needs some migration.
@@ -145,7 +149,7 @@ class Collection(ModelBase):
 
     def save(self, **kw):
         if not self.uuid:
-            self.uuid = unicode(uuid.uuid4())
+            self.uuid = six.text_type(uuid.uuid4())
         if not self.slug:
             self.slug = self.uuid[:30]
         self.clean_slug()
@@ -157,7 +161,7 @@ class Collection(ModelBase):
             self.slug = SPECIAL_SLUGS[self.type]
             return
 
-        if self.slug in SPECIAL_SLUGS.values():
+        if self.slug in list(SPECIAL_SLUGS.values()):
             self.slug += '~'
 
         if not self.author:
@@ -290,7 +294,7 @@ class Collection(ModelBase):
             (CollectionAddon.objects.filter(collection=self.id, addon=addon)
              .update(ordering=ordering, modified=now))
 
-        for addon, comment in comments.iteritems():
+        for addon, comment in six.iteritems(comments):
             try:
                 c = (CollectionAddon.objects.using('default')
                      .get(collection=self.id, addon=addon))
@@ -441,7 +445,7 @@ class CollectionPromo(ModelBase):
              .extra(select={'promo_id': 'collection_promos.id'}))
 
         for promo_id, collection in (sorted_groupby(q, 'promo_id')):
-            promo_dict[promo_id].collection = collection.next()
+            promo_dict[promo_id].collection = next(collection)
 
 
 class CollectionWatcher(ModelBase):
@@ -468,7 +472,7 @@ class CollectionUser(models.Model):
     user = models.ForeignKey(UserProfile)
     role = models.SmallIntegerField(
         default=1,
-        choices=amo.COLLECTION_AUTHOR_CHOICES.items())
+        choices=list(amo.COLLECTION_AUTHOR_CHOICES.items()))
 
     class Meta:
         db_table = 'collections_users'

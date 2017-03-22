@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import copy
 import re
 
@@ -6,6 +7,8 @@ from django.db import connection
 from django.db.models import Q
 from django.db.models.sql.query import AND, OR
 from django.utils.tree import Node
+import six
+from six.moves import zip
 
 
 ORDER_PATTERN = re.compile(r'^[-+]?[a-zA-Z0-9_]+$')
@@ -323,7 +326,7 @@ class RawSQLManager(object):
         self._cursor.execute(sql, self.base_query['_args'])
 
     def _param(self, val):
-        param_k = 'param_%s' % len(self.base_query['_args'].keys())
+        param_k = 'param_%s' % len(list(self.base_query['_args'].keys()))
         self.base_query['_args'][param_k] = val
         return param_k
 
@@ -344,7 +347,7 @@ class RawSQLManager(object):
             yield self._make_row(row, col_names)
 
     def _make_row(self, row, col_names):
-        values = dict(zip(col_names, row))
+        values = dict(list(zip(col_names, row)))
         return self.sql_model.__class__(**values)
 
     def _check_limit(self, i):
@@ -363,7 +366,7 @@ class RawSQLModelMeta(type):
         return cls
 
 
-class RawSQLModel(object):
+class RawSQLModel(six.with_metaclass(RawSQLModelMeta, object)):
     """Very minimal model-like object based on a SQL query.
 
     It supports barely enough for django-tables and the Django paginator.
@@ -372,7 +375,6 @@ class RawSQLModel(object):
     This is for rare cases when you need the speed and optimization of
     building a query with many different types of where clauses.
     """
-    __metaclass__ = RawSQLModelMeta
 
     # django-tables2 looks for this to decide what Columns to add.
     class _meta(object):

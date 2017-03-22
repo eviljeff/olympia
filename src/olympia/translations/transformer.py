@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 from django.conf import settings
 from django.db import connections, models, router
 from django.utils import translation
 
 from olympia.translations.models import Translation
 from olympia.translations.fields import TranslatedField
+from six.moves import map
 
 isnull = """IF(!ISNULL({t1}.localized_string), {t1}.{col}, {t2}.{col})
             AS {name}_{col}"""
@@ -72,7 +74,7 @@ def get_trans(items):
     connection = connections[dbname]
     sql, params = build_query(model, connection)
     item_dict = dict((item.pk, item) for item in items)
-    ids = ','.join(map(str, item_dict.keys()))
+    ids = ','.join(map(str, list(item_dict.keys())))
 
     cursor = connection.cursor()
     cursor.execute(sql.format(ids='(%s)' % ids), tuple(params))

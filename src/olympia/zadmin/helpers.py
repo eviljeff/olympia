@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from jingo import register
 
 from olympia.amo.urlresolvers import reverse

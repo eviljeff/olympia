@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db.transaction import non_atomic_requests
 from django.utils.translation import ugettext as _
 

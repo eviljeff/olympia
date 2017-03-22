@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import defaultdict
 
 from django import forms
@@ -61,7 +62,7 @@ class FileSelectWidget(widgets.Select):
                 hashes[f.hash].append(f)
 
             label = '{0} ({1})'.format(ver.version, ver.nomination)
-            distinct_files = hashes.values()
+            distinct_files = list(hashes.values())
             channel = ver.channel if self.should_show_channel else None
             if len(distinct_files) == 1:
                 output.extend(

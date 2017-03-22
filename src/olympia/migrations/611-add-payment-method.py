@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from constants.payments import PAYMENT_METHOD_CARD, PAYMENT_METHOD_OPERATOR
 from market.models import Price, PriceCurrency
 from mkt.regions import SPAIN, PL, CO, VE
@@ -47,16 +49,16 @@ def run():
         try:
             tier = Price.objects.get(price=k)
         except Price.DoesNotExist:
-            print 'Tier does not exist: {0}'.format(k)
+            print('Tier does not exist: {0}'.format(k))
             continue
 
         for region, values in v.items():
             try:
                 currency = PriceCurrency.objects.get(tier=tier, region=region)
             except PriceCurrency.DoesNotExist:
-                print 'Region does not exist: {0}'.format(region)
+                print('Region does not exist: {0}'.format(region))
                 continue
 
             currency.method = values['method']
             currency.save()
-            print 'Updating: {0}, {1}, {2}'.format(k, region, values['method'])
+            print('Updating: {0}, {1}, {2}'.format(k, region, values['method']))

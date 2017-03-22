@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.utils.translation import override
 
 from elasticsearch_dsl import Search
@@ -21,6 +22,7 @@ from olympia.addons.utils import generate_addon_guid
 from olympia.constants.categories import CATEGORIES
 from olympia.files.models import WebextPermission
 from olympia.versions.models import ApplicationsVersions, AppVersion, License
+import six
 
 
 class AddonSerializerOutputTestMixin(object):
@@ -164,7 +166,7 @@ class AddonSerializerOutputTestMixin(object):
         assert result['has_eula'] is False
         assert result['has_privacy_policy'] is False
         assert result['homepage'] == {
-            'en-US': get_outgoing_url(unicode(self.addon.homepage))
+            'en-US': get_outgoing_url(six.text_type(self.addon.homepage))
         }
         assert result['icon_url'] == absolutify(self.addon.get_icon_url(64))
         assert result['is_disabled'] == self.addon.is_disabled
@@ -207,7 +209,7 @@ class AddonSerializerOutputTestMixin(object):
         assert result['summary'] == {'en-US': self.addon.summary}
         assert result['support_email'] == {'en-US': self.addon.support_email}
         assert result['support_url'] == {
-            'en-US': get_outgoing_url(unicode(self.addon.support_url))
+            'en-US': get_outgoing_url(six.text_type(self.addon.support_url))
         }
         assert 'theme_data' not in result
         assert set(result['tags']) == set(['some_tag', 'some_other_tag'])

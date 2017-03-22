@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from olympia import amo
 from addons.models import Addon, CompatOverride, CompatOverrideRange
 
@@ -27,4 +29,4 @@ def run():
 
         count += 1
 
-    print('Overrode compatibility for %d SDK add-ons.' % count)
+    print(('Overrode compatibility for %d SDK add-ons.' % count))

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia import amo
 from olympia.addons.models import Category
 from olympia.addons.utils import get_featured_ids, get_creatured_ids

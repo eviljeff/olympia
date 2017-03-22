@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import hashlib
 import os
 
@@ -97,7 +98,7 @@ def delete_preview_files(id, **kw):
     for f in (p.thumbnail_path, p.image_path):
         try:
             storage.delete(f)
-        except Exception, e:
+        except Exception as e:
             log.error('Error deleting preview file (%s): %s' % (f, e))
 
 
@@ -124,7 +125,7 @@ def delete_persona_image(dst, **kw):
         return
     try:
         storage.delete(dst)
-    except Exception, e:
+    except Exception as e:
         log.error('Error deleting persona image: %s' % e)
 
 

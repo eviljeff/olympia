@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from olympia.amo.tests import TestCase
 from olympia.lib.queryset_transform import TransformQuerySet
 from olympia.zadmin.models import DownloadSource

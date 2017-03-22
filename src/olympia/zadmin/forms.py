@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import re
 
@@ -23,6 +24,7 @@ from olympia.compat.forms import APPVER_CHOICES
 from olympia.lib import happyforms
 from olympia.files.models import File
 from olympia.zadmin.models import SiteEvent, ValidationJob
+from six.moves import range
 
 LOGGER_NAME = 'z.zadmin'
 log = olympia.core.logger.getLogger(LOGGER_NAME)
@@ -123,7 +125,7 @@ class NotifyForm(happyforms.Form):
     def check_template(self, data):
         try:
             Template(data).render(Context({}))
-        except TemplateSyntaxError, err:
+        except TemplateSyntaxError as err:
             raise forms.ValidationError(err)
         return data
 
@@ -241,9 +243,9 @@ class CompatForm(forms.Form):
                                       ('binary', _lazy('Binary')),
                                       ('non-binary', _lazy('Non-binary'))),
                              widget=RadioSelect, required=False)
-    _minimum_choices = [(x, x) for x in xrange(100, -10, -10)]
+    _minimum_choices = [(x, x) for x in range(100, -10, -10)]
     minimum = forms.TypedChoiceField(choices=_minimum_choices, coerce=int,
                                      required=False)
     _ratio_choices = [('%.1f' % (x / 10.0), '%.0f%%' % (x * 10))
-                      for x in xrange(9, -1, -1)]
+                      for x in range(9, -1, -1)]
     ratio = forms.ChoiceField(choices=_ratio_choices, required=False)

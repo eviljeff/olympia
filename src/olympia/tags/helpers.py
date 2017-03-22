@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from jingo import register
 import jinja2
 
@@ -9,7 +10,7 @@ def tag_list(context, addon, tags=None):
     if tags is None:
         tags = []
 
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({'addon': addon,
               'tags': tags})
     return c

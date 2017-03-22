@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from jingo import get_env
 from mock import Mock
 from pyquery import PyQuery as pq

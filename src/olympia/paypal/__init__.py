@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import urllib
 import urlparse
 
@@ -13,6 +14,7 @@ import olympia.core.logger
 from olympia import amo
 from olympia.amo.helpers import absolutify
 from olympia.amo.urlresolvers import reverse
+import six
 
 
 class PaypalError(Exception):
@@ -28,7 +30,7 @@ class PaypalError(Exception):
         msg = self.message
         if not msg:
             msg = messages.get(self.id, self.default)
-        return msg.encode('utf8') if isinstance(msg, unicode) else msg
+        return msg.encode('utf8') if isinstance(msg, six.text_type) else msg
 
 
 class PaypalDataError(PaypalError):
@@ -194,10 +196,10 @@ def _call(url, paypal_data, ip=None):
                                  data=data,
                                  verify=True,
                                  cert=settings.PAYPAL_CERT)
-    except AuthError, error:
+    except AuthError as error:
         paypal_log.error('Authentication error: %s' % error)
         raise
-    except Exception, error:
+    except Exception as error:
         paypal_log.error('HTTP Error: %s' % error)
         # We'll log the actual error and then raise a Paypal error.
         # That way all the calling methods only have catch a Paypal error,

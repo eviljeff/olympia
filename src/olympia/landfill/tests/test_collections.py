@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from olympia import amo
 from olympia.amo.tests import TestCase
 from olympia.addons.models import Addon
@@ -6,6 +7,7 @@ from olympia.bandwagon.models import (
     Collection, CollectionAddon, FeaturedCollection)
 from olympia.constants.applications import APPS
 from olympia.landfill.collection import generate_collection
+import six
 
 
 class CollectionsTests(TestCase):
@@ -23,7 +25,7 @@ class CollectionsTests(TestCase):
     def test_collections_themes_translations(self):
         generate_collection(self.addon)
         with self.activate(locale='es'):
-            collection_name = unicode(Collection.objects.last().name)
+            collection_name = six.text_type(Collection.objects.last().name)
             assert collection_name.startswith(u'(español) ')
 
     def test_collections_addons_generation(self):
@@ -36,5 +38,5 @@ class CollectionsTests(TestCase):
     def test_collections_addons_translations(self):
         generate_collection(self.addon, APPS['android'])
         with self.activate(locale='es'):
-            collection_name = unicode(Collection.objects.last().name)
+            collection_name = six.text_type(Collection.objects.last().name)
             assert collection_name.startswith(u'(español) ')

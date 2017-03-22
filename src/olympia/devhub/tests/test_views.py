@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 import os
 import socket
@@ -38,6 +40,8 @@ from olympia.reviews.models import Review
 from olympia.translations.models import delete_translation, Translation
 from olympia.users.models import UserProfile
 from olympia.versions.models import ApplicationsVersions, Version
+import six
+from six.moves import range
 
 
 class HubTest(TestCase):
@@ -242,7 +246,7 @@ class TestDashboard(HubTest):
         assert e10s_flag.text() == 'Compatible'
 
     def test_dev_news(self):
-        for i in xrange(7):
+        for i in range(7):
             bp = BlogPost(title='hi %s' % i,
                           date_posted=datetime.now() - timedelta(days=i))
             bp.save()
@@ -657,7 +661,7 @@ class TestEditPayments(TestCase):
         assert response.status_code == 302
         addon = self.get_addon()
         assert addon.enable_thankyou
-        assert unicode(addon.thankyou_note) == 'woo'
+        assert six.text_type(addon.thankyou_note) == 'woo'
 
     def test_enable_thankyou_unchecked_with_text(self):
         data = {
@@ -817,8 +821,8 @@ class TestPaymentsProfile(TestCase):
         assert not doc('#trans-the_future')
 
         addon = self.get_addon()
-        assert unicode(addon.the_reason) == 'xxx'
-        assert unicode(addon.the_future) == 'yyy'
+        assert six.text_type(addon.the_reason) == 'xxx'
+        assert six.text_type(addon.the_future) == 'yyy'
         assert addon.wants_contributions
 
     def test_profile_required(self):
@@ -970,7 +974,7 @@ class TestHome(TestCase):
 
             doc = self.get_pq()
             addon_item = doc('#my-addons .addon-item')
-            status_str = 'Status: ' + unicode(
+            status_str = 'Status: ' + six.text_type(
                 self.addon.STATUS_CHOICES[self.addon.status])
             assert status_str == addon_item.find('p').eq(1).text()
 
@@ -994,7 +998,7 @@ class TestHome(TestCase):
 
         doc = self.get_pq()
         addon_item = doc('#my-addons .addon-item')
-        status_str = 'Status: ' + unicode(
+        status_str = 'Status: ' + six.text_type(
             self.addon.STATUS_CHOICES[self.addon.status])
         assert status_str == addon_item.find('p').eq(1).text()
 
@@ -1017,7 +1021,7 @@ class TestHome(TestCase):
 
         doc = self.get_pq()
         addon_item = doc('#my-addons .addon-item')
-        status_str = 'Status: ' + unicode(
+        status_str = 'Status: ' + six.text_type(
             self.addon.STATUS_CHOICES[self.addon.status])
         assert status_str == addon_item.find('p').eq(1).text()
 
@@ -1159,7 +1163,7 @@ class TestProfileBase(TestCase):
         for k, v in kw.items():
             if k in ('the_reason', 'the_future'):
                 assert getattr(getattr(addon, k), 'localized_string') == (
-                    unicode(v))
+                    six.text_type(v))
             else:
                 assert getattr(addon, k) == v
 
@@ -1728,7 +1732,7 @@ class TestUploadDetail(BaseUploadTest):
         upload = FileUpload.objects.get()
         response = self.client.get(reverse('devhub.upload_detail_for_version',
                                            args=[addon.slug, upload.uuid.hex]))
-        print response.content
+        print(response.content)
         data = json.loads(response.content)
         assert data['validation']['messages'] == []
 

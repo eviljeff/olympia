@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.conf import settings
 
 import olympia.core.logger
@@ -5,6 +6,7 @@ from olympia.constants.search import SEARCH_ANALYZER_MAP
 
 from .models import SearchMixin
 from .utils import to_language
+import six
 
 
 log = olympia.core.logger.getLogger('z.es')
@@ -126,7 +128,7 @@ class BaseSearchIndexer(object):
 
         # Indices for each language. languages is a list of locales we want to
         # index with analyzer if the string's locale matches.
-        for analyzer, languages in SEARCH_ANALYZER_MAP.iteritems():
+        for analyzer, languages in six.iteritems(SEARCH_ANALYZER_MAP):
             extend_with_me['%s_%s' % (field, analyzer)] = list(
                 set(string for locale, string
                     in obj.translations[getattr(obj, db_field)]

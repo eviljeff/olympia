@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import olympia.core.logger
 from olympia import amo
 from olympia.files.models import File

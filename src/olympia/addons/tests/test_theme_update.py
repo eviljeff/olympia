@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 from StringIO import StringIO
 
@@ -13,6 +14,7 @@ from olympia.amo.helpers import user_media_path, user_media_url
 from olympia.versions.models import Version
 
 from services import theme_update
+import six
 
 
 class TestWSGIApplication(TestCase):
@@ -31,7 +33,7 @@ class TestWSGIApplication(TestCase):
         }
 
         # From AMO we consume the ID as the `addon_id`.
-        for path_info, call_args in urls.iteritems():
+        for path_info, call_args in six.iteritems(urls):
             environ = dict(self.environ, PATH_INFO=path_info)
             theme_update.application(environ, self.start_response)
             ThemeUpdate_mock.assert_called_with(*call_args)
@@ -39,7 +41,7 @@ class TestWSGIApplication(TestCase):
         # From getpersonas.com we append `?src=gp` so we know to consume
         # the ID as the `persona_id`.
         self.environ['QUERY_STRING'] = 'src=gp'
-        for path_info, call_args in urls.iteritems():
+        for path_info, call_args in six.iteritems(urls):
             environ = dict(self.environ, PATH_INFO=path_info)
             theme_update.application(environ, self.start_response)
             call_args[2] = 'src=gp'
@@ -87,7 +89,7 @@ class TestThemeUpdate(TestCase):
         }
 
     def check_good(self, data):
-        for k, v in self.good.iteritems():
+        for k, v in six.iteritems(self.good):
             got = data[k]
             if k.endswith('URL'):
                 if k in ('detailURL', 'updateURL'):

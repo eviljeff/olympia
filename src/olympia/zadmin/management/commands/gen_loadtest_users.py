@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 from datetime import datetime
 from optparse import make_option
@@ -5,6 +7,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 
 from olympia.users.models import UserProfile
+from six.moves import range
 
 
 class Command(BaseCommand):
@@ -32,8 +35,8 @@ class Command(BaseCommand):
         group_id = os.urandom(3).encode('hex')
 
         with open(fn, 'w') as user_file:
-            print 'About to generate {} users; prefix={}'.format(
-                options['total'], group_id)
+            print('About to generate {} users; prefix={}'.format(
+                options['total'], group_id))
             for index in range(options['total']):
                 user_id = '{}-{}'.format(group_id, index)
                 username = 'loadtest-{}'.format(user_id)
@@ -50,5 +53,5 @@ class Command(BaseCommand):
 
                 user_file.write('{}:{}\n'.format(email))
 
-        print ('Wrote user credentials to {}'
-               .format(user_file.name.replace(os.getcwd(), '.')))
+        print(('Wrote user credentials to {}'
+               .format(user_file.name.replace(os.getcwd(), '.'))))

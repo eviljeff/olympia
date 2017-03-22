@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import contextlib
 import threading
 
@@ -15,6 +16,7 @@ import olympia.lib.queryset_transform as queryset_transform
 from olympia.translations.hold import save_translations
 
 from . import search
+from six.moves import map
 
 
 _locals = threading.local()

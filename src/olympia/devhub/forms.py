@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import os
 import socket
 
@@ -35,6 +36,7 @@ from olympia.versions.models import (
     ApplicationsVersions, License, VALID_SOURCE_EXTENSIONS, Version)
 
 from . import tasks
+from six.moves import map
 
 
 paypal_log = olympia.core.logger.getLogger('z.paypal')
@@ -64,8 +66,8 @@ class BaseAuthorFormSet(BaseModelFormSet):
         if any(self.errors):
             return
         # cleaned_data could be None if it's the empty extra form.
-        data = filter(None, [f.cleaned_data for f in self.forms
-                             if not f.cleaned_data.get('DELETE', False)])
+        data = [_f for _f in [f.cleaned_data for f in self.forms
+                             if not f.cleaned_data.get('DELETE', False)] if _f]
         if not any(d['role'] == amo.AUTHOR_ROLE_OWNER for d in data):
             raise forms.ValidationError(_('Must have at least one owner.'))
         if not any(d['listed'] for d in data):
@@ -335,7 +337,7 @@ class ContribForm(TranslationFormMixin, happyforms.ModelForm):
         try:
             if not self.errors and data['recipient'] == 'dev':
                 check_paypal_id(data['paypal_id'])
-        except forms.ValidationError, e:
+        except forms.ValidationError as e:
             self.errors['paypal_id'] = self.error_class(e.messages)
         # thankyou_note is a dict since it's a Translation.
         if not (data.get('enable_thankyou') and
@@ -468,8 +470,8 @@ class BaseCompatFormSet(BaseModelFormSet):
         if any(self.errors):
             return
 
-        apps = filter(None, [f.cleaned_data for f in self.forms
-                             if not f.cleaned_data.get('DELETE', False)])
+        apps = [_f for _f in [f.cleaned_data for f in self.forms
+                             if not f.cleaned_data.get('DELETE', False)] if _f]
 
         if not apps:
             raise forms.ValidationError(
@@ -545,7 +547,7 @@ class NewUploadForm(AddonUploadForm):
         # If we have a version reset platform choices to just those compatible.
         if self.version:
             field = self.fields['supported_platforms']
-            compat_platforms = self.version.compatible_platforms().values()
+            compat_platforms = list(self.version.compatible_platforms().values())
             field.choices = sorted((p.id, p.name) for p in compat_platforms)
             # Don't allow platforms we already have.
             to_exclude = set(File.objects.filter(version=self.version)

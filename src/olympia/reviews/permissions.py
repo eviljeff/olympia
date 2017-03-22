@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from rest_framework.permissions import BasePermission
 
 from olympia.reviews.helpers import user_can_delete_review

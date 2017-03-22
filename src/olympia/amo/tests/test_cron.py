@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import unittest
 from datetime import timedelta
@@ -9,6 +10,7 @@ import pytest
 
 from olympia.amo.celery import app, task
 from olympia.amo.utils import utc_millesecs_from_epoch
+import six
 
 
 fake_task_func = mock.Mock()
@@ -59,7 +61,7 @@ class TestTaskTiming(unittest.TestCase):
         assert not self.statsd.timing.called
 
 
-@pytest.mark.skipif('PostRequestTask' not in unicode(app.task_cls),
+@pytest.mark.skipif('PostRequestTask' not in six.text_type(app.task_cls),
                     reason='requires PostRequestTask to be active')
 class TestTaskQueued(unittest.TestCase):
     """Test that our celery tasks are queued to be triggered only when the

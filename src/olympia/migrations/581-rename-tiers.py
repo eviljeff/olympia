@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from decimal import Decimal
 
 from market.models import Price
@@ -32,9 +34,9 @@ def run():
         try:
             tier = Price.objects.get(price=Decimal(amount))
         except Price.DoesNotExist:
-            print 'Tier not found: %s' % amount
+            print('Tier not found: %s' % amount)
             continue
 
         tier.name = name
         tier.save()
-        print 'Tier changed: %s to %s' % (amount, name)
+        print('Tier changed: %s to %s' % (amount, name))

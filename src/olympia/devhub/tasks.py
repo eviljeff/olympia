@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import datetime
 import json
 import os
@@ -38,6 +39,7 @@ from olympia.files.models import FileUpload, File, FileValidation
 from olympia.files.utils import is_beta
 from olympia.versions.compare import version_int
 from olympia.versions.models import Version
+import six
 
 
 log = olympia.core.logger.getLogger('z.devhub.task')
@@ -135,7 +137,7 @@ def validation_task(fn):
             data = fn(id_, hash_, *args, **kw)
             result = json.loads(data)
             return result
-        except Exception, e:
+        except Exception as e:
             log.exception('Unhandled error during validation: %r' % e)
 
             is_webextension = kw.get('is_webextension', False)
@@ -571,7 +573,7 @@ def resize_icon(src, dst, size, locally=False, **kw):
             resize_image(src, dst, (size, size), remove_src=True,
                          locally=locally)
         return True
-    except Exception, e:
+    except Exception as e:
         log.error("Error saving addon icon: %s" % e)
 
 
@@ -592,7 +594,7 @@ def resize_preview(src, instance, **kw):
         instance.sizes = sizes
         instance.save()
         return True
-    except Exception, e:
+    except Exception as e:
         log.error("Error saving preview: %s" % e)
     finally:
         # Finally delete the temporary now useless source file.
@@ -619,7 +621,7 @@ def get_preview_sizes(ids, **kw):
                     'image': Image.open(storage.open(preview.image_path)).size,
                 }
                 preview.update(sizes=sizes)
-            except Exception, err:
+            except Exception as err:
                 log.error('Failed to find size of preview: %s, error: %s'
                           % (addon.pk, err))
 
@@ -655,9 +657,9 @@ def failed_validation(*messages):
 def _fetch_content(url):
     try:
         return urllib2.urlopen(url, timeout=15)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         raise Exception(_('%s responded with %s (%s).') % (url, e.code, e.msg))
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         # Unpack the URLError to try and find a useful message.
         if isinstance(e.reason, socket.timeout):
             raise Exception(_('Connection to "%s" timed out.') % url)
@@ -690,7 +692,7 @@ def get_content_and_check_size(response, max_size, error_message):
 def send_welcome_email(addon_pk, emails, context, **kw):
     log.info(u'[1@None] Sending welcome email for %s to %s.' %
              (addon_pk, emails))
-    app = context.get('app', unicode(amo.FIREFOX.pretty))
+    app = context.get('app', six.text_type(amo.FIREFOX.pretty))
     subject = u'Mozilla Add-ons: Thanks for submitting a %s Add-on!' % app
     html_template = 'devhub/email/submission.html'
     text_template = 'devhub/email/submission.txt'

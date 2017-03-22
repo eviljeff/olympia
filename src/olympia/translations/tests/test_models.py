@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import re
 from contextlib import nested
 
@@ -24,6 +25,8 @@ from olympia.translations.query import order_by_translation
 from olympia.translations.models import (
     LinkifiedTranslation, NoLinksTranslation, NoLinksNoMarkupTranslation,
     PurifiedTranslation, Translation, TranslationSequence)
+import six
+from six.moves import range
 
 
 pytestmark = pytest.mark.django_db
@@ -268,7 +271,7 @@ class TranslationTestCase(BaseTestCase):
     def test_order_by_translations_query_uses_left_outer_join(self):
         translation.activate('de')
         qs = TranslatedModel.objects.all()
-        query = unicode(order_by_translation(qs, 'name').query)
+        query = six.text_type(order_by_translation(qs, 'name').query)
         # There should be 2 LEFT OUTER JOIN to find translations matching
         # current language and fallback.
         joins = re.findall('LEFT OUTER JOIN `translations`', query)
@@ -399,7 +402,7 @@ class TranslationTestCase(BaseTestCase):
 
     def test_require_locale(self):
         obj = TranslatedModel.objects.get(id=1)
-        assert unicode(obj.no_locale) == 'blammo'
+        assert six.text_type(obj.no_locale) == 'blammo'
         assert obj.no_locale.locale == 'en-US'
 
         # Switch the translation to a locale we wouldn't pick up by default.
@@ -407,7 +410,7 @@ class TranslationTestCase(BaseTestCase):
         obj.no_locale.save()
 
         obj = TranslatedModel.objects.get(id=1)
-        assert unicode(obj.no_locale) == 'blammo'
+        assert six.text_type(obj.no_locale) == 'blammo'
         assert obj.no_locale.locale == 'fr'
 
     def test_delete_set_null(self):
@@ -534,7 +537,7 @@ class TranslationMultiDbTests(TransactionTestCase):
 class PurifiedTranslationTest(BaseTestCase):
 
     def test_output(self):
-        assert isinstance(PurifiedTranslation().__html__(), unicode)
+        assert isinstance(PurifiedTranslation().__html__(), six.text_type)
 
     def test_raw_text(self):
         s = u'   This is some text   '
@@ -678,8 +681,8 @@ def test_translation_unicode():
     def t(s):
         return Translation(localized_string=s)
 
-    assert unicode(t('hello')) == 'hello'
-    assert unicode(t(None)) == ''
+    assert six.text_type(t('hello')) == 'hello'
+    assert six.text_type(t(None)) == ''
 
 
 def test_widget_value_from_datadict():
@@ -691,7 +694,7 @@ def test_widget_value_from_datadict():
 
 def test_comparison_with_lazy():
     x = Translation(localized_string='xxx')
-    lazy_u = lazy(lambda x: x, unicode)
+    lazy_u = lazy(lambda x: x, six.text_type)
     x == lazy_u('xxx')
     lazy_u('xxx') == x
 

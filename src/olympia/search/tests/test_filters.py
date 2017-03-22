@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 
 from django.test.client import RequestFactory
@@ -13,6 +14,7 @@ from olympia.constants.categories import CATEGORIES
 from olympia.search.filters import (
     InternalSearchParameterFilter, ReviewedContentFilter,
     SearchParameterFilter, SearchQueryFilter, SortingFilter)
+import six
 
 
 class FilterTestsBase(TestCase):
@@ -164,18 +166,18 @@ class TestSearchParameterFilter(FilterTestsBase):
 
     def test_search_by_type_invalid(self):
         with self.assertRaises(serializers.ValidationError) as context:
-            self._filter(data={'type': unicode(amo.ADDON_EXTENSION + 666)})
+            self._filter(data={'type': six.text_type(amo.ADDON_EXTENSION + 666)})
 
         with self.assertRaises(serializers.ValidationError) as context:
             self._filter(data={'type': 'nosuchtype'})
         assert context.exception.detail == ['Invalid "type" parameter.']
 
     def test_search_by_type_id(self):
-        qs = self._filter(data={'type': unicode(amo.ADDON_EXTENSION)})
+        qs = self._filter(data={'type': six.text_type(amo.ADDON_EXTENSION)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'type': amo.ADDON_EXTENSION}} in must
 
-        qs = self._filter(data={'type': unicode(amo.ADDON_PERSONA)})
+        qs = self._filter(data={'type': six.text_type(amo.ADDON_PERSONA)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'type': amo.ADDON_PERSONA}} in must
 
@@ -190,18 +192,18 @@ class TestSearchParameterFilter(FilterTestsBase):
 
     def test_search_by_app_invalid(self):
         with self.assertRaises(serializers.ValidationError) as context:
-            self._filter(data={'app': unicode(amo.FIREFOX.id + 666)})
+            self._filter(data={'app': six.text_type(amo.FIREFOX.id + 666)})
 
         with self.assertRaises(serializers.ValidationError) as context:
             self._filter(data={'app': 'nosuchapp'})
         assert context.exception.detail == ['Invalid "app" parameter.']
 
     def test_search_by_app_id(self):
-        qs = self._filter(data={'app': unicode(amo.FIREFOX.id)})
+        qs = self._filter(data={'app': six.text_type(amo.FIREFOX.id)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'app': amo.FIREFOX.id}} in must
 
-        qs = self._filter(data={'app': unicode(amo.THUNDERBIRD.id)})
+        qs = self._filter(data={'app': six.text_type(amo.THUNDERBIRD.id)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'app': amo.THUNDERBIRD.id}} in must
 
@@ -243,19 +245,19 @@ class TestSearchParameterFilter(FilterTestsBase):
 
     def test_search_by_platform_invalid(self):
         with self.assertRaises(serializers.ValidationError) as context:
-            self._filter(data={'platform': unicode(amo.PLATFORM_WIN.id + 42)})
+            self._filter(data={'platform': six.text_type(amo.PLATFORM_WIN.id + 42)})
 
         with self.assertRaises(serializers.ValidationError) as context:
             self._filter(data={'platform': 'nosuchplatform'})
         assert context.exception.detail == ['Invalid "platform" parameter.']
 
     def test_search_by_platform_id(self):
-        qs = self._filter(data={'platform': unicode(amo.PLATFORM_WIN.id)})
+        qs = self._filter(data={'platform': six.text_type(amo.PLATFORM_WIN.id)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'terms': {'platforms': [
             amo.PLATFORM_WIN.id, amo.PLATFORM_ALL.id]}} in must
 
-        qs = self._filter(data={'platform': unicode(amo.PLATFORM_LINUX.id)})
+        qs = self._filter(data={'platform': six.text_type(amo.PLATFORM_LINUX.id)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'terms': {'platforms': [
             amo.PLATFORM_LINUX.id, amo.PLATFORM_ALL.id]}} in must
@@ -332,18 +334,18 @@ class TestInternalSearchParameterFilter(TestSearchParameterFilter):
 
     def test_search_by_status_invalid(self):
         with self.assertRaises(serializers.ValidationError) as context:
-            self._filter(data={'status': unicode(amo.STATUS_PUBLIC + 999)})
+            self._filter(data={'status': six.text_type(amo.STATUS_PUBLIC + 999)})
 
         with self.assertRaises(serializers.ValidationError) as context:
             self._filter(data={'status': 'nosuchstatus'})
         assert context.exception.detail == ['Invalid "status" parameter.']
 
     def test_search_by_status_id(self):
-        qs = self._filter(data={'status': unicode(amo.STATUS_PUBLIC)})
+        qs = self._filter(data={'status': six.text_type(amo.STATUS_PUBLIC)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'status': amo.STATUS_PUBLIC}} in must
 
-        qs = self._filter(data={'status': unicode(amo.STATUS_NULL)})
+        qs = self._filter(data={'status': six.text_type(amo.STATUS_NULL)})
         must = qs['query']['filtered']['filter']['bool']['must']
         assert {'term': {'status': amo.STATUS_NULL}} in must
 

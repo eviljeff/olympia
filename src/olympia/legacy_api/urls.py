@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 from django.conf.urls import include, patterns, url
 from django.db.transaction import non_atomic_requests
 
 from olympia.addons.urls import ADDON_ID
 from olympia.legacy_api import views
+from six.moves import range
 
 
 # Wrap class views in a lambda call so we get an fresh instance of the class

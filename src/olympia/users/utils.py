@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import base64
 from functools import partial
 import hashlib

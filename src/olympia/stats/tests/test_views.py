@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import csv
 import datetime
 import os
@@ -25,6 +26,7 @@ from olympia.stats.models import (
     ThemeUpdateCount)
 from olympia.stats.management.commands import save_stats_to_file
 from olympia.users.models import UserProfile
+from six.moves import range
 
 
 class StatsTest(TestCase):
@@ -124,7 +126,7 @@ class ESStatsTest(StatsTest, amo.tests.ESTestCase):
     def csv_eq(self, response, expected):
         content = csv.DictReader(
             # Drop lines that are comments.
-            filter(lambda row: row[0] != '#', response.content.splitlines()))
+            [row for row in response.content.splitlines() if row[0] != '#'])
         expected = csv.DictReader(
             # Strip any extra spaces from the expected content.
             line.strip() for line in expected.splitlines())
@@ -720,7 +722,7 @@ class TestSiteQuery(TestCase):
         super(TestSiteQuery, self).setUp()
         self.start = datetime.date(2012, 1, 1)
         self.end = datetime.date(2012, 1, 31)
-        for k in xrange(0, 15):
+        for k in range(0, 15):
             for name in ['addon_count_new', 'version_count_new']:
                 date_ = self.start + datetime.timedelta(days=k)
                 GlobalStat.objects.create(date=date_, name=name, count=k)
@@ -800,7 +802,7 @@ class TestCollections(amo.tests.ESTestCase):
         self.url = reverse('stats.collection',
                            args=[self.collection.uuid, 'json'])
 
-        for x in xrange(1, 4):
+        for x in range(1, 4):
             data = {'date': self.today - datetime.timedelta(days=x - 1),
                     'id': int(self.collection.pk), 'count': x,
                     'data': search.es_dict({'subscribers': x, 'votes_up': x,

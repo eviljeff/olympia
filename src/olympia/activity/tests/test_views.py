@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 import mock
 import StringIO
@@ -19,6 +20,7 @@ from olympia.amo.urlresolvers import reverse
 from olympia.addons.models import AddonUser
 from olympia.addons.utils import generate_addon_guid
 from olympia.users.models import UserProfile
+import six
 
 
 class ReviewNotesViewSetDetailMixin(LogMixin):
@@ -278,8 +280,8 @@ class TestReviewNotesViewSetCreate(TestCase):
         reply = logs[0]
         rdata = response.data
         assert reply.pk == rdata['id']
-        assert (unicode(reply.details['comments']) == rdata['comments'] ==
-                u'comménty McCómm€nt')
+        assert (six.text_type(reply.details['comments']) ==
+                rdata['comments'] == u'comménty McCómm€nt')
         assert reply.user == self.user
         assert reply.user.name == rdata['user']['name'] == self.user.name
         assert reply.action == amo.LOG.DEVELOPER_REPLY_VERSION.id
@@ -303,8 +305,8 @@ class TestReviewNotesViewSetCreate(TestCase):
         reply = logs[0]
         rdata = response.data
         assert reply.pk == rdata['id']
-        assert (unicode(reply.details['comments']) == rdata['comments'] ==
-                u'comménty McCómm€nt')
+        assert (six.text_type(reply.details['comments']) ==
+                rdata['comments'] == u'comménty McCómm€nt')
         assert reply.user == self.user
         assert reply.user.name == rdata['user']['name'] == self.user.name
         assert reply.action == amo.LOG.REVIEWER_REPLY_VERSION.id

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import jinja2
 
 import jingo
@@ -41,7 +42,7 @@ def impala_reviews_link(addon, collection_uuid=None, link_to_list=False):
 @jingo.register.inclusion_tag('reviews/mobile/reviews_link.html')
 @jinja2.contextfunction
 def mobile_reviews_link(context, addon):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(addon=addon)
     return c
 
@@ -49,7 +50,7 @@ def mobile_reviews_link(context, addon):
 @jingo.register.inclusion_tag('reviews/report_review.html')
 @jinja2.contextfunction
 def report_review_popup(context):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(ReviewFlag=ReviewFlag, flag_form=forms.ReviewFlagForm())
     return c
 
@@ -57,7 +58,7 @@ def report_review_popup(context):
 @jingo.register.inclusion_tag('reviews/edit_review.html')
 @jinja2.contextfunction
 def edit_review_form(context):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(form=forms.ReviewForm())
     return c
 
@@ -65,7 +66,7 @@ def edit_review_form(context):
 @jingo.register.inclusion_tag('reviews/edit_review.html')
 @jinja2.contextfunction
 def edit_review_reply_form(context):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update(form=forms.ReviewReplyForm())
     return c
 

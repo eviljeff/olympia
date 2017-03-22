@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import codecs
 from datetime import datetime, timedelta
 from optparse import make_option
@@ -119,7 +120,7 @@ class Command(BaseCommand):
                 tuc.count += count
 
         # Create in bulk: this is much faster.
-        ThemeUpdateCount.objects.bulk_create(theme_update_counts.values(), 100)
+        ThemeUpdateCount.objects.bulk_create(list(theme_update_counts.values()), 100)
         for theme_update_count in theme_update_counts.values():
             save_stats_to_file(theme_update_count)
         log.info('Processed a total of %s lines' % (index + 1))

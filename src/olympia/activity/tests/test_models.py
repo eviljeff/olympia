@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 # from os import path
 
@@ -18,6 +19,8 @@ from olympia.tags.models import Tag
 from olympia.reviews.models import Review
 from olympia.users.models import UserProfile
 from olympia.versions.models import Version
+import six
+from six.moves import range
 
 
 class TestActivityLogToken(TestCase):
@@ -99,7 +102,7 @@ class TestActivityLog(TestCase):
         assert len(entries) == 1
         assert entries[0].arguments[0] == addon
         for x in ('Delicious Bookmarks', 'was created.'):
-            assert x in unicode(entries[0])
+            assert x in six.text_type(entries[0])
 
     def test_no_user(self):
         core.set_user(None)
@@ -129,7 +132,7 @@ class TestActivityLog(TestCase):
         ActivityLog.create(amo.LOG.CREATE_ADDON, (Addon, addon.id))
         entries = ActivityLog.objects.for_addons(addon)
         assert len(entries) == 1
-        assert addon.get_url_path() in unicode(entries[0])
+        assert addon.get_url_path() in six.text_type(entries[0])
 
     def test_addon_log_unlisted_addon(self):
         addon = Addon.objects.get()
@@ -141,7 +144,7 @@ class TestActivityLog(TestCase):
         ActivityLog.create(amo.LOG.CREATE_ADDON, (Addon, addon.id))
         entries = ActivityLog.objects.for_addons(addon)
         assert len(entries) == 1
-        assert url_path not in unicode(entries[0])
+        assert url_path not in six.text_type(entries[0])
 
     def test_fancy_rendering(self):
         """HTML for Review, and Collection."""
@@ -176,7 +179,7 @@ class TestActivityLog(TestCase):
     def test_output(self):
         ActivityLog.create(amo.LOG['CUSTOM_TEXT'], 'hi there')
         entry = ActivityLog.objects.get()
-        assert unicode(entry) == 'hi there'
+        assert six.text_type(entry) == 'hi there'
 
     def test_user_log(self):
         request = self.request
@@ -204,7 +207,7 @@ class TestActivityLog(TestCase):
                            user=self.request.user)
         entries = ActivityLog.objects.for_version(version)
         assert len(entries) == 1
-        assert version.get_url_path() in unicode(entries[0])
+        assert version.get_url_path() in six.text_type(entries[0])
 
     def test_version_log_unlisted_addon(self):
         version = Version.objects.all()[0]
@@ -215,7 +218,7 @@ class TestActivityLog(TestCase):
                            user=self.request.user)
         entries = ActivityLog.objects.for_version(version)
         assert len(entries) == 1
-        assert url_path not in unicode(entries[0])
+        assert url_path not in six.text_type(entries[0])
 
     def test_version_log_transformer(self):
         addon = Addon.objects.get()
