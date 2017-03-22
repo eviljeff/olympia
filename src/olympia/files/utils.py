@@ -9,11 +9,11 @@ import re
 import shutil
 import stat
 import struct
-import StringIO
 import tempfile
 import zipfile
+import six
+from six.moves import cStringIO, range
 
-from cStringIO import StringIO as cStringIO
 from datetime import datetime, timedelta
 from itertools import groupby
 from xml.dom import minidom
@@ -37,8 +37,6 @@ from olympia.amo.utils import rm_local_tmp_dir, find_language, decode_json
 from olympia.applications.models import AppVersion
 from olympia.versions.compare import version_int as vint
 from olympia.lib.safe_xml import lxml
-import six
-from six.moves import range
 
 
 log = olympia.core.logger.getLogger('z.files.utils')
@@ -500,7 +498,7 @@ class SafeUnzip(object):
             parts = path.split('!')
             for part in parts[:-1]:
                 jar = self.__class__(
-                    StringIO.StringIO(jar.zip_file.read(part)))
+                    six.StringIO(jar.zip_file.read(part)))
                 jar.is_valid(fatal=True)
             path = parts[-1]
         return jar.extract_path(path[1:] if path.startswith('/') else path)

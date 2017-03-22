@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 import json
 import mock
-import StringIO
 
 from django.test.utils import override_settings
 
@@ -421,7 +420,7 @@ class TestEmailApi(TestCase):
         req.META['REMOTE_ADDR'] = '10.10.10.10'
         req.META['CONTENT_LENGTH'] = len(datastr)
         req.META['CONTENT_TYPE'] = 'application/json'
-        req._stream = StringIO.StringIO(datastr)
+        req._stream = six.StringIO(datastr)
         return req
 
     def get_validation_request(self, data):

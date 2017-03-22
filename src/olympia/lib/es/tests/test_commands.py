@@ -1,7 +1,8 @@
 from __future__ import absolute_import
-import StringIO
 import threading
 import time
+from six import StringIO
+from six.moves import range
 
 from django.core import management
 from django.db import connection
@@ -11,7 +12,6 @@ from olympia.amo.tests import addon_factory, ESTestCase
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import urlparams
 from olympia.lib.es.utils import is_reindexing_amo, unflag_reindexing_amo
-from six.moves import range
 
 
 class TestIndexCommand(ESTestCase):
@@ -96,7 +96,7 @@ class TestIndexCommand(ESTestCase):
         # This is to start a reindexation in the background.
         class ReindexThread(threading.Thread):
             def __init__(self):
-                self.stdout = StringIO.StringIO()
+                self.stdout = StringIO()
                 super(ReindexThread, self).__init__()
 
             def run(self):

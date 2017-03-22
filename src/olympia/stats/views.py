@@ -1,11 +1,12 @@
 from __future__ import absolute_import
-import cStringIO
 import csv
 import itertools
 import json
 import os
 import time
 from datetime import date, timedelta, datetime
+import six
+from six.moves import cStringIO, map, range, zip
 
 from django import http
 from django.conf import settings
@@ -43,10 +44,6 @@ from olympia.zadmin.models import SiteEvent
 
 from .models import (
     CollectionCount, Contribution, DownloadCount, ThemeUserCount, UpdateCount)
-from six.moves import map
-import six
-from six.moves import range
-from six.moves import zip
 
 
 logger = olympia.core.logger.getLogger('z.apps.stats.views')
@@ -654,7 +651,7 @@ class UnicodeCSVDictWriter(csv.DictWriter):
     def __init__(self, stream, fields, **kw):
         # We have the csv module write into our buffer as bytes and then we
         # dump the buffer to the real stream as unicode.
-        self.buffer = cStringIO.StringIO()
+        self.buffer = cStringIO()
         csv.DictWriter.__init__(self, self.buffer, fields, **kw)
         self.stream = stream
 

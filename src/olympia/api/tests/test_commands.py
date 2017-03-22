@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import os.path
-from StringIO import StringIO
+from six import StringIO
 
 from django.core.management import call_command
 from django.conf import settings

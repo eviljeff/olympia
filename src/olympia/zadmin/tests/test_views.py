@@ -3,8 +3,9 @@ from __future__ import absolute_import
 import csv
 import os
 import json
-from cStringIO import StringIO
+import six
 from datetime import datetime
+from six.moves import cStringIO, range
 
 from django.conf import settings
 from django.core import mail
@@ -40,8 +41,6 @@ from olympia.zadmin.models import (
     ValidationResultAffectedAddon, ValidationResultMessage)
 from olympia.zadmin.tasks import updated_versions
 from olympia.zadmin.views import find_files
-import six
-from six.moves import range
 
 
 SHORT_LIVED_CACHE_PARAMS = settings.CACHES.copy()
@@ -1220,11 +1219,11 @@ class TestEmailPreview(TestCase):
         r = self.client.get(reverse('zadmin.email_preview_csv',
                             args=[self.topic.topic]))
         assert r.status_code == 200
-        rdr = csv.reader(StringIO(r.content))
+        rdr = csv.reader(cStringIO(r.content))
         assert next(rdr) == ['from_email', 'recipient_list', 'subject',
-                              'body']
+                             'body']
         assert next(rdr) == ['admin@mozilla.org', 'funnyguy@mozilla.org',
-                              'the subject', 'Hello Ivan Krsti\xc4\x87']
+                             'the subject', 'Hello Ivan Krsti\xc4\x87']
 
 
 class TestMonthlyPick(TestCase):

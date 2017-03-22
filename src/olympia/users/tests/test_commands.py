@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import json
-from StringIO import StringIO
+from six import StringIO
 
 from mock import patch, ANY
 from django.core.management import call_command

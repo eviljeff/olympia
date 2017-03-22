@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import json
-from StringIO import StringIO
+from six import StringIO
 
 from django.conf import settings
 from django.db import connection
