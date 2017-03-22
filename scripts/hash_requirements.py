@@ -76,7 +76,7 @@ def main(requirements_path):
             'sha256',
             # Workaround a bug or feature in hashin which would avoid
             # fetching wheels e.g for some packages.
-            python_versions=['py27', '2.7'],
+            python_versions=['py27', '2.7', 'py36', '3.6'],
             verbose=True)
 
 
