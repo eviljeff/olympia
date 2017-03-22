@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from settings import *  # noqa
 
 import atexit
@@ -19,7 +20,7 @@ def _cleanup():
     try:
         for tmp in _tmpdirs:
             shutil.rmtree(tmp)
-    except Exception, exc:
+    except Exception as exc:
         sys.stderr.write("\n** shutil.rmtree(%r): %s\n" % (tmp, exc))
 
 atexit.register(_cleanup)

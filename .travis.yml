@@ -10,11 +10,11 @@ env:
   - TOXENV=assets
   - TOXENV=es
   - TOXENV=addons
-  - TOXENV=devhub
-  - TOXENV=editors
-  - TOXENV=amo
-  - TOXENV=users
-  - TOXENV=main
+#  - TOXENV=devhub
+#  - TOXENV=editors
+#  - TOXENV=amo
+#  - TOXENV=users
+#  - TOXENV=main
 
 matrix:
   fast_finish: true
