@@ -117,3 +117,6 @@ reindex:
 	python manage.py reindex $(ARGS)
 
 initialize: update_deps initialize_db update_assets populate_data
+
+retire:
+	$(NODE_MODULES)retire/bin/retire --jspath ./static/js/ --nodepath $(NODE_MODULES)
