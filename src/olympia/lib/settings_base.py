@@ -470,7 +470,6 @@ INSTALLED_APPS = (
     'raven.contrib.django',
     'rest_framework',
     'waffle',
-    'jingo_minify',
     'puente',
 
     # Django contrib apps
@@ -1561,9 +1560,6 @@ LANGPACK_PATH_DEFAULT = '%s/releases/%s/win32/xpi/'
 # E.g. https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/23.0/SHA512SUMS
 LANGPACK_MANIFEST_PATH = '../../SHA512SUMS'
 LANGPACK_MAX_SIZE = 5 * 1024 * 1024  # 5MB should be more than enough
-
-# This saves us when we upgrade jingo-minify (jsocol/jingo-minify@916b054c).
-JINGO_MINIFY_USE_STATIC = True
 
 # Whitelist IP addresses of the allowed clients that can post email
 # through the API.
