@@ -27,10 +27,6 @@ class BaseESSerializer(ModelSerializer):
         for field_name in self.fields:
             self.fields[field_name].read_only = True
 
-        if getattr(self, 'context'):
-            for field_name in self.fields:
-                self.fields[field_name].context = self.context
-
     def get_fields(self):
         """
         Return all fields as normal, with one exception: replace every instance
@@ -39,7 +35,8 @@ class BaseESSerializer(ModelSerializer):
         fields = super(BaseESSerializer, self).get_fields()
         for key, field in fields.items():
             if isinstance(field, TranslationSerializerField):
-                fields[key] = ESTranslationSerializerField(source=field.source)
+                fields[key] = ESTranslationSerializerField(
+                    source=field.source, context=self.context)
         return fields
 
     def to_representation(self, data):
