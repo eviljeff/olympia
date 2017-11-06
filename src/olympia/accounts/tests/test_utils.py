@@ -118,32 +118,6 @@ def test_redirect_for_login(default_fxa_login_url):
     assert response['location'] == login_url
 
 
-class TestProcessSqsQueue(TestCase):
-
-    @mock.patch('olympia.accounts.utils.process_fxa_event')
-    @mock.patch('boto3.client')
-    def test_process_sqs_queue(self, client, process_fxa_event):
-        messages = [{'Body': 'foo', 'ReceiptHandle': '$$$'}, {'Body': 'bar'}]
-        sqs = mock.MagicMock(
-            **{'receive_message.side_effect': [{'Messages': messages}]})
-        delete_mock = mock.MagicMock()
-        sqs.delete_message = delete_mock
-        client.return_value = sqs
-
-        with self.assertRaises(StopIteration):
-            utils.process_sqs_queue(
-                queue_url='https://nowh.ere/', aws_region='NARNIA_1',
-                queue_wait_time=20)
-
-        client.assert_called()
-        process_fxa_event.assert_called()
-        process_fxa_event.assert_has_calls(
-            [mock.call('foo'), mock.call('bar')])
-        delete_mock.assert_called_once()  # Receipt handle is present in foo.
-        delete_mock.assert_called_with(
-            QueueUrl='https://nowh.ere/', ReceiptHandle='$$$')
-
-
 def totimestamp(datetime_obj):
     return time.mktime(datetime_obj.timetuple())
 

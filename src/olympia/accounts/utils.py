@@ -1,5 +1,6 @@
 import json
 import os
+# from base64 import b64encode, urlsafe_b64encode
 from base64 import urlsafe_b64encode
 from datetime import datetime
 from urllib import urlencode
@@ -8,7 +9,9 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.http import is_safe_url
 
-import boto3
+from kombu import Connection, Queue
+from kombu.mixins import ConsumerMixin
+from kombu.transport import SQS
 
 from olympia.core.logger import getLogger
 from olympia.accounts.tasks import primary_email_change_event
@@ -80,6 +83,83 @@ def camel_case(snake):
     return parts[0] + ''.join(part.capitalize() for part in parts[1:])
 
 
+sqs_queue = Queue('amo-account-change-dev', routing_key='default')
+
+
+class SQSWorker(ConsumerMixin):
+    log = getLogger('accounts.sqs')
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def get_consumers(self, Consumer, channel):
+        return [Consumer(queues=[sqs_queue],
+                         accept=['json'],
+                         on_message=self.process_task_on,
+                         # callbacks=[self.process_task]
+                         )]
+
+    def process_task_on(self, message):
+        self.process_task(message.body, message)
+
+    def process_task(self, body, message):
+        self.log.info('Got task: %s' % body)
+        print message
+        try:
+            process_fxa_event(body)
+        except Exception as ex:
+            self.log.exception('Error while processing account events: %s', ex)
+        message.ack()
+
+    def on_consume_ready(self, connection, channel, consumers, **kwargs):
+        self.log.info('on_consume_ready')
+        self.log.info('connection %s' % connection)
+        self.log.info('channel %s' % channel)
+        self.log.info('consumers %s' % consumers)
+        super(SQSWorker, self).on_consume_ready(
+            connection, channel, consumers, **kwargs)
+
+
+class SQSChannel(SQS.Channel):
+    """This subclass only exists to encode the message body to base64 because
+    Kombu wants to decode it. (Ugh)."""
+#    def _message_to_python(self, message, queue_name, queue):
+#        print "*** MessageId: %s" % message['MessageId']
+#        # print "*** Message: %s" % message
+#        message['Body'] = b64encode(message['Body'])
+#        # print "*** Message: %s" % message
+#        super(SQSChannel, self)._message_to_python(message, queue_name, queue)
+
+    def _message_to_python(self, message, queue_name, queue):
+        body = message['Body']
+        payload = json.loads(body)
+        if queue_name in self._noack_queues:
+            queue = self._new_queue(queue_name)
+            self.asynsqs.delete_message(queue, message['ReceiptHandle'])
+        else:
+            try:
+                properties = payload['properties']
+                delivery_info = payload['properties']['delivery_info']
+            except KeyError:
+                # json message not sent by kombu?
+                delivery_info = {}
+                properties = {'delivery_info': delivery_info}
+                payload.update({
+                    'body': body,
+                    'properties': properties,
+                })
+            # set delivery tag to SQS receipt handle
+            delivery_info.update({
+                'sqs_message': message, 'sqs_queue': queue,
+            })
+            properties['delivery_tag'] = message['ReceiptHandle']
+        return payload
+
+
+class SQSTransport(SQS.Transport):
+    Channel = SQSChannel
+
+
 def process_fxa_event(raw_body, **kwargs):
     """Parse and process a single firefox account event."""
     # Try very hard not to error out if there's junk in the queue.
@@ -109,29 +189,14 @@ def process_fxa_event(raw_body, **kwargs):
 
 
 def process_sqs_queue(queue_url, aws_region, queue_wait_time):
-    log = getLogger('accounts.sqs')
-    log.info('Processing account events from %s', queue_url)
-    try:
-        # Connect to the SQS queue.
-        sqs = boto3.client(
-            'sqs', aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=aws_region)
-        # Poll for messages indefinitely.
-        while True:
-            # msg = queue.read(wait_time_seconds=queue_wait_time)
-            response = sqs.receive_message(
-                QueueUrl=queue_url, WaitTimeSeconds=queue_wait_time,
-                MaxNumberOfMessages=10)
-            msgs = response.get('Messages', []) if response else []
-            for message in msgs:
-                process_fxa_event(message.get('Body', ''))
-                # This intentionally deletes the event even if it was some
-                # unrecognized type.  Not point leaving a backlog.
-                if 'ReceiptHandle' in message:
-                    sqs.delete_message(
-                        QueueUrl=queue_url,
-                        ReceiptHandle=message['ReceiptHandle'])
-    except Exception as e:
-        log.exception('Error while processing account events: %s' % e)
-        raise e
+    connection_kwargs = {'userid': settings.AWS_ACCESS_KEY_ID,
+                         'password': settings.AWS_SECRET_ACCESS_KEY,
+                         'connect_timeout': queue_wait_time,
+                         'transport': SQSTransport,
+                         'transport_options': {'region': aws_region}}
+    with Connection(queue_url, **connection_kwargs) as conn:
+        try:
+            worker = SQSWorker(conn)
+            worker.run()
+        except KeyboardInterrupt:
+            pass
