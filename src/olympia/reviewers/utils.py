@@ -505,11 +505,8 @@ class ReviewBase(object):
                   'details': details}
         self.log_entry = ActivityLog.create(action, *args, **kwargs)
 
-    def notify_email(self, template, subject,
-                     perm_setting='reviewer_reviewed', version=None):
+    def notify_email(self, template, subject, channel=None):
         """Notify the authors that their addon has been reviewed."""
-        if version is None:
-            version = self.version
         data = self.data.copy() if self.data else {}
         data.update(self.get_context_data())
         data['tested'] = ''
@@ -525,6 +522,12 @@ class ReviewBase(object):
         unique_id = (self.log_entry.id if hasattr(self, 'log_entry')
                      else random.randrange(100000))
 
+        perm_setting = 'reviewer_reviewed'
+        # We always need to send the latest version for emails or the developer
+        # won't be able to reply.
+        version = self.addon.find_latest_version(
+            channel=channel or self.version.channel,
+            exclude=(amo.STATUS_BETA,))
         message = loader.get_template(
             'reviewers/emails/%s.ltxt' % template).render(data)
         send_activity_mail(
@@ -752,14 +755,14 @@ class ReviewBase(object):
         self.data['version_numbers'] = u', '.join(
             unicode(v.version) for v in self.data['versions'])
 
-        # Send the email to the developer. We need to pass the latest version
-        # of the add-on instead of one of the versions we rejected, it will be
-        # used to generate a token allowing the developer to reply, and that
-        # only works with the latest version.
+        # Send the email to the developer. The latest version of the add-on
+        # will be referenced instead of one of the versions we rejected as it
+        # will be used to generate a token allowing the developer to reply,
+        # and that only works with the latest version.
         template = u'reject_multiple_versions'
         subject = (u"Mozilla Add-ons: One or more versions of %s%s didn't "
                    u"pass review")
-        self.notify_email(template, subject, version=latest_version)
+        self.notify_email(template, subject, channel=latest_version.channel)
 
         log.info(
             u'Making %s versions %s disabled' % (
