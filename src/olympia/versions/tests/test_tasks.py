@@ -1,6 +1,7 @@
 import math
 import operator
 import os
+import shutil
 import tempfile
 from base64 import b64encode
 
@@ -38,6 +39,7 @@ def test_write_svg_to_png():
         reduce(operator.add, map(
             lambda h, i: h * (i ** 2), image_diff.histogram(), range(1024))
         ) / (float(svg_png_img.size[0]) * svg_png_img.size[1]))
+    shutil.copyfile(out, os.path.join(settings.ROOT, 'out.png'))
     assert rms < 960
 
 
