@@ -150,8 +150,8 @@
       </div>{# /addon-summary-wrapper #}
 
       <div class="secondary">
-        {% if addon.all_previews %}
-          {% with preview=addon.all_previews[0] %}
+        {% if addon.get_previews %}
+          {% with preview=addon.get_previews[0] %}
             <a class="screenshot thumbnail" rel="jquery-lightbox"
               href="{{ preview.image_url }}" title="{{ preview.caption }}">
                 <img alt="" src="{{ preview.thumbnail_url }}" />
@@ -179,15 +179,15 @@
     {% endif %}
   {% endif %}
 
-  {% if addon.description or addon.all_previews|length > 1 or addon.developer_comments or
+  {% if addon.description or addon.get_previews|length > 1 or addon.developer_comments or
         addon.show_beta  %}
     <h3 id="more-about">{{ _('More about this add-on') }}</h3>
     <div class="article userinput">
       <p{{ addon.description|locale_html }}>{{ addon.description|nl2br }}</p>
 
-      {% if addon.all_previews|length > 1 %}
+      {% if addon.get_previews|length > 1 %}
         <h4>{{ _('Image Gallery') }}</h4>
-        {% for preview in addon.all_previews[1:] %}
+        {% for preview in addon.get_previews[1:] %}
         <a class="screenshot thumbnail" rel="jquery-lightbox"
           href="{{ preview.image_url }}" title="{{ preview.caption }}">
             <img src="{{ preview.thumbnail_url }}" alt="" />

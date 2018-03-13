@@ -574,7 +574,7 @@ class TestMonthlyPick(TestCase):
         pick = pq(r.content)('#monthly')
         assert pick.length == 1
         assert pick.find('img').attr('src') == (
-            self.addon.all_previews[0].image_url)
+            self.addon.get_previews[0].image_url)
 
     def test_no_monthlypick(self):
         r = self.client.get(self.url)

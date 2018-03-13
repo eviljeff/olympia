@@ -254,7 +254,7 @@ class AddonSerializer(serializers.ModelSerializer):
     is_source_public = serializers.BooleanField(source='view_source')
     is_featured = serializers.SerializerMethodField()
     name = TranslationSerializerField()
-    previews = PreviewSerializer(many=True, source='all_previews')
+    previews = PreviewSerializer(many=True, source='get_previews')
     ratings = serializers.SerializerMethodField()
     ratings_url = serializers.SerializerMethodField()
     review_url = serializers.SerializerMethodField()
@@ -455,7 +455,7 @@ class ESAddonSerializer(BaseESSerializer, AddonSerializer):
     authors = BaseUserSerializer(many=True, source='listed_authors')
     current_beta_version = SimpleESVersionSerializer()
     current_version = SimpleESVersionSerializer()
-    previews = ESPreviewSerializer(many=True, source='all_previews')
+    previews = ESPreviewSerializer(many=True, source='get_previews')
 
     datetime_fields = ('created', 'last_updated', 'modified')
     translated_fields = ('name', 'description', 'developer_comments',
@@ -565,10 +565,10 @@ class ESAddonSerializer(BaseESSerializer, AddonSerializer):
             for data_author in data_authors
         ]
 
-        # We set obj.all_previews to the raw preview data because
+        # We set obj.get_previews to the raw preview data because
         # ESPreviewSerializer will handle creating the fake Preview object
         # for us when its to_representation() method is called.
-        obj.all_previews = data.get('previews', [])
+        obj.get_previews = data.get('previews', [])
 
         ratings = data.get('ratings', {})
         obj.average_rating = ratings.get('average')

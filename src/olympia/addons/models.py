@@ -1016,8 +1016,8 @@ class Addon(OnChangeMixin, ModelBase):
             qs = qs.no_transforms()
         qs = sorted(qs, key=lambda x: (x.addon_id, x.position, x.created))
         for addon, previews in itertools.groupby(qs, lambda x: x.addon_id):
-            addon_dict[addon].all_previews = list(previews)
-        # FIXME: set all_previews to empty list on addons without previews.
+            addon_dict[addon].get_previews = list(previews)
+        # FIXME: set get_previews to empty list on addons without previews.
 
     @staticmethod
     def attach_static_categories(addons, addon_dict=None):
@@ -1115,7 +1115,7 @@ class Addon(OnChangeMixin, ModelBase):
         Returns the addon's thumbnail url or a default.
         """
         try:
-            preview = self.all_previews[0]
+            preview = self.get_previews[0]
             return preview.thumbnail_url
         except IndexError:
             return settings.STATIC_URL + '/img/icons/no-preview.png'
@@ -1306,8 +1306,8 @@ class Addon(OnChangeMixin, ModelBase):
             None, [cat.to_static_category() for cat in self.categories.all()])
 
     @cached_property
-    def all_previews(self):
-        """Exclude promo graphics."""
+    def get_previews(self):
+        # Exclude promo graphics.
         return list(self.previews.exclude(position=-1))
 
     @property

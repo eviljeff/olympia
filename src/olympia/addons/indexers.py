@@ -347,11 +347,11 @@ class AddonIndexer(BaseSearchIndexer):
         data['latest_unlisted_version'] = cls.extract_version(
             obj, obj.latest_unlisted_version)
 
-        # We can use all_previews because the indexing code goes through the
+        # We can use get_previews because the indexing code goes through the
         # transformer that sets it.
         data['previews'] = [{'id': preview.id, 'modified': preview.modified,
                              'sizes': preview.sizes}
-                            for preview in obj.all_previews]
+                            for preview in obj.get_previews]
         data['ratings'] = {
             'average': obj.average_rating,
             'count': obj.total_ratings,
@@ -375,8 +375,8 @@ class AddonIndexer(BaseSearchIndexer):
             data.update(cls.extract_field_raw_translations(obj, field))
         # Also do that for preview captions, which are set on each preview
         # object.
-        attach_trans_dict(Preview, obj.all_previews)
-        for i, preview in enumerate(obj.all_previews):
+        attach_trans_dict(Preview, obj.get_previews)
+        for i, preview in enumerate(obj.get_previews):
             data['previews'][i].update(
                 cls.extract_field_raw_translations(preview, 'caption'))
 

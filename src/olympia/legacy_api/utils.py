@@ -86,7 +86,7 @@ def addon_to_dict(addon, disco=False, src='api'):
                  'caption': unicode(preview.caption)}
             return d
 
-        d['previews'] = [preview_as_dict(p, src) for p in addon.all_previews]
+        d['previews'] = [preview_as_dict(p, src) for p in addon.get_previews]
 
     return d
 

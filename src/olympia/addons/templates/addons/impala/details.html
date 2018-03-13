@@ -148,7 +148,7 @@
   {% if addon.type == amo.ADDON_STATICTHEME %}
     {% set previews = list(version.previews) %}
   {% else %}
-    {% set previews = addon.all_previews %}
+    {% set previews = addon.get_previews %}
   {% endif %}
 
   {% if previews|length > 0 %}
