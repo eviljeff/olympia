@@ -442,6 +442,39 @@ class TranslationTestCase(BaseTestCase):
         assert obj.name.id == orig_name_id
         assert obj.name.locale == 'de'
 
+    def test_setting_none_deletes(self):
+        """
+        Test that setting a translated value to None deletes the Translation.
+        """
+        obj = TranslatedModel.objects.get(id=1)
+        desc_trans_id = obj.description.id
+        assert Translation.objects.filter(id=desc_trans_id).count() == 1
+        name_trans_id = obj.name.id
+
+        # Clear description
+        obj.update(description=None)
+
+        obj = TranslatedModel.objects.no_cache().get(id=1)
+        assert obj.description_id is None
+        assert obj.description is None
+        assert not Translation.objects.no_cache().filter(
+            id=desc_trans_id).exists()
+
+        # Clear name, which has 2 translations
+        assert Translation.objects.no_cache().filter(
+            id=name_trans_id).count() == 2
+        translation.activate('de')
+        obj = TranslatedModel.objects.no_cache().get(id=1)
+        assert obj.name.locale == 'de'
+        obj.update(name=None)
+        assert Translation.objects.no_cache().filter(
+            id=name_trans_id).count() == 1
+
+        translation.activate('en-US')
+        obj = TranslatedModel.objects.no_cache().get(id=1)
+        assert obj.name_id == name_trans_id
+        assert obj.name is not None
+
 
 class TranslationMultiDbTests(TransactionTestCase):
     fixtures = ['testapp/test_models.json']

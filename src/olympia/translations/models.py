@@ -70,6 +70,9 @@ class Translation(ModelBase):
             self.localized_string = self.localized_string.strip()
 
     def save(self, **kwargs):
+        if self.localized_string is None:
+            self.delete()
+            return
         self.clean()
         return super(Translation, self).save(**kwargs)
 
@@ -84,6 +87,7 @@ class Translation(ModelBase):
         # current one (autoid=self.autoid).
         qs = cls.objects.filter(id=self.id).exclude(autoid=self.autoid)
         if qs.using(using).exists():
+            print "exists!"
             # If other Translations for the same id exist, we just need to
             # delete this one and *only* this one, without letting Django
             # collect dependencies (it'd remove the others, which we want to
@@ -98,6 +102,7 @@ class Translation(ModelBase):
             with connections[using].constraint_checks_disabled():
                 collector.delete()
         else:
+            print "um, wot?"
             # If no other Translations with that id exist, then we should let
             # django behave normally. It should find the related model and set
             # the FKs to NULL.
