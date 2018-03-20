@@ -2,7 +2,7 @@
 from django.core.exceptions import ValidationError
 
 from mock import Mock
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
@@ -208,6 +208,22 @@ class TestTranslationSerializerField(TestCase):
         field.bind('description', mock_serializer)
         result = field.to_representation(field.get_attribute(self.addon))
         assert result is None
+
+    def test_can_update_optional_to_none(self):
+        field = self.field_class()
+        # dict updates to null already worked, but check we didn't break it.
+        assert field.run_validation(data={'fr': None}) == {'fr': None}
+        field.required = False
+        # non-partial setting (creating) should still not allow None.
+        with self.assertRaises(exceptions.ValidationError):
+            field.run_validation(data=None)
+        # but partial setting (updates) should allow None.
+        field.root.partial = True
+        assert field.run_validation(data=None) is None
+        # but only if not a required field.
+        field.required = True
+        with self.assertRaises(exceptions.ValidationError):
+            field.run_validation(data=None)
 
 
 class TestESTranslationSerializerField(TestTranslationSerializerField):

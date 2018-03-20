@@ -134,6 +134,13 @@ class TranslationSerializerField(fields.Field):
             raise ValidationError(
                 self.error_messages['min_length'].format(num=self.min_length))
 
+    def validate_empty_values(self, data):
+        # Need to set this to allow None for partial updates only.
+        self.allow_null = (
+            getattr(self.root, 'partial', False) and not self.required)
+        return super(TranslationSerializerField, self).validate_empty_values(
+            data=data)
+
 
 class ESTranslationSerializerField(TranslationSerializerField):
     """
