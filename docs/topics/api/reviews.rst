@@ -74,7 +74,6 @@ This endpoint allows you to fetch a review by its id.
     :>json int previous_count: The number of reviews posted by the user on the same add-on before this one.
     :>json int rating: The rating the user gave as part of the review.
     :>json object|null reply: The review object containing the developer reply to this review, if any (The fields ``rating``, ``reply`` and ``version`` are omitted).
-    :>json string|null title: The title of the review.
     :>json int version.id: The add-on version id the review applies to.
     :>json string version.version: The add-on version string the review applies to.
     :>json object user: Object holding information about the user who posted the review.
@@ -100,7 +99,6 @@ If successful a :ref:`review object <review-detail-object>` is returned.
 
     :<json string addon: The add-on id the review applies to (required).
     :<json string|null body: The text of the review.
-    :<json string|null title: The title of the review.
     :<json int rating: The rating the user wants to give as part of the review (required).
     :<json int version: The add-on version id the review applies to (required).
 
@@ -117,12 +115,11 @@ If successful a :ref:`review object <review-detail-object>` is returned.
      Requires authentication and Addons:Edit permissions or the user
      account that posted the review.
 
-     Only body, title and rating are allowed for modification.
+     Only body and rating are allowed for modification.
 
 .. http:patch:: /api/v3/reviews/review/(int:id)/
 
     :<json string|null body: The text of the review.
-    :<json string|null title: The title of the review.
     :<json int rating: The rating the user wants to give as part of the review.
 
 
@@ -159,7 +156,6 @@ If successful a :ref:`review reply object <review-detail-object>` is returned.
 .. http:post:: /api/v3/reviews/review/(int:id)/reply/
 
     :<json string body: The text of the reply (required).
-    :<json string|null title: The title of the reply.
 
 
 ----

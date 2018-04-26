@@ -15,21 +15,21 @@ from olympia.versions.models import Version
 
 
 class BaseRatingSerializer(serializers.ModelSerializer):
-    # title and body are TranslatedFields, but there is never more than one
-    # translation for each review - it's essentially useless. Because of that
-    # we use a simple CharField in the API, hiding the fact that it's a
-    # TranslatedField underneath.
+    # body is a TranslatedField, but there is never more than one translation
+    # for each review - it's essentially useless. Lolno, actually some Ratings
+    # *do* have additional translations, but it's unsupported behavior anyway.
+    # Because of that we use a simple CharField in the API, hiding the fact
+    # that it's a TranslatedField underneath.
     addon = serializers.SerializerMethodField()
     body = serializers.CharField(allow_null=True, required=False)
     is_latest = serializers.BooleanField(read_only=True)
     previous_count = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(allow_null=True, required=False)
     user = BaseUserSerializer(read_only=True)
 
     class Meta:
         model = Rating
         fields = ('id', 'addon', 'body', 'created', 'is_latest',
-                  'previous_count', 'title', 'user')
+                  'previous_count', 'user')
 
     def get_addon(self, obj):
         # We only return the addon id and slug for convenience, so just return

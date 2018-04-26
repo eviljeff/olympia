@@ -440,8 +440,8 @@ class TestCreate(ReviewTest):
             'addons.ratings.reply', self.addon.slug, 218207)
         response = self.client.get(url)
         assert response.status_code == 200
-        # We should have a form with title and body in that order.
-        assert response.context['form'].fields.keys() == ['title', 'body']
+        # We should have a form with the body.
+        assert response.context['form'].fields.keys() == ['body']
 
     def test_new_reply(self):
         self.login_dev()
@@ -654,11 +654,10 @@ class TestEdit(ReviewTest):
     def test_edit_reply(self):
         self.login_dev()
         url = jinja_helpers.url('addons.ratings.edit', self.addon.slug, 218468)
-        response = self.client.post(url, {'title': 'fo', 'body': 'shizzle'},
+        response = self.client.post(url, {'body': 'shizzle'},
                                     X_REQUESTED_WITH='XMLHttpRequest')
         assert response.status_code == 200
         reply = Rating.objects.get(id=218468)
-        assert '%s' % reply.title == 'fo'
         assert '%s' % reply.body == 'shizzle'
 
         response = self.client.get(jinja_helpers.url('addons.ratings.list',
@@ -1356,7 +1355,7 @@ class TestRatingViewSetGet(TestCase):
 
         # Do a post to add a review by this user.
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': u'blahé',
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': self.addon.current_version.pk})
         assert response.status_code == 201
 
@@ -1500,7 +1499,7 @@ class TestRatingViewSetEdit(TestCase):
         self.user = user_factory(username='areviewuser')
         self.rating = Rating.objects.create(
             addon=self.addon, version=self.addon.current_version, rating=1,
-            body=u'My revïew', title=u'Titlé', user=self.user)
+            body=u'My revïew', user=self.user)
         self.url = reverse('rating-detail', kwargs={'pk': self.rating.pk})
 
     def test_edit_anonymous(self):
@@ -1539,7 +1538,6 @@ class TestRatingViewSetEdit(TestCase):
         self.rating.reload()
         assert response.data['id'] == self.rating.pk
         assert response.data['body'] == unicode(self.rating.body) == u'løl!'
-        assert response.data['title'] == unicode(self.rating.title) == u'Titlé'
         assert response.data['rating'] == self.rating.rating == 2
         assert response.data['version'] == {
             'id': self.rating.version.id,
@@ -1587,7 +1585,6 @@ class TestRatingViewSetEdit(TestCase):
         self.rating.reload()
         assert response.data['id'] == self.rating.pk
         assert response.data['body'] == unicode(self.rating.body) == u'løl!'
-        assert response.data['title'] == unicode(self.rating.title) == u'Titlé'
         assert response.data['version'] == {
             'id': self.rating.version.id,
             'version': self.rating.version.version,
@@ -1648,7 +1645,7 @@ class TestRatingViewSetPost(TestCase):
 
     def test_post_anonymous(self):
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5})
         assert response.status_code == 401
 
@@ -1657,7 +1654,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'body': u'test bodyé', 'title': None, 'rating': 5,
+            'body': u'test bodyé', 'rating': 5,
             'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['addon'] == [u'This field is required.']
@@ -1667,7 +1664,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5})
         assert response.status_code == 400
         assert response.data['version'] == [u'This field is required.']
@@ -1677,7 +1674,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': self.addon.current_version.version})
         assert response.status_code == 400
         assert response.data['version'] == [
@@ -1690,7 +1687,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': u'blahé',
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': self.addon.current_version.pk},
             REMOTE_ADDR='213.225.312.5')
         assert response.status_code == 201
@@ -1699,7 +1696,6 @@ class TestRatingViewSetPost(TestCase):
         assert unicode(review.body) == response.data['body'] == u'test bodyé'
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert unicode(review.title) == response.data['title'] == u'blahé'
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1727,7 +1723,7 @@ class TestRatingViewSetPost(TestCase):
         body = u'Trying to spam <br> http://éxample.com'
         cleaned_body = u'Trying to spam \n http://éxample.com'
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': body, 'title': u'blahé',
+            'addon': self.addon.pk, 'body': body,
             'rating': 5, 'version': self.addon.current_version.pk})
         assert response.status_code == 201
         review = Rating.objects.latest('pk')
@@ -1735,7 +1731,6 @@ class TestRatingViewSetPost(TestCase):
         assert unicode(review.body) == response.data['body'] == cleaned_body
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert unicode(review.title) == response.data['title'] == u'blahé'
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1751,7 +1746,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 4.5, 'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['rating'] == ['A valid integer is required.']
@@ -1761,7 +1756,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 6, 'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['rating'] == [
@@ -1772,18 +1767,18 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 0, 'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['rating'] == [
             'Ensure this value is greater than or equal to 1.']
 
-    def test_post_rating_no_title(self):
+    def test_post_rating_has_body(self):
         self.user = user_factory()
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': self.addon.current_version.pk})
         assert response.status_code == 201
         review = Rating.objects.latest('pk')
@@ -1791,8 +1786,6 @@ class TestRatingViewSetPost(TestCase):
         assert unicode(review.body) == response.data['body'] == u'test bodyé'
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert review.title is None
-        assert response.data['title'] is None
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1801,12 +1794,12 @@ class TestRatingViewSetPost(TestCase):
             'version': review.version.version
         }
 
-    def test_no_body_or_title_just_rating(self):
+    def test_no_body_just_rating(self):
         self.user = user_factory()
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': None, 'title': None, 'rating': 5,
+            'addon': self.addon.pk, 'body': None, 'rating': 5,
             'version': self.addon.current_version.pk})
         assert response.status_code == 201
         review = Rating.objects.latest('pk')
@@ -1815,8 +1808,6 @@ class TestRatingViewSetPost(TestCase):
         assert response.data['body'] is None
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert review.title is None
-        assert response.data['title'] is None
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1825,7 +1816,7 @@ class TestRatingViewSetPost(TestCase):
             'version': review.version.version
         }
 
-    def test_omit_body_and_title_completely_just_rating(self):
+    def test_omit_body_completely_just_rating(self):
         self.user = user_factory()
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
@@ -1839,8 +1830,6 @@ class TestRatingViewSetPost(TestCase):
         assert response.data['body'] is None
         assert review.rating == response.data['rating'] == 5
         assert review.user == self.user
-        assert review.title is None
-        assert response.data['title'] is None
         assert review.reply_to is None
         assert review.addon == self.addon
         assert review.version == self.addon.current_version
@@ -1854,7 +1843,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['rating'] == ['This field is required.']
@@ -1863,7 +1852,7 @@ class TestRatingViewSetPost(TestCase):
         self.user = user_factory()
         self.client.login_api(self.user)
         response = self.client.post(self.url, {
-            'addon': self.addon.pk + 42, 'body': 'test body', 'title': None,
+            'addon': self.addon.pk + 42, 'body': 'test body',
             'rating': 5, 'version': self.addon.current_version.pk})
         assert response.status_code == 404
 
@@ -1872,7 +1861,7 @@ class TestRatingViewSetPost(TestCase):
         self.user = user_factory()
         self.client.login_api(self.user)
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': 'test body', 'title': None,
+            'addon': self.addon.pk, 'body': 'test body',
             'rating': 5, 'version': addon2.current_version.pk})
         assert response.status_code == 400
         assert response.data['version'] == [
@@ -1885,7 +1874,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': version_pk})
         assert response.status_code == 404
 
@@ -1903,7 +1892,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': old_version_pk})
         assert response.status_code == 400
         assert response.data['version'] == [
@@ -1921,7 +1910,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': old_version.pk})
         assert response.status_code == 400
         assert response.data['version'] == [
@@ -1934,7 +1923,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': version_pk})
         assert response.status_code == 403
 
@@ -1944,7 +1933,7 @@ class TestRatingViewSetPost(TestCase):
         self.client.login_api(self.user)
         assert not Rating.objects.exists()
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'test bodyé', 'title': None,
+            'addon': self.addon.pk, 'body': u'test bodyé',
             'rating': 5, 'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['non_field_errors'] == [
@@ -1958,7 +1947,7 @@ class TestRatingViewSetPost(TestCase):
             body='My review', user=self.user)
         second_version = version_factory(addon=self.addon)
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'My ôther review', 'title': None,
+            'addon': self.addon.pk, 'body': u'My ôther review',
             'rating': 2, 'version': second_version.pk})
         assert response.status_code == 201
         assert Rating.objects.count() == 2
@@ -1971,7 +1960,7 @@ class TestRatingViewSetPost(TestCase):
             addon=self.addon, version=self.addon.current_version, rating=1,
             body='My review', user=self.user)
         response = self.client.post(self.url, {
-            'addon': self.addon.pk, 'body': u'My ôther review', 'title': None,
+            'addon': self.addon.pk, 'body': u'My ôther review',
             'rating': 2, 'version': self.addon.current_version.pk})
         assert response.status_code == 400
         assert response.data['non_field_errors'] == [
@@ -1984,7 +1973,7 @@ class TestRatingViewSetPost(TestCase):
             self.client.login_api(self.user)
             # First post, no problem.
             response = self.client.post(self.url, {
-                'addon': self.addon.pk, 'body': u'My réview', 'title': None,
+                'addon': self.addon.pk, 'body': u'My réview',
                 'rating': 2, 'version': self.addon.current_version.pk})
             assert response.status_code == 201
 
@@ -1993,7 +1982,6 @@ class TestRatingViewSetPost(TestCase):
             # Second post, nope, have to wait a while.
             response = self.client.post(self.url, {
                 'addon': self.addon.pk, 'body': u'My n3w réview',
-                'title': None,
                 'rating': 2, 'version': new_version.pk})
             assert response.status_code == 429
 
@@ -2001,7 +1989,7 @@ class TestRatingViewSetPost(TestCase):
             frozen_time.tick(delta=timedelta(seconds=60))
             # And we're good.
             response = self.client.post(self.url, {
-                'addon': self.addon.pk, 'body': u'My réview', 'title': None,
+                'addon': self.addon.pk, 'body': u'My réview',
                 'rating': 2, 'version': new_version.pk})
             assert response.status_code == 201, response.content
 
@@ -2021,7 +2009,6 @@ class TestRatingViewSetPost(TestCase):
             # Make sure you can still submit a rating after the abuse report.
             response = self.client.post(self.url, {
                 'addon': self.addon.pk, 'body': u'My n3w réview',
-                'title': None,
                 'rating': 2, 'version': self.addon.current_version.pk})
             assert response.status_code == 201
 
@@ -2030,7 +2017,6 @@ class TestRatingViewSetPost(TestCase):
             # Second post, nope, have to wait a while.
             response = self.client.post(self.url, {
                 'addon': self.addon.pk, 'body': u'My n3w réview',
-                'title': None,
                 'rating': 2, 'version': new_version.pk})
             assert response.status_code == 429
 
@@ -2045,7 +2031,7 @@ class TestRatingViewSetPost(TestCase):
             frozen_time.tick(delta=timedelta(seconds=60))
             # And we're good.
             response = self.client.post(self.url, {
-                'addon': self.addon.pk, 'body': u'My réview', 'title': None,
+                'addon': self.addon.pk, 'body': u'My réview',
                 'rating': 2, 'version': new_version.pk})
             assert response.status_code == 201, response.content
 
@@ -2264,8 +2250,6 @@ class TestRatingViewSetReply(TestCase):
         assert review.rating is None
         assert 'rating' not in response.data
         assert review.user == self.admin_user
-        assert review.title is None
-        assert response.data['title'] is None
         assert review.reply_to == self.rating
         assert 'reply_to' not in response.data  # It's already in the URL...
         assert review.addon == self.addon
@@ -2290,8 +2274,6 @@ class TestRatingViewSetReply(TestCase):
         assert review.rating is None
         assert 'rating' not in response.data
         assert review.user == self.addon_author
-        assert review.title is None
-        assert response.data['title'] is None
         assert review.reply_to == self.rating
         assert 'reply_to' not in response.data  # It's already in the URL...
         assert review.addon == self.addon
