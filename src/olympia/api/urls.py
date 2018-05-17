@@ -12,8 +12,9 @@ v3_api_urls = [
     url(r'^activity/', include('olympia.activity.urls')),
     url(r'^github/', include('olympia.github.urls')),
 ]
+v4_api_urls = list(v3_api_urls)
 
 urlpatterns = [
     url(r'^v3/', include(v3_api_urls, namespace='v3')),
-    url(r'^v4/', include(v3_api_urls, namespace='v4')),
+    url(r'^v4/', include(v4_api_urls, namespace='v4')),
 ]
