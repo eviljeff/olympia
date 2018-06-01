@@ -11,10 +11,11 @@ from mock import patch
 
 from olympia import amo, core
 from olympia.addons import forms
-from olympia.addons.models import Addon, Category
-from olympia.amo.tests import TestCase, addon_factory, req_factory_factory
+from olympia.addons.models import Addon
+from olympia.amo.tests import TestCase, req_factory_factory
 from olympia.amo.tests.test_helpers import get_image_path
 from olympia.amo.utils import rm_local_tmp_dir
+from olympia.constants.categories import CATEGORIES
 from olympia.tags.models import AddonTag, Tag
 from olympia.users.models import UserProfile
 
@@ -135,9 +136,6 @@ class TestTagsForm(TestCase):
     def setUp(self):
         super(TestTagsForm, self).setUp()
         self.addon = Addon.objects.get(pk=3615)
-        category = Category.objects.get(pk=22)
-        category.db_name = 'test'
-        category.save()
 
         self.data = {
             'summary': str(self.addon.summary),
@@ -321,18 +319,6 @@ class TestIconForm(TestCase):
         assert update_mock.called
 
 
-class TestCategoryForm(TestCase):
-
-    def test_no_possible_categories(self):
-        Category.objects.create(type=amo.ADDON_SEARCH,
-                                application=amo.FIREFOX.id)
-        addon = addon_factory(type=amo.ADDON_SEARCH)
-        request = req_factory_factory('/')
-        form = forms.CategoryFormSet(addon=addon, request=request)
-        apps = [f.app for f in form.forms]
-        assert apps == [amo.FIREFOX]
-
-
 class TestThemeForm(TestCase):
 
     # Don't save image, we use a fake one.
@@ -344,11 +330,12 @@ class TestThemeForm(TestCase):
                                           display_name='b' * 255)
         request = RequestFactory()
         request.user = user
-        cat = Category.objects.create(type=amo.ADDON_PERSONA)
+
+        persona_cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
         form = forms.ThemeForm({
             'name': 'my theme',
             'slug': 'my-theme',
-            'category': cat.pk,
+            'category': persona_cat.id,
             'header': 'some_file.png',
             'agreed': True,
             'header_hash': 'hash',

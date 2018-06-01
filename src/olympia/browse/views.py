@@ -6,19 +6,20 @@ from django.conf import settings
 from django.db.transaction import non_atomic_requests
 from django.http import (
     Http404, HttpResponsePermanentRedirect, HttpResponseRedirect)
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import cache_page
 
 from product_details import product_details
 
 from olympia import amo
-from olympia.addons.models import Addon, AddonCategory, Category, FrozenAddon
+from olympia.addons.models import Addon, AddonCategory, FrozenAddon
 from olympia.addons.utils import get_creatured_ids, get_featured_ids
 from olympia.addons.views import BaseFilter
 from olympia.amo.models import manual_order
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import render
+from olympia.constants.categories import CATEGORIES, StaticCategory
 
 
 languages = dict((lang.lower(), val)
@@ -141,8 +142,10 @@ def language_tools(request, category=None):
 def themes(request, category=None):
     TYPE = amo.ADDON_THEME
     if category is not None:
-        q = Category.objects.filter(application=request.APP.id, type=TYPE)
-        category = get_object_or_404(q, slug=category)
+        try:
+            category = CATEGORIES[request.APP.id][TYPE][category]
+        except IndexError:
+            raise Http404()
 
     addons, filter = addon_listing(request, [TYPE], default='users',
                                    filter_=ThemeFilter)
@@ -151,7 +154,7 @@ def themes(request, category=None):
     dl_src = 'cb-dl-%s' % sorting
 
     if category is not None:
-        addons = addons.filter(categories__id=category.id)
+        addons = addons.filter(addon_categories__category_id=category.id)
 
     addons = amo.utils.paginate(request, addons, 16, count=addons.count())
     return render(request, 'browse/themes.html',
@@ -165,8 +168,10 @@ def extensions(request, category=None):
     TYPE = amo.ADDON_EXTENSION
 
     if category is not None:
-        q = Category.objects.filter(application=request.APP.id, type=TYPE)
-        category = get_object_or_404(q, slug=category)
+        try:
+            category = CATEGORIES[request.APP.id][TYPE][category]
+        except IndexError:
+            raise Http404()
 
     sort = request.GET.get('sort')
     if not sort and category and category.count > 4:
@@ -178,7 +183,7 @@ def extensions(request, category=None):
     dl_src = 'cb-dl-%s' % sorting
 
     if category:
-        addons = addons.filter(categories__id=category.id)
+        addons = addons.filter(addon_categories__category_id=category.id)
 
     addons = amo.utils.paginate(request, addons, count=addons.count())
     return render(request, 'browse/extensions.html',
@@ -224,8 +229,11 @@ def category_landing(request, category, addon_type=amo.ADDON_EXTENSION,
 @non_atomic_requests
 def creatured(request, category):
     TYPE = amo.ADDON_EXTENSION
-    q = Category.objects.filter(application=request.APP.id, type=TYPE)
-    category = get_object_or_404(q, slug=category)
+    try:
+        category = CATEGORIES[request.APP.id][TYPE][category]
+    except IndexError:
+        raise Http404()
+
     ids = AddonCategory.creatured_random(category, request.LANG)
     addons = manual_order(Addon.objects.public(), ids, pk_name='addons.id')
     return render(request, 'browse/creatured.html',
@@ -262,8 +270,6 @@ class PersonasFilter(BaseFilter):
 def personas_listing(request, category_slug=None):
     # Common pieces used by browse and search.
     TYPE = amo.ADDON_PERSONA
-    qs = Category.objects.filter(type=TYPE)
-    categories = sorted(qs, key=attrgetter('weight', 'name'))
 
     frozen = list(FrozenAddon.objects.values_list('addon', flat=True))
 
@@ -272,12 +278,12 @@ def personas_listing(request, category_slug=None):
     cat = None
     if category_slug is not None:
         try:
-            cat = Category.objects.filter(slug=category_slug, type=TYPE)[0]
+            cat = CATEGORIES[amo.FIREFOX.id][TYPE][category_slug]
         except IndexError:
             # Maybe it's a Complete Theme?
             try:
-                cat = Category.objects.filter(slug=category_slug,
-                                              type=amo.ADDON_THEME)[0]
+                cat = (CATEGORIES[amo.FIREFOX.id][amo.ADDON_THEME]
+                       [category_slug])
             except IndexError:
                 raise Http404
             else:
@@ -291,6 +297,8 @@ def personas_listing(request, category_slug=None):
 
     filter_ = PersonasFilter(request, base, key='sort',
                              default='up-and-coming')
+    qs = CATEGORIES[amo.FIREFOX.id][TYPE].values()
+    categories = sorted(qs, key=attrgetter('weight', 'name'))
     return categories, filter_, base, cat
 
 
@@ -353,8 +361,7 @@ def legacy_theme_redirects(request, category=None, category_name=None):
         else:
             try:
                 # Theme?
-                cat = Category.objects.filter(slug=category,
-                                              type=amo.ADDON_PERSONA)[0]
+                cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA][category]
             except IndexError:
                 pass
             else:
@@ -380,8 +387,10 @@ def legacy_fulltheme_redirects(request, category=None):
 @cache_page(60 * 60 * 24 * 365)
 @non_atomic_requests
 def legacy_creatured_redirect(request, category):
-    category = get_object_or_404(Category.objects, slug=category,
-                                 application=request.APP.id)
+    try:
+        category = CATEGORIES[request.APP.id][amo.ADDON_EXTENSION][category]
+    except IndexError:
+        raise Http404()
     return legacy_redirects(request, amo.ADDON_EXTENSION, category, 'featured')
 
 
@@ -392,8 +401,13 @@ def legacy_redirects(request, type_, category=None, sort=None, format=None):
     if not category or category == 'all':
         url = reverse('browse.%s' % type_slug)
     else:
-        if not isinstance(category, Category):
-            category = get_object_or_404(Category.objects, id=category)
+        if not isinstance(category, StaticCategory):
+            try:
+                app = (request.APP if type_ != amo.ADDON_PERSONA
+                       else amo.FIREFOX)
+                category = CATEGORIES[app.id][type_][category]
+            except IndexError:
+                raise Http404()
         if format == 'rss':
             if type_slug in ('language-tools', 'personas'):
                 raise Http404
@@ -423,11 +437,11 @@ class SearchToolsFilter(AddonFilter):
         ids = get_featured_ids(APP, LANG, amo.ADDON_SEARCH)
 
         try:
-            search_cat = Category.objects.get(slug='search-tools',
-                                              application=APP.id)
+            search_cat = (CATEGORIES[APP.id][amo.ADDON_EXTENSION]
+                          ['search-tools'])
             others = get_creatured_ids(search_cat, LANG)
             ids.extend(o for o in others if o not in ids)
-        except Category.DoesNotExist:
+        except IndexError:
             pass
 
         return manual_order(Addon.objects.valid(), ids, 'addons.id')
@@ -441,16 +455,19 @@ class SearchExtensionsFilter(AddonFilter):
 @non_atomic_requests
 def search_tools(request, category=None):
     """View the search tools page."""
-    APP, TYPE = request.APP, amo.ADDON_SEARCH
-    qs = Category.objects.filter(application=APP.id, type=TYPE)
+    TYPE = amo.ADDON_SEARCH
+    qs = CATEGORIES.get(request.APP.id, {}).get(TYPE, {})
     categories = sorted(qs, key=attrgetter('weight', 'name'))
 
     addons, filter = addon_listing(request, [TYPE], SearchToolsFilter,
                                    'popular')
 
     if category:
-        category = get_object_or_404(qs, slug=category)
-        addons = addons.filter(categories__id=category.id)
+        try:
+            category = CATEGORIES[request.APP.id][TYPE][category]
+        except IndexError:
+            raise Http404()
+        addons = addons.filter(addon_categories__category_id=category.id)
 
     addons = amo.utils.paginate(request, addons)
 

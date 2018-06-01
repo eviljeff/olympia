@@ -22,7 +22,7 @@ from rest_framework.test import APIRequestFactory
 from olympia import amo
 from olympia.abuse.models import AbuseReport
 from olympia.addons.models import (
-    Addon, AddonDependency, AddonFeatureCompatibility, AddonUser, Category,
+    Addon, AddonDependency, AddonFeatureCompatibility, AddonUser,
     CompatOverride, CompatOverrideRange, Persona, ReplacementAddon)
 from olympia.addons.utils import generate_addon_guid
 from olympia.addons.views import (
@@ -1014,8 +1014,8 @@ class TestDetailPage(TestCase):
     def test_categories(self):
         links = self.get_more_pq()('#related ul:first').find('a')
         expected = [(unicode(c.name), c.get_url_path())
-                    for c in self.addon.categories.filter(
-                        application=amo.FIREFOX.id)]
+                    for c in self.addon.addon_categories.all()
+                    if c.category.application == amo.FIREFOX.id]
         amo.tests.check_links(expected, links)
 
     def test_static_theme_detail(self):
@@ -2647,18 +2647,16 @@ class TestAddonSearchView(ESTestCase):
         assert data['results'][0]['id'] == tb_addon.pk
 
     def test_filter_by_category(self):
-        static_category = (
+        category = (
             CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]['alerts-updates'])
-        category = Category.from_static_category(static_category, True)
         addon = addon_factory(
             slug='my-addon', name=u'My Addôn', category=category)
 
         self.refresh()
 
         # Create an add-on in a different category.
-        static_category = (
+        other_category = (
             CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]['tabs'])
-        other_category = Category.from_static_category(static_category, True)
         addon_factory(slug='different-addon', category=other_category)
 
         self.refresh()
@@ -2673,9 +2671,7 @@ class TestAddonSearchView(ESTestCase):
 
     def test_filter_by_category_multiple_types(self):
         def get_category(type_, name):
-            static_category = (
-                CATEGORIES[amo.FIREFOX.id][type_][name])
-            return Category.from_static_category(static_category, True)
+            return CATEGORIES[amo.FIREFOX.id][type_][name]
 
         addon_lwt = addon_factory(
             slug='my-addon-lwt', name=u'My Addôn LWT',

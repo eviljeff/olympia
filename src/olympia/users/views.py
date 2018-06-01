@@ -5,7 +5,8 @@ from operator import attrgetter
 from django import http
 from django.conf import settings
 from django.db.transaction import non_atomic_requests
-from django.shortcuts import get_list_or_404, get_object_or_404, redirect
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext
 from django.views.decorators.cache import never_cache
@@ -19,7 +20,7 @@ from olympia.abuse.models import send_abuse_report
 from olympia.access import acl
 from olympia.accounts.views import logout_user
 from olympia.addons.decorators import addon_view_factory
-from olympia.addons.models import Addon, Category
+from olympia.addons.models import Addon
 from olympia.amo import messages
 from olympia.amo.decorators import (
     json_view, login_required, permission_required, write)
@@ -28,6 +29,7 @@ from olympia.amo.urlresolvers import get_url_prefix, reverse
 from olympia.amo.utils import escape_all, render
 from olympia.bandwagon.models import Collection
 from olympia.browse.views import PersonasFilter
+from olympia.constants.categories import CATEGORIES
 from olympia.users import notifications as notifications
 from olympia.users.models import UserNotification
 
@@ -271,11 +273,11 @@ def profile(request, user):
 @user_view
 @non_atomic_requests
 def themes(request, user, category=None):
-    cats = Category.objects.filter(type=amo.ADDON_PERSONA)
+    categories = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()
 
     ctx = {
         'profile': user,
-        'categories': sorted(cats, key=attrgetter('weight', 'name')),
+        'categories': sorted(categories, key=attrgetter('weight', 'name')),
         'search_cat': 'themes'
     }
 
@@ -285,9 +287,11 @@ def themes(request, user, category=None):
             addonuser__user=user, addonuser__listed=True)
 
         if category:
-            qs = cats.filter(slug=category)
-            ctx['category'] = cat = get_list_or_404(qs)[0]
-            base = base.filter(categories__id=cat.id)
+            cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].get(category)
+            if not cat:
+                raise Http404
+            ctx['category'] = cat
+            base = base.filter(addon_categories__category_id=cat.id)
 
     else:
         base = Addon.objects.none()

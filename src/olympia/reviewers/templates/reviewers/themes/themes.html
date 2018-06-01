@@ -33,7 +33,7 @@
       </dd>
       <dt>{{ _('Categories') }}</dt>
       <dd>
-        {% for category in theme.addon.categories.all() %}
+        {% for category in theme.addon.all_categories %}
           <a href="{{ category.get_url_path() }}">{{ category.name }}</a>{{ ', ' if not loop.last }}
         {% endfor %}
       </dd>

@@ -5,9 +5,9 @@ We're big fans of creativity, and it's fun to see how people are dressing up the
 
 Once it gets automatically copied to the live server, you'll be able to view it at {{ theme.addon.get_url_path()|absolutify(base_url) }}
 
-{% if theme.addon.categories.exists() %}
+{% if theme.addon.all_categories %}
   You can also check it out shortly in the Gallery at
-  {% for category in theme.addon.categories.all() %}
+  {% for category in theme.addon.all_categories %}
     {{ category.get_url_path()|absolutify(base_url) }}{% if not loop.last %} and {% endif %}
   {% endfor %}
 {% endif %}

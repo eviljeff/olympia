@@ -63,7 +63,8 @@ class TestESWithoutMakingQueries(TestCase):
             [{'terms': {'type': [1, 2]}}])
 
     def test_and(self):
-        qs = Addon.search().filter(type=1, category__in=[1, 2])
+        qs = Addon.search().filter(
+            type=amo.ADDON_EXTENSION, addon_category__category_id__in=[1, 2])
         filters = qs._build_query()['query']['bool']['filter']
         # Filters:
         # [{'term': {'type': 1}}, {'terms': {'category': [1, 2]}}]
@@ -238,12 +239,13 @@ class TestESWithoutMakingQueries(TestCase):
         assert filtered['filter'] == [{'term': {'status': 1}}]
 
     def test_extra_filter(self):
-        qs = Addon.search().extra(filter={'category__in': [1, 2]})
+        qs = Addon.search().extra(
+            filter={'addon_category__category_id__in': [1, 2]})
         assert qs._build_query()['query']['bool']['filter'] == (
             [{'terms': {'category': [1, 2]}}])
 
         qs = (Addon.search().filter(type=1)
-              .extra(filter={'category__in': [1, 2]}))
+              .extra(filter={'addon_category__category_id__in': [1, 2]}))
         filters = qs._build_query()['query']['bool']['filter']
         # Filters:
         # [{'term': {'type': 1}}, {'terms': {'category': [1, 2]}}]

@@ -8,13 +8,14 @@ from django.views.decorators.vary import vary_on_headers
 import olympia.core.logger
 
 from olympia import amo
-from olympia.addons.models import Addon, Category
+from olympia.addons.models import Addon
 from olympia.amo.decorators import json_view
 from olympia.amo.templatetags.jinja_helpers import locale_url, urlparams
 from olympia.amo.utils import render, sorted_groupby
 from olympia.bandwagon.models import Collection
 from olympia.bandwagon.views import get_filter as get_filter_view
 from olympia.browse.views import personas_listing as personas_listing_view
+from olympia.constants.categories import CATEGORIES, CATEGORIES_BY_ID
 from olympia.versions.compare import dict_from_int, version_dict, version_int
 
 from .forms import ESSearchForm, SecondarySearchForm
@@ -274,14 +275,15 @@ def _build_suggestions(request, cat, suggester):
                         'cls': 'app ' + a.short
                     })
 
-        # Categories.
-        cats = Category.objects
-        cats = cats.filter(Q(application=request.APP.id) |
-                           Q(type=amo.ADDON_SEARCH))
         if cat == 'themes':
-            cats = cats.filter(type=amo.ADDON_PERSONA)
+            cats = CATEGORIES.get(
+                amo.FIREFOX.id, {}).get(amo.ADDON_PERSONA, {}).values()
         else:
-            cats = cats.exclude(type=amo.ADDON_PERSONA)
+            cats = []
+            for type_, type_cats in CATEGORIES[request.APP.id].items():
+                if type_ != amo.ADDON_PERSONA:
+                    cats.extend(type_cats.values())
+            cats.extend(CATEGORIES[amo.FIREFOX.id][amo.ADDON_SEARCH])
 
         for c in cats:
             if not c.name:
@@ -333,9 +335,8 @@ def _filter_search(request, qs, query, filters, sorting,
     else:
         qs = qs.filter(type__in=types)
     if 'cat' in show:
-        cat = (Category.objects.filter(id=query['cat'])
-               .filter(Q(application=APP.id) | Q(type=amo.ADDON_SEARCH)))
-        if not cat.exists():
+        cat = CATEGORIES_BY_ID.get(query['cat'])
+        if cat.type != amo.ADDON_SEARCH or cat.application == APP.id:
             show.remove('cat')
         if 'cat' in show:
             qs = qs.filter(category=query['cat'])
@@ -465,7 +466,7 @@ def category_sidebar(request, form_data, aggregations):
     APP = request.APP
     qatype, qcat = form_data.get('atype'), form_data.get('cat')
     cats = [f['key'] for f in aggregations['categories']]
-    categories = Category.objects.filter(id__in=cats)
+    categories = [cat for id_, cat in CATEGORIES_BY_ID.values() if id_ in cats]
     if qatype in amo.ADDON_TYPES:
         categories = categories.filter(type=qatype)
     # Search categories don't have an application.

@@ -156,10 +156,11 @@ def persona_detail(request, addon):
     persona = addon.persona
 
     # This persona's categories.
-    categories = addon.categories.all()
+    categories = addon.all_categories
     category_personas = None
-    if categories.exists():
-        qs = Addon.objects.public().filter(categories=categories[0])
+    if categories:
+        qs = Addon.objects.public().filter(
+            addon_categories__category_id=categories[0].id)
         category_personas = _category_personas(qs, limit=6)
 
     data = {

@@ -25,7 +25,6 @@ import caching.base as caching
 
 from django_extensions.db.fields.json import JSONField
 from django_statsd.clients import statsd
-from jinja2.filters import do_dictsort
 
 import olympia.core.logger
 
@@ -36,13 +35,13 @@ from olympia.addons.utils import (
 from olympia.amo.decorators import use_master, write
 from olympia.amo.models import (
     BasePreview, ManagerBase, manual_order, ModelBase, OnChangeMixin,
-    SaveUpdateMixin, SlugField)
+    SaveUpdateMixin)
 from olympia.amo.templatetags import jinja_helpers
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import (
     AMOJSONEncoder, attach_trans_dict, cache_ns_key, chunked, find_language,
     send_mail, slugify, sorted_groupby, timer, to_language)
-from olympia.constants.categories import CATEGORIES, CATEGORIES_BY_ID
+from olympia.constants.categories import CATEGORIES_BY_ID
 from olympia.files.models import File
 from olympia.files.utils import extract_translations, resolve_i18n_message
 from olympia.ratings.models import Rating
@@ -341,7 +340,6 @@ class Addon(OnChangeMixin, ModelBase):
 
     authors = models.ManyToManyField('users.UserProfile', through='AddonUser',
                                      related_name='addons')
-    categories = models.ManyToManyField('Category', through='AddonCategory')
     dependencies = models.ManyToManyField('self', symmetrical=False,
                                           through='AddonDependency',
                                           related_name='addons')
@@ -1030,12 +1028,9 @@ class Addon(OnChangeMixin, ModelBase):
         # FIXME: set all_previews to empty list on addons without previews.
 
     @staticmethod
-    def attach_static_categories(addons, addon_dict=None):
-        if addon_dict is None:
-            addon_dict = dict((a.id, a) for a in addons)
-
+    def attach_static_categories(addons, addon_dict):
         qs = AddonCategory.objects.values_list(
-            'addon', 'category').filter(addon__in=addon_dict)
+            'addon', 'category_id').filter(addon__in=addon_dict)
         qs = sorted(qs, key=lambda x: (x[0], x[1]))
         for addon_id, cats_iter in itertools.groupby(qs, key=lambda x: x[0]):
             # The second value of each tuple in cats_iter are the category ids
@@ -1298,8 +1293,7 @@ class Addon(OnChangeMixin, ModelBase):
 
     @cached_property
     def all_categories(self):
-        return filter(
-            None, [cat.to_static_category() for cat in self.categories.all()])
+        return [cat.category for cat in self.addon_categories.all()]
 
     @cached_property
     def current_previews(self):
@@ -1730,16 +1724,25 @@ class MigratedLWT(OnChangeMixin, ModelBase):
 
 
 class AddonCategory(caching.CachingMixin, models.Model):
-    addon = models.ForeignKey(Addon, on_delete=models.CASCADE)
-    category = models.ForeignKey('Category')
-    feature = models.BooleanField(default=False)
-    feature_locales = models.CharField(max_length=255, default='', null=True)
+    addon = models.ForeignKey(
+        Addon, on_delete=models.CASCADE, related_name='addon_categories')
+    category_id = models.SmallIntegerField(choices=CATEGORIES_BY_ID.keys())
 
     objects = caching.CachingManager()
 
     class Meta:
         db_table = 'addons_categories'
-        unique_together = ('addon', 'category')
+        unique_together = ('addon', 'category_id')
+
+    def __init__(self, *args, **kwargs):
+        category = kwargs.pop('category', None)
+        if category:
+            kwargs['category_id'] = category.id
+        super(AddonCategory, self).__init__(*args, **kwargs)
+
+    @property
+    def category(self):
+        return CATEGORIES_BY_ID.get(self.category_id)
 
     @classmethod
     def creatured_random(cls, category, lang):
@@ -1865,77 +1868,6 @@ class DeniedGuid(ModelBase):
 
     def __unicode__(self):
         return self.guid
-
-
-class Category(OnChangeMixin, ModelBase):
-    # Old name translations, we now have constants translated via gettext, but
-    # this is for backwards-compatibility, for categories which have a weird
-    # type/application/slug combo that is not in the constants.
-    db_name = TranslatedField(db_column='name')
-    slug = SlugField(max_length=50,
-                     help_text='Used in Category URLs.')
-    type = models.PositiveIntegerField(db_column='addontype_id',
-                                       choices=do_dictsort(amo.ADDON_TYPE))
-    application = models.PositiveIntegerField(choices=amo.APPS_CHOICES,
-                                              null=True, blank=True,
-                                              db_column='application_id')
-    count = models.IntegerField('Addon count', default=0)
-    weight = models.IntegerField(
-        default=0, help_text='Category weight used in sort ordering')
-    misc = models.BooleanField(default=False)
-
-    addons = models.ManyToManyField(Addon, through='AddonCategory')
-
-    class Meta:
-        db_table = 'categories'
-        verbose_name_plural = 'Categories'
-
-    @property
-    def name(self):
-        try:
-            value = CATEGORIES[self.application][self.type][self.slug].name
-        except KeyError:
-            # If we can't find the category in the constants dict, fall back
-            # to the db field.
-            value = self.db_name
-        return unicode(value)
-
-    def __unicode__(self):
-        return unicode(self.name)
-
-    def get_url_path(self):
-        try:
-            type = amo.ADDON_SLUGS[self.type]
-        except KeyError:
-            type = amo.ADDON_SLUGS[amo.ADDON_EXTENSION]
-        return reverse('browse.%s' % type, args=[self.slug])
-
-    def to_static_category(self):
-        """Return the corresponding StaticCategory instance from a Category."""
-        try:
-            staticcategory = CATEGORIES[self.application][self.type][self.slug]
-        except KeyError:
-            staticcategory = None
-        return staticcategory
-
-    @classmethod
-    def from_static_category(cls, static_category, save=False):
-        """Return a Category instance created from a StaticCategory.
-
-        Does not save it into the database by default. Useful in tests."""
-        # we need to drop description as it's a StaticCategory only property.
-        _dict = dict(static_category.__dict__)
-        del _dict['description']
-        if save:
-            category, _ = Category.objects.get_or_create(
-                id=static_category.id, defaults=_dict)
-            return category
-        else:
-            return cls(**_dict)
-
-
-dbsignals.pre_save.connect(save_signal, sender=Category,
-                           dispatch_uid='category_translations')
 
 
 class Preview(BasePreview, ModelBase):

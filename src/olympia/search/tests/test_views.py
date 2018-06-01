@@ -14,13 +14,14 @@ from pyquery import PyQuery as pq
 
 from olympia import amo
 from olympia.addons.models import (
-    Addon, AddonCategory, AddonUser, Category, Persona)
+    Addon, AddonCategory, AddonUser, Persona)
 from olympia.amo.templatetags.jinja_helpers import (
     format_date, locale_url, numberfmt, urlparams)
 from olympia.amo.tests import (
     ESTestCaseWithAddons, addon_factory, create_switch)
 from olympia.amo.urlresolvers import reverse
 from olympia.bandwagon.tasks import unindex_collections
+from olympia.constants.categories import CATEGORIES
 from olympia.search import views
 from olympia.search.utils import floor_version
 from olympia.search.views import version_sidebar
@@ -443,8 +444,7 @@ class TestESSearch(SearchBase):
         self.check_cat_filters({'cat': 999})
 
     def test_defaults_atype_foreign_cat(self):
-        cat = Category.objects.create(application=amo.THUNDERBIRD.id,
-                                      type=amo.ADDON_EXTENSION)
+        cat = CATEGORIES[amo.THUNDERBIRD.id][amo.ADDON_EXTENSION].values()[0]
         self.check_cat_filters({'atype': amo.ADDON_EXTENSION, 'cat': cat.id})
 
     def test_listed_cat(self):

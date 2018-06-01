@@ -19,7 +19,7 @@ from olympia.abuse.models import AbuseReport
 from olympia.access.models import Group, GroupUser
 from olympia.accounts.views import API_TOKEN_COOKIE
 from olympia.activity.models import ActivityLog
-from olympia.addons.models import Addon, AddonUser, Category
+from olympia.addons.models import Addon, AddonUser
 from olympia.amo.templatetags.jinja_helpers import urlparams
 from olympia.amo.tests import TestCase
 from olympia.amo.urlresolvers import reverse
@@ -871,16 +871,15 @@ class TestThemesProfile(TestCase):
     def test_empty_category(self):
         self.theme = amo.tests.addon_factory(type=amo.ADDON_PERSONA)
         self.theme.addonuser_set.create(user=self.user, listed=True)
-        cat = Category.objects.create(type=amo.ADDON_PERSONA, slug='swag')
+        cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
 
         res = self.client.get(
             self.user.get_themes_url_path(args=[cat.slug]))
         assert res.status_code == 200
 
     def test_themes_category(self):
-        static_category = (
+        category = (
             CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA]['fashion'])
-        category = Category.from_static_category(static_category, True)
 
         self.theme = amo.tests.addon_factory(
             type=amo.ADDON_PERSONA, users=[self.user], category=category)

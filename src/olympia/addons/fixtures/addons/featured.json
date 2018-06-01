@@ -50,26 +50,10 @@
         }
     },
     {
-        "pk": 22,
-        "model": "addons.category",
-        "fields": {
-            "count": 8,
-            "weight": 0,
-            "created": "2007-03-05 13:09:27",
-            "modified": "2010-01-20 02:03:03",
-            "application": 1,
-            "type": 1,
-            "slug": "bookmarks",
-            "db_name": 1
-        }
-    },
-    {
         "pk": 7428,
         "model": "addons.addoncategory",
         "fields": {
-            "category": 22,
-            "feature_locales": null,
-            "feature": 1,
+            "category_id": 22,
             "addon": 1001
         }
     },
@@ -77,9 +61,7 @@
         "pk": 7430,
         "model": "addons.addoncategory",
         "fields": {
-            "category": 22,
-            "feature_locales": null,
-            "feature": 1,
+            "category_id": 22,
             "addon": 3481
         }
     },

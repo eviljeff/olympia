@@ -2,8 +2,6 @@
 """Check all our redirects from remora to zamboni."""
 from django.db import connection
 
-from olympia import amo
-from olympia.addons.models import Category
 from olympia.amo.tests import TestCase
 
 
@@ -135,8 +133,6 @@ class TestRedirects(TestCase):
         self.assert3xx(r, '/en-US/firefox/extensions/',
                        status_code=301)
 
-        Category.objects.create(pk=12, slug='woo', type=amo.ADDON_EXTENSION,
-                                application=amo.FIREFOX.id, count=1, weight=0)
         r = self.client.get('/browse/type:1/cat:12?sort=averagerating',
                             follow=True)
         url, code = r.redirect_chain[-1]

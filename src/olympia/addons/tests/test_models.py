@@ -13,7 +13,6 @@ from django.core import mail
 from django.db import IntegrityError
 from django.utils import translation
 
-import pytest
 from mock import Mock, patch
 
 from olympia import amo, core
@@ -22,7 +21,7 @@ from olympia.activity.models import ActivityLog, AddonLog
 from olympia.addons.models import (
     Addon, AddonApprovalsCounter, AddonCategory, AddonDependency,
     AddonFeatureCompatibility, AddonReviewerFlags, AddonUser, AppSupport,
-    Category, CompatOverride, CompatOverrideRange, DeniedGuid, DeniedSlug,
+    CompatOverride, CompatOverrideRange, DeniedGuid, DeniedSlug,
     FrozenAddon, IncompatibleVersions, MigratedLWT, Persona, Preview,
     track_addon_status_change)
 from olympia.amo.templatetags.jinja_helpers import absolutify, user_media_url
@@ -1070,7 +1069,8 @@ class TestAddonModels(TestCase):
 
         # This add-on is already associated with three Firefox categories
         # using fixtures: Bookmarks, Feeds, Social.
-        FIREFOX_EXT_CATS = CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]
+        FIREFOX_EXT_CATS = (
+            CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION].values())
         expected_firefox_cats = [
             FIREFOX_EXT_CATS['bookmarks'],
             FIREFOX_EXT_CATS['feeds-news-blogging'],
@@ -1082,10 +1082,8 @@ class TestAddonModels(TestCase):
         assert addon.app_categories == {amo.FIREFOX: expected_firefox_cats}
 
         # Let's add a thunderbird category.
-        thunderbird_static_cat = (
+        tb_category = (
             CATEGORIES[amo.THUNDERBIRD.id][amo.ADDON_EXTENSION]['tags'])
-        tb_category = Category.from_static_category(thunderbird_static_cat)
-        tb_category.save()
         AddonCategory.objects.create(addon=addon, category=tb_category)
 
         # Reload the addon to get a fresh, uncached categories list.
@@ -1093,56 +1091,13 @@ class TestAddonModels(TestCase):
 
         # Test that the thunderbird category was added correctly.
         assert set(addon.all_categories) == set(
-            expected_firefox_cats + [thunderbird_static_cat])
+            expected_firefox_cats + [tb_category])
         assert set(addon.app_categories.keys()) == set(
             [amo.FIREFOX, amo.THUNDERBIRD])
         assert set(addon.app_categories[amo.FIREFOX]) == set(
             expected_firefox_cats)
         assert set(addon.app_categories[amo.THUNDERBIRD]) == set(
-            [thunderbird_static_cat])
-
-    def test_app_categories_ignore_unknown_cats(self):
-        def get_addon():
-            return Addon.objects.get(pk=3615)
-
-        # This add-on is already associated with three Firefox categories
-        # using fixtures: Bookmarks, Feeds, Social.
-        FIREFOX_EXT_CATS = CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]
-        expected_firefox_cats = [
-            FIREFOX_EXT_CATS['bookmarks'],
-            FIREFOX_EXT_CATS['feeds-news-blogging'],
-            FIREFOX_EXT_CATS['social-communication']
-        ]
-
-        addon = get_addon()
-        assert set(addon.all_categories) == set(expected_firefox_cats)
-        assert addon.app_categories == {amo.FIREFOX: expected_firefox_cats}
-
-        # Associate this add-on with a couple more categories, including
-        # one that does not exist in the constants.
-        unknown_cat = Category.objects.create(
-            application=amo.SUNBIRD.id, id=123456, type=amo.ADDON_EXTENSION,
-            name='Sunny D')
-        AddonCategory.objects.create(addon=addon, category=unknown_cat)
-        thunderbird_static_cat = (
-            CATEGORIES[amo.THUNDERBIRD.id][amo.ADDON_EXTENSION]['appearance'])
-        tb_category = Category.from_static_category(thunderbird_static_cat)
-        tb_category.save()
-        AddonCategory.objects.create(addon=addon, category=tb_category)
-
-        # Reload the addon to get a fresh, uncached categories list.
-        addon = get_addon()
-
-        # The sunbird category should not be present since it does not match
-        # an existing static category, thunderbird one should have been added.
-        assert set(addon.all_categories) == set(
-            expected_firefox_cats + [thunderbird_static_cat])
-        assert set(addon.app_categories.keys()) == set(
-            [amo.FIREFOX, amo.THUNDERBIRD])
-        assert set(addon.app_categories[amo.FIREFOX]) == set(
-            expected_firefox_cats)
-        assert set(addon.app_categories[amo.THUNDERBIRD]) == set(
-            [thunderbird_static_cat])
+            [tb_category])
 
     def test_review_replies(self):
         """
@@ -1334,8 +1289,8 @@ class TestAddonModels(TestCase):
 
     def test_category_transform(self):
         addon = Addon.objects.get(id=3615)
-        cats = addon.categories.filter(application=amo.FIREFOX.id)
-        names = [c.name for c in cats]
+        cats = addon.addon_categories.all()
+        names = [c.category.name for c in cats]
         assert addon.get_category(amo.FIREFOX.id).name in names
 
     def test_binary_property(self):
@@ -1694,7 +1649,8 @@ class TestAddonDelete(TestCase):
 
         AddonCategory.objects.create(
             addon=addon,
-            category=Category.objects.create(type=amo.ADDON_EXTENSION))
+            category=CATEGORIES[
+                amo.FIREFOX.id][amo.ADDON_EXTENSION].values()[0])
         AddonDependency.objects.create(
             addon=addon, dependent_addon=addon)
         AddonUser.objects.create(
@@ -1921,35 +1877,6 @@ class TestBackupVersion(TestCase):
             self.addon.find_latest_version(None))
 
 
-class TestCategoryModel(TestCase):
-
-    def test_category_url(self):
-        """Every type must have a url path for its categories."""
-        for t in amo.ADDON_TYPE.keys():
-            if t == amo.ADDON_DICT:
-                continue  # Language packs don't have categories.
-            cat = Category(type=t, slug='omg')
-            assert cat.get_url_path()
-
-    @pytest.mark.needs_locales_compilation
-    def test_name_from_constants(self):
-        category = Category(
-            type=amo.ADDON_EXTENSION, application=amo.FIREFOX.id,
-            slug='alerts-updates')
-        assert category.name == u'Alerts & Updates'
-        with translation.override('fr'):
-            assert category.name == u'Alertes et mises à jour'
-
-    def test_name_fallback_to_db(self):
-        category = Category.objects.create(
-            type=amo.ADDON_EXTENSION, application=amo.FIREFOX.id,
-            slug='this-cat-does-not-exist', db_name=u'ALAAAAAAARM')
-
-        assert category.name == u'ALAAAAAAARM'
-        with translation.override('fr'):
-            assert category.name == u'ALAAAAAAARM'
-
-
 class TestPersonaModel(TestCase):
     fixtures = ['addons/persona']
 
@@ -2017,7 +1944,8 @@ class TestPersonaModel(TestCase):
             assert url_.endswith('/fr/themes/update-check/15663')
 
     def test_json_data(self):
-        self.persona.addon.all_categories = [Category(db_name='Yolo Art')]
+        persona_cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
+        self.persona.addon.all_categories = [persona_cat]
 
         VAMO = 'https://vamo/%(locale)s/themes/update-check/%(id)d'
 
@@ -2033,7 +1961,7 @@ class TestPersonaModel(TestCase):
             assert data['name'] == unicode(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
-            assert data['category'] == 'Yolo Art'
+            assert data['category'] == unicode(persona_cat.name)
             assert data['author'] == 'persona_author'
             assert data['description'] == unicode(self.addon.description)
 
@@ -2056,7 +1984,8 @@ class TestPersonaModel(TestCase):
         self.persona.persona_id = 0  # Make this a "new" theme.
         self.persona.save()
 
-        self.persona.addon.all_categories = [Category(db_name='Yolo Art')]
+        persona_cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
+        self.persona.addon.all_categories = [persona_cat]
 
         VAMO = 'https://vamo/%(locale)s/themes/update-check/%(id)d'
 
@@ -2072,7 +2001,7 @@ class TestPersonaModel(TestCase):
             assert data['name'] == unicode(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
-            assert data['category'] == 'Yolo Art'
+            assert data['category'] == unicode(persona_cat.name)
             assert data['author'] == 'persona_author'
             assert data['description'] == unicode(self.addon.description)
 

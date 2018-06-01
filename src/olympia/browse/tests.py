@@ -18,7 +18,7 @@ from waffle.testutils import override_switch
 
 from olympia import amo
 from olympia.addons.models import (
-    Addon, AddonCategory, AppSupport, Category, FrozenAddon, Persona)
+    Addon, AddonCategory, AppSupport, FrozenAddon, Persona)
 from olympia.amo.templatetags.jinja_helpers import (
     absolutify, format_date, numberfmt, urlparams)
 from olympia.amo.tests import TestCase
@@ -30,6 +30,7 @@ from olympia.browse.views import (
     MIN_COUNT_FOR_LANDING, PAGINATE_PERSONAS_BY, AddonFilter, ThemeFilter,
     locale_display_name)
 from olympia.constants.applications import THUNDERBIRD
+from olympia.constants.categories import CATEGORIES_BY_ID
 from olympia.translations.models import Translation
 from olympia.versions.models import Version
 
@@ -197,7 +198,7 @@ class TestListing(TestCase):
                                           's' if adu != 1 else ''))
 
     def test_seeall_link_should_have_a_sort(self):
-        category = Category.objects.get(pk=1)
+        category = CATEGORIES_BY_ID[1]
         url = reverse('browse.extensions', kwargs={'category': category.slug})
         response = self.client.get(url)
         self.assertTemplateUsed(response,
@@ -325,10 +326,10 @@ class TestThemes(TestCase):
         _test_listing_sort(self, 'hotness', 'hotness', sel_class='extra-opt')
 
     def test_category_sidebar(self):
-        c = Category.objects.filter(weight__gte=0).values_list('id', flat=True)
+        category_ids = CATEGORIES_BY_ID.keys()
         doc = pq(self.client.get(self.url).content)
-        for id in c:
-            assert doc('#side-categories #c-%s' % id).length == 1
+        for id_ in category_ids:
+            assert doc('#side-categories #c-%s' % id_).length == 1
 
 
 class TestFeeds(TestCase):
@@ -543,7 +544,7 @@ class TestFeaturedLocale(TestCase):
         category = Category.objects.get(id=22)
         category.update(type=amo.ADDON_PERSONA)
 
-        addon.addoncategory_set.create(category=category, feature=True)
+        addon.addoncategory_set.create(category=category)
         self.reset()
         url = reverse('browse.personas', args=[category.slug])
         res = self.client.get(url)
@@ -862,8 +863,7 @@ class TestSearchToolsFeed(BaseSearchToolsTest):
         foxy.type = amo.ADDON_SEARCH
         foxy.save()
         bookmarks = Category.objects.get(slug='bookmarks')
-        bookmarks.addoncategory_set.add(
-            AddonCategory(addon=foxy, feature=False))
+        bookmarks.addoncategory_set.add(AddonCategory(addon=foxy))
         bookmarks.save()
 
         url = reverse('browse.search-tools.rss',
@@ -921,8 +921,7 @@ class TestLegacyRedirects(TestCase):
         self.redirects('/browse/type:1/cat:72/sort:weeklydownloads/format:rss',
                        '/extensions/alerts-updates/format:rss?sort=popular')
 
-        Category.objects.get(id=72).update(type=amo.ADDON_THEME)
-        self.redirects('/browse/type:2/cat:72/format:rss',
+        self.redirects('/browse/type:2/cat:67/format:rss',
                        '/complete-themes/alerts-updates/format:rss')
 
         self.redirects('/browse/type:2', '/complete-themes/')

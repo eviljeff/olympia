@@ -15,7 +15,7 @@ import olympia.core.logger
 from olympia import amo, activity
 from olympia.addons.indexers import AddonIndexer
 from olympia.addons.models import (
-    Addon, AddonCategory, AppSupport, Category, CompatOverride,
+    Addon, AddonCategory, AppSupport, CompatOverride,
     IncompatibleVersions, MigratedLWT, Persona, Preview, attach_tags,
     attach_translations)
 from olympia.addons.utils import build_static_theme_xpi_from_lwt
@@ -544,13 +544,12 @@ def add_static_theme_from_lwt(lwt):
     # Set category
     static_theme_categories = CATEGORIES.get(amo.FIREFOX.id, []).get(
         amo.ADDON_STATICTHEME, [])
-    lwt_category = (lwt.categories.all() or [None])[0]  # lwt only have 1 cat.
+    lwt_category = (lwt.all_categories or [None])[0]  # lwt only have 1 cat.
     lwt_category_slug = lwt_category.slug if lwt_category else 'other'
     static_category = static_theme_categories.get(
         lwt_category_slug, static_theme_categories.get('other'))
     AddonCategory.objects.create(
-        addon=addon,
-        category=Category.from_static_category(static_category, True))
+        addon=addon, category=static_category)
 
     # Set license
     lwt_license = PERSONA_LICENSES_IDS.get(

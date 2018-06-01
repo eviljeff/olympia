@@ -14,12 +14,13 @@ from PIL import Image
 
 from olympia import amo
 from olympia.addons.forms import EditThemeForm, EditThemeOwnerForm, ThemeForm
-from olympia.addons.models import Addon, Category, Persona
+from olympia.addons.models import Addon, Persona
 from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.tests import TestCase
 from olympia.amo.tests.test_helpers import get_image_path
 from olympia.amo.urlresolvers import reverse
 from olympia.applications.models import AppVersion
+from olympia.constants.categories import CATEGORIES
 from olympia.devhub import forms
 from olympia.files.models import FileUpload
 from olympia.reviewers.models import RereviewQueueTheme
@@ -274,8 +275,7 @@ class TestThemeForm(TestCase):
         self.request.user.is_authenticated.return_value = True
 
     def populate(self):
-        self.cat = Category.objects.create(application=amo.FIREFOX.id,
-                                           type=amo.ADDON_PERSONA, name='xxxx')
+        self.cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
         License.objects.create(id=amo.LICENSE_CC_BY.id)
 
     def get_dict(self, **kw):
@@ -422,8 +422,9 @@ class TestThemeForm(TestCase):
         # Test for correct Addon and Persona values.
         assert unicode(addon.name) == data['name']
         assert addon.slug == data['slug']
-        self.assertSetEqual(set(addon.categories.values_list('id', flat=True)),
-                            {self.cat.id})
+        self.assertSetEqual(
+            set(addon.addon_categories.values_list('category_id', flat=True)),
+            {self.cat.id})
         self.assertSetEqual(set(addon.tags.values_list('tag_text', flat=True)),
                             set(data['tags'].split(', ')))
         assert persona.persona_id == 0
@@ -498,8 +499,7 @@ class TestEditThemeForm(TestCase):
             type=amo.ADDON_PERSONA, status=amo.STATUS_PUBLIC,
             slug='swag-overload', name='Bands Make Me Dance',
             description='tha description')
-        self.cat = Category.objects.create(
-            type=amo.ADDON_PERSONA, name='xxxx')
+        self.cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[0]
         self.instance.addoncategory_set.create(category=self.cat)
         self.license = amo.LICENSE_CC_BY.id
         self.theme = Persona.objects.create(
@@ -534,7 +534,7 @@ class TestEditThemeForm(TestCase):
             assert self.form.initial[k] == eq_data[k]
 
     def save_success(self):
-        other_cat = Category.objects.create(type=amo.ADDON_PERSONA)
+        other_cat = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()[1]
         self.data = {
             'accentcolor': '#EFF0FF',
             'category': other_cat.id,
@@ -564,7 +564,7 @@ class TestEditThemeForm(TestCase):
         self.instance = self.instance.reload()
         assert unicode(self.instance.persona.accentcolor) == (
             self.data['accentcolor'].lstrip('#'))
-        assert self.instance.categories.all()[0].id == self.data['category']
+        assert self.instance.all_categories[0].id == self.data['category']
         assert self.instance.persona.license == self.data['license']
         assert unicode(self.instance.name) == self.data['name_en-us']
         assert unicode(self.instance.description) == (

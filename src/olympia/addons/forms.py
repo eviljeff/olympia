@@ -15,7 +15,7 @@ from olympia import amo
 from olympia.access import acl
 from olympia.activity.models import ActivityLog
 from olympia.addons.models import (
-    Addon, AddonCategory, Category, DeniedSlug, Persona)
+    Addon, AddonCategory, DeniedSlug, Persona)
 from olympia.addons.tasks import save_theme, save_theme_reupload
 from olympia.addons.widgets import CategoriesSelectMultiple, IconWidgetRenderer
 from olympia.addons.utils import verify_mozilla_trademark
@@ -23,7 +23,8 @@ from olympia.amo.fields import (
     ColorField, HttpHttpsOnlyURLField, ReCaptchaField)
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import (
-    remove_icons, slug_validator, slugify, sorted_groupby)
+    remove_icons, slug_validator, slugify)
+from olympia.constants.categories import CATEGORIES, CATEGORIES_BY_ID
 from olympia.devhub import tasks as devhub_tasks
 from olympia.lib import happyforms
 from olympia.tags.models import Tag
@@ -203,8 +204,8 @@ class CategoryForm(forms.Form):
     application = forms.TypedChoiceField(amo.APPS_CHOICES, coerce=int,
                                          widget=forms.HiddenInput,
                                          required=True)
-    categories = forms.ModelMultipleChoiceField(
-        queryset=Category.objects.all(), widget=CategoriesSelectMultiple)
+    categories = forms.MultipleChoiceField(
+        choices=CATEGORIES_BY_ID.keys(), widget=CategoriesSelectMultiple)
 
     def save(self, addon):
         application = self.cleaned_data.get('application')
@@ -260,13 +261,11 @@ class BaseCategoryFormSet(BaseFormSet):
         apps = sorted(self.addon.compatible_apps.keys(), key=lambda x: x.id)
 
         # Drop any apps that don't have appropriate categories.
-        qs = Category.objects.filter(type=self.addon.type)
-        app_cats = {k: list(v) for k, v in sorted_groupby(qs, 'application')}
+        # qs = Category.objects.filter(type=self.addon.type)
+        # app_cats = {k: list(v) for k, v in sorted_groupby(qs, 'application')}
         for app in list(apps):
-            if app and not app_cats.get(app.id):
+            if app and not CATEGORIES.get(app.id, {}).get(self.addon.type):
                 apps.remove(app)
-        if not app_cats:
-            apps = []
 
         for app in apps:
             cats = self.addon.app_categories.get(app, [])
@@ -277,7 +276,9 @@ class BaseCategoryFormSet(BaseFormSet):
             form.request = self.request
             form.initial['application'] = key
             form.app = app
-            cats = sorted(app_cats[key], key=lambda x: x.name)
+            cats = sorted(
+                CATEGORIES.get(key, {}).get(self.addon.type).values(),
+                key=lambda x: x.name)
             form.fields['categories'].choices = [(c.id, c.name) for c in cats]
 
             # If this add-on is featured for this application, category
@@ -430,7 +431,7 @@ class ThemeFormBase(AddonFormBase):
 
     def __init__(self, *args, **kwargs):
         super(ThemeFormBase, self).__init__(*args, **kwargs)
-        cats = Category.objects.filter(type=amo.ADDON_PERSONA, weight__gte=0)
+        cats = CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()
         cats = sorted(cats, key=lambda x: x.name)
         self.fields['category'].choices = [(c.id, c.name) for c in cats]
 
@@ -445,8 +446,8 @@ class ThemeFormBase(AddonFormBase):
 class ThemeForm(ThemeFormBase):
     name = forms.CharField(max_length=50)
     slug = forms.CharField(max_length=30)
-    category = forms.ModelChoiceField(queryset=Category.objects.all(),
-                                      widget=forms.widgets.RadioSelect)
+    category = forms.ChoiceField(choices=CATEGORIES_BY_ID.keys(),
+                                 widget=forms.widgets.RadioSelect)
     description = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}),
                                   max_length=500, required=False)
     tags = forms.CharField(required=False)
@@ -524,8 +525,8 @@ class ThemeForm(ThemeFormBase):
 class EditThemeForm(AddonFormBase):
     name = TransField(max_length=50, label=_('Give Your Theme a Name.'))
     slug = forms.CharField(max_length=30)
-    category = forms.ModelChoiceField(queryset=Category.objects.all(),
-                                      widget=forms.widgets.RadioSelect)
+    category = forms.ChoiceField(choices=CATEGORIES_BY_ID.keys(),
+                                 widget=forms.widgets.RadioSelect)
     description = TransField(
         widget=TransTextarea(attrs={'rows': 4}),
         max_length=500, required=False, label=_('Describe your Theme.'))
@@ -574,13 +575,11 @@ class EditThemeForm(AddonFormBase):
             self.initial['textcolor'] = '#' + persona.textcolor
         self.initial['license'] = persona.license
 
-        cats = sorted(Category.objects.filter(type=amo.ADDON_PERSONA,
-                                              weight__gte=0),
+        cats = sorted(CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values(),
                       key=lambda x: x.name)
         self.fields['category'].choices = [(c.id, c.name) for c in cats]
         try:
-            self.initial['category'] = addon.categories.values_list(
-                'id', flat=True)[0]
+            self.initial['category'] = addon.all_categories[0].id
         except IndexError:
             pass
 

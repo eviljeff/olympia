@@ -82,7 +82,7 @@ def get_creatured_ids(category, lang=None):
                   Q(collections__featuredcollection__locale=''),
                   collections__featuredcollection__isnull=False,
                   collections__featuredcollection__application=app_id,
-                  category=category.id)
+                  addon_category__category_id=category.id)
               .distinct()
               .values_list('id', flat=True))
 

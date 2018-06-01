@@ -27,6 +27,7 @@ from rest_framework.settings import api_settings
 
 from olympia import amo
 from olympia.amo import urlresolvers, utils
+from olympia.constants.categories import CATEGORIES
 from olympia.constants.licenses import PERSONA_LICENSES_IDS
 from olympia.lib.jingo_minify_helpers import (
     _build_html, _get_compiled_css_url, get_css_urls, get_js_urls, get_path,
@@ -127,16 +128,15 @@ def impala_paginator(pager):
 @library.global_function
 def sidebar(app):
     """Populates the sidebar with (categories, types)."""
-    from olympia.addons.models import Category
     if app is None:
         return [], []
 
     # Fetch categories...
-    qs = Category.objects.filter(application=app.id, weight__gte=0,
-                                 type=amo.ADDON_EXTENSION)
+    extensions = (
+        CATEGORIES.get(app.id, {}).get(amo.ADDON_EXTENSION, {}).values())
     # Now sort them in python according to their name property (which looks up
     # the translated name using gettext + our constants)
-    categories = sorted(qs, key=attrgetter('weight', 'name'))
+    categories = sorted(extensions, key=attrgetter('weight', 'name'))
 
     Type = collections.namedtuple('Type', 'id name url')
     base = urlresolvers.reverse('home')
@@ -378,13 +378,14 @@ def side_nav(context, addon_type, category=None):
 
 def _side_nav(context, addon_type, cat):
     # Prevent helpers generating circular imports.
-    from olympia.addons.models import Category, Addon
+    from olympia.addons.models import Addon
     request = context['request']
-    qs = Category.objects.filter(weight__gte=0)
-    if addon_type != amo.ADDON_PERSONA:
-        qs = qs.filter(application=request.APP.id)
+
+    app = request.APP if addon_type != amo.ADDON_PERSONA else amo.FIREFOX
+    categories = CATEGORIES.get(app.id, {}).get(addon_type, {}).values()
+
     sort_key = attrgetter('weight', 'name')
-    categories = sorted(qs.filter(type=addon_type), key=sort_key)
+    categories = sorted(categories, key=sort_key)
     if cat:
         base_url = cat.get_url_path()
     else:
@@ -403,16 +404,17 @@ def site_nav(context):
 
 
 def _site_nav(context):
-    # Prevent helpers from generating circular imports.
-    from olympia.addons.models import Category
     request = context['request']
 
     def sorted_cats(qs):
         return sorted(qs, key=attrgetter('weight', 'name'))
 
-    extensions = Category.objects.filter(
-        application=request.APP.id, weight__gte=0, type=amo.ADDON_EXTENSION)
-    personas = Category.objects.filter(weight__gte=0, type=amo.ADDON_PERSONA)
+    extensions = (
+        CATEGORIES.get(request.APP.id, {}).get(amo.ADDON_EXTENSION, {})
+        .values())
+    personas = (
+        CATEGORIES.get(amo.FIREFOX.id, {}).get(amo.ADDON_PERSONA, {})
+        .values())
 
     ctx = dict(request=request, amo=amo,
                extensions=sorted_cats(extensions),

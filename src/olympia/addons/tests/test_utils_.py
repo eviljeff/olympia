@@ -10,7 +10,6 @@ from django.conf import settings
 from django.forms import ValidationError
 
 from olympia import amo
-from olympia.addons.models import Category
 from olympia.addons.utils import (
     build_static_theme_xpi_from_lwt,
     get_addon_recommendations, get_addon_recommendations_invalid,
@@ -116,11 +115,6 @@ class TestGetCreaturedIds(TestCase):
         assert set(get_creatured_ids(category, None)) == (
             set(self.no_locale))
 
-    def test_by_category_dynamic(self):
-        category = Category.objects.get(pk=self.category_id)
-        assert set(get_creatured_ids(category, None)) == (
-            set(self.no_locale))
-
     def test_by_category_id(self):
         assert set(get_creatured_ids(self.category_id, None)) == (
             set(self.no_locale))
@@ -129,7 +123,7 @@ class TestGetCreaturedIds(TestCase):
         # Add an addon to the same category, but in a featured collection
         # for a different app: it should not be returned.
         extra_addon = addon_factory(
-            category=Category.objects.get(pk=self.category_id))
+            category=CATEGORIES_BY_ID[self.category_id])
         collection = collection_factory()
         collection.add_addon(extra_addon)
         FeaturedCollection.objects.create(
@@ -146,7 +140,7 @@ class TestGetCreaturedIds(TestCase):
         # Add an addon to the same category and locale, but in a featured
         # collection for a different app: it should not be returned.
         extra_addon = addon_factory(
-            category=Category.objects.get(pk=self.category_id))
+            category=CATEGORIES_BY_ID[self.category_id])
         collection = collection_factory()
         collection.add_addon(extra_addon)
         FeaturedCollection.objects.create(

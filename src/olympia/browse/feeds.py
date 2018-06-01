@@ -1,11 +1,13 @@
-from django.shortcuts import get_object_or_404
+from django.http import Http404
+
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from olympia import amo
-from olympia.addons.models import Addon, Category
+from olympia.addons.models import Addon
 from olympia.amo.feeds import NonAtomicFeed
 from olympia.amo.templatetags.jinja_helpers import absolutify, page_name, url
 from olympia.amo.urlresolvers import reverse
+from olympia.constants.categories import CATEGORIES
 
 from .views import SearchToolsFilter, addon_listing
 
@@ -56,8 +58,11 @@ class CategoriesRss(AddonFeedMixin, NonAtomicFeed):
         self.request = request
         if category_name is None:
             return None
-        q = Category.objects.filter(application=request.APP.id, type=self.TYPE)
-        self.category = get_object_or_404(q, slug=category_name)
+        try:
+            self.category = CATEGORIES[
+                request.APP.id][self.TYPE][category_name]
+        except IndexError:
+            raise Http404()
         return self.category
 
     def title(self, category):
@@ -162,11 +167,11 @@ class SearchToolsRss(AddonFeedMixin, NonAtomicFeed):
 
     def get_object(self, request, category=None):
         if category:
-            # Note that we don't need to include extensions
-            # when looking up a category
-            qs = Category.objects.filter(application=request.APP.id,
-                                         type=amo.ADDON_SEARCH)
-            self.category = get_object_or_404(qs, slug=category)
+            try:
+                self.category = CATEGORIES[
+                    request.APP.id][amo.ADDON_SEARCH][category]
+            except IndexError:
+                raise Http404()
         else:
             self.category = None
         self.request = request

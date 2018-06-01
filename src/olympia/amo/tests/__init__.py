@@ -41,7 +41,7 @@ from olympia.amo import search as amo_search
 from olympia.access.models import Group, GroupUser
 from olympia.accounts.utils import fxa_login_url
 from olympia.addons.models import (
-    Addon, AddonCategory, Category, Persona,
+    Addon, AddonCategory, Persona,
     update_search_index as addon_update_search_index)
 from olympia.addons.tasks import version_changed
 from olympia.amo.urlresolvers import get_url_prefix, Prefixer, set_url_prefix
@@ -716,9 +716,8 @@ def addon_factory(
 
     application = version_kw.get('application', amo.FIREFOX.id)
     if not category:
-        static_category = random.choice(
+        category = random.choice(
             CATEGORIES[application][addon.type].values())
-        category = Category.from_static_category(static_category, True)
     AddonCategory.objects.create(addon=addon, category=category)
 
     # Put signals back.

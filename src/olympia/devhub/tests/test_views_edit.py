@@ -13,7 +13,7 @@ from olympia import amo
 from olympia.activity.models import ActivityLog
 from olympia.addons.forms import AddonFormBasic
 from olympia.addons.models import (
-    Addon, AddonCategory, AddonDependency, Category)
+    Addon, AddonCategory, AddonDependency)
 from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.tests import (
     TestCase, addon_factory, formset, initial, req_factory_factory)
@@ -22,7 +22,6 @@ from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import image_size
 from olympia.bandwagon.models import (
     Collection, CollectionAddon, FeaturedCollection)
-from olympia.constants.categories import CATEGORIES_BY_ID
 from olympia.devhub.views import edit_theme
 from olympia.tags.models import AddonTag, Tag
 from olympia.users.models import UserProfile
@@ -42,11 +41,8 @@ class BaseTestEdit(TestCase):
         addon = self.get_addon()
         if self.listed:
             self.make_addon_listed(addon)
-            ac = AddonCategory.objects.filter(addon=addon, category__id=22)[0]
-            ac.feature = False
-            ac.save()
             AddonCategory.objects.filter(addon=addon,
-                                         category__id__in=[1, 71]).delete()
+                                         category_id__in=[1, 71]).delete()
             cache.clear()
 
             self.tags = ['tag3', 'tag2', 'tag1']
@@ -465,7 +461,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
 
         self.client.post(self.basic_edit_url, self.get_dict())
 
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
         assert sorted(addon_cats) == [1, 22]
 
     def test_edit_categories_add_featured(self):
@@ -474,7 +471,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
 
         self.cat_initial['categories'] = [22, 1]
         response = self.client.post(self.basic_edit_url, self.get_dict())
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
 
         assert response.context['cat_form'].errors[0]['categories'] == (
             ['Categories cannot be changed while your add-on is featured for '
@@ -492,7 +490,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
         assert doc('#addon-categories-edit > p').length == 0
         self.cat_initial['categories'] = [22, 1]
         response = self.client.post(self.basic_edit_url, self.get_dict())
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
         assert 'categories' not in response.context['cat_form'].errors[0]
         # This add-on's categories should change.
         assert sorted(addon_cats) == [1, 22]
@@ -520,7 +519,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
         self.cat_initial['categories'] = [22, 71]
         response = self.client.post(self.basic_edit_url, self.get_dict())
         self.addon = self.get_addon()
-        addon_cats = self.addon.categories.values_list('id', flat=True)
+        addon_cats = self.addon.addon_categories.values_list(
+            'category_id', flat=True)
         assert sorted(addon_cats) == [22, 71]
 
         # Make sure the categories list we display to the user in the response
@@ -536,7 +536,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
         self.cat_initial['categories'] = [22, 71]
         response = self.client.post(self.basic_edit_url, self.get_dict())
         self.addon = self.get_addon()
-        addon_cats = self.addon.categories.values_list('id', flat=True)
+        addon_cats = self.addon.addon_categories.values_list(
+            'category_id', flat=True)
         assert sorted(addon_cats) == [22, 71]
 
         # Make sure the categories list we display to the user in the response
@@ -544,22 +545,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
         assert set(response.context['addon'].all_categories) == set(
             self.addon.all_categories)
 
-    def test_edit_categories_xss(self):
-        category = Category.objects.get(id=22)
-        category.db_name = '<script>alert("test");</script>'
-        category.slug = 'xssattempt'
-        category.save()
-
-        self.cat_initial['categories'] = [22, 71]
-        response = self.client.post(
-            self.basic_edit_url, formset(self.cat_initial, initial_count=1))
-
-        assert '<script>alert' not in response.content
-        assert '&lt;script&gt;alert' in response.content
-
     def test_edit_categories_remove(self):
-        category = Category.objects.get(id=1)
-        AddonCategory(addon=self.addon, category=category).save()
+        AddonCategory(addon=self.addon, category_id=1).save()
         assert sorted(
             [cat.id for cat in self.get_addon().all_categories]) == [1, 22]
 
@@ -567,7 +554,8 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
         response = self.client.post(self.basic_edit_url, self.get_dict())
 
         self.addon = self.get_addon()
-        addon_cats = self.addon.categories.values_list('id', flat=True)
+        addon_cats = self.addon.addon_categories.values_list(
+            'category_id', flat=True)
         assert sorted(addon_cats) == [22]
 
         # Make sure the categories list we display to the user in the response
@@ -591,8 +579,7 @@ class TestEditBasicListed(BaseTestEditBasic, TagTestsMixin,
             ['You can have only 2 categories.'])
 
     def test_edit_categories_other_failure(self):
-        Category.objects.get(id=22).update(misc=True)
-        self.cat_initial['categories'] = [22, 1]
+        self.cat_initial['categories'] = [73, 1]
         response = self.client.post(
             self.basic_edit_url, formset(self.cat_initial, initial_count=1))
         assert response.context['cat_form'].errors[0]['categories'] == (
@@ -1474,8 +1461,6 @@ class StaticMixin(object):
         if self.listed:
             AddonCategory.objects.filter(addon=addon).delete()
             cache.clear()
-            Category.from_static_category(CATEGORIES_BY_ID[300], save=True)
-            Category.from_static_category(CATEGORIES_BY_ID[308], save=True)
             VersionPreview.objects.create(version=addon.current_version)
 
 
@@ -1498,12 +1483,12 @@ class TestEditBasicStaticThemeListed(StaticMixin, BaseTestEditBasic,
         assert set(response.context['addon'].all_categories) == set(
             self.get_addon().all_categories)
 
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
         assert sorted(addon_cats) == [308]
 
     def test_edit_categories_change(self):
-        category = Category.objects.get(id=300)
-        AddonCategory(addon=self.addon, category=category).save()
+        AddonCategory(addon=self.addon, category_id=300).save()
         assert sorted(
             [cat.id for cat in self.get_addon().all_categories]) == [300]
 
@@ -1511,8 +1496,6 @@ class TestEditBasicStaticThemeListed(StaticMixin, BaseTestEditBasic,
         category_ids_new = [cat.id for cat in self.get_addon().all_categories]
         # Only ever one category for Static Themes
         assert category_ids_new == [308]
-        # Check we didn't delete the Category object too!
-        assert category.reload()
 
     def test_edit_categories_required(self):
         data = self.get_dict(category='')
@@ -1523,12 +1506,12 @@ class TestEditBasicStaticThemeListed(StaticMixin, BaseTestEditBasic,
 
     def test_edit_categories_add_featured(self):
         """Ensure that categories cannot be changed for featured add-ons."""
-        category = Category.objects.get(id=308)
-        AddonCategory(addon=self.addon, category=category).save()
+        AddonCategory(addon=self.addon, category_id=308).save()
         self._feature_addon(self.addon.id)
 
         response = self.client.post(self.basic_edit_url, self.get_dict())
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
 
         # This add-on's categories should not change.
         assert sorted(addon_cats) == [308]
@@ -1539,8 +1522,7 @@ class TestEditBasicStaticThemeListed(StaticMixin, BaseTestEditBasic,
     def test_edit_categories_add_new_creatured_admin(self):
         """Ensure that admins can change categories for creatured add-ons."""
         assert self.client.login(email='admin@mozilla.com')
-        category = Category.objects.get(id=308)
-        AddonCategory(addon=self.addon, category=category).save()
+        AddonCategory(addon=self.addon, category_id=308).save()
         self._feature_addon(self.addon.id)
 
         response = self.client.get(self.basic_edit_url)
@@ -1548,7 +1530,8 @@ class TestEditBasicStaticThemeListed(StaticMixin, BaseTestEditBasic,
         assert doc('#addon-categories-edit').length == 1
         assert doc('#addon-categories-edit > p').length == 0
         response = self.client.post(self.basic_edit_url, self.get_dict())
-        addon_cats = self.get_addon().categories.values_list('id', flat=True)
+        addon_cats = self.get_addon().addon_categories.values_list(
+            'category_id', flat=True)
         assert 'category' not in response.context['cat_form'].errors
         # This add-on's categories should change.
         assert sorted(addon_cats) == [300]

@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 from olympia import amo
 from olympia.accounts.tests.test_serializers import TestBaseUserSerializer
 from olympia.addons.models import (
-    Addon, AddonCategory, AddonUser, Category, CompatOverride,
+    Addon, AddonCategory, AddonUser, CompatOverride,
     CompatOverrideRange, Persona, Preview, ReplacementAddon)
 from olympia.addons.serializers import (
     AddonDeveloperSerializer, AddonSerializer, AddonSerializerWithUnlistedData,
@@ -99,9 +99,7 @@ class AddonSerializerOutputTestMixin(object):
         assert data['url'] == absolutify(version.get_url_path())
 
     def test_basic(self):
-        cat1 = Category.from_static_category(
-            CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]['bookmarks'])
-        cat1.save()
+        cat1 = CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]['bookmarks']
         license = License.objects.create(
             name={
                 'en-US': u'My License',
@@ -176,13 +174,10 @@ class AddonSerializerOutputTestMixin(object):
         # Reset current_version.compatible_apps now that we've added an app.
         del self.addon.current_version._compatible_apps
 
-        cat2 = Category.from_static_category(
-            CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION]['alerts-updates'])
-        cat2.save()
+        cat2 = CATEGORIES[
+            amo.FIREFOX.id][amo.ADDON_EXTENSION]['alerts-updates']
         AddonCategory.objects.create(addon=self.addon, category=cat2)
-        cat3 = Category.from_static_category(
-            CATEGORIES[amo.THUNDERBIRD.id][amo.ADDON_EXTENSION]['calendar'])
-        cat3.save()
+        cat3 = CATEGORIES[amo.THUNDERBIRD.id][amo.ADDON_EXTENSION]['calendar']
         AddonCategory.objects.create(addon=self.addon, category=cat3)
 
         result = self.serialize()
