@@ -315,7 +315,7 @@ class AddonIndexer(BaseSearchIndexer):
                                      obj.current_version.supported_platforms]
             data['has_theme_rereview'] = None
 
-        data['app'] = [app.id for app in obj.compatible_apps.keys()]
+        data['app'] = [app.id for app in obj.compatible_apps]
         # Boost by the number of users on a logarithmic scale.
         data['boost'] = float(data['average_daily_users'] ** .2)
         # Quadruple the boost if the add-on is public.

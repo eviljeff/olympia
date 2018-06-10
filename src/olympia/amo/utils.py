@@ -13,14 +13,15 @@ import re
 import shutil
 import time
 import unicodedata
-import urllib
-import urlparse
 import string
 import subprocess
 import scandir
+from six import text_type as str
+from six import string_types as basestring
+from six.moves.urllib.parse import (
+    parse_qsl, ParseResult, unquote, urlencode as urllib_urlencode)
 
 import django.core.mail
-
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import (
@@ -85,14 +86,14 @@ def urlparams(url_, hash=None, **query):
 
     # Use dict(parse_qsl) so we don't get lists of values.
     q = url.query
-    query_dict = dict(urlparse.parse_qsl(force_bytes(q))) if q else {}
+    query_dict = dict(parse_qsl(force_bytes(q))) if q else {}
     query_dict.update(
         (k, force_bytes(v) if v is not None else v) for k, v in query.items())
     query_string = urlencode(
-        [(k, urllib.unquote(v)) for k, v in query_dict.items()
+        [(k, unquote(v)) for k, v in query_dict.items()
          if v is not None])
-    new = urlparse.ParseResult(url.scheme, url.netloc, url.path, url.params,
-                               query_string, fragment)
+    new = ParseResult(
+        url.scheme, url.netloc, url.path, url.params, query_string, fragment)
     return new.geturl()
 
 
@@ -191,7 +192,7 @@ def send_mail(subject, message, from_email=None, recipient_list=None,
 
     # Check against user notification settings
     if perm_setting:
-        if isinstance(perm_setting, str):
+        if isinstance(perm_setting, basestring):
             perm_setting = notifications.NOTIFICATIONS_BY_SHORT[perm_setting]
         perms = dict(UserNotification.objects
                                      .filter(user__email__in=recipient_list,
@@ -409,9 +410,9 @@ def chunked(seq, n):
 def urlencode(items):
     """A Unicode-safe URLencoder."""
     try:
-        return urllib.urlencode(items)
+        return urllib_urlencode(items)
     except UnicodeEncodeError:
-        return urllib.urlencode([(k, force_bytes(v)) for k, v in items])
+        return urllib_urlencode([(k, force_bytes(v)) for k, v in items])
 
 
 def randslice(qs, limit, exclude=None):
@@ -666,7 +667,7 @@ class ImageCheck(object):
             return True
 
 
-class MenuItem():
+class MenuItem(object):
     """Refinement item with nestable children for use in menus."""
     url, text, selected, children = ('', '', False, [])
 
@@ -706,7 +707,7 @@ class HttpResponseSendFile(HttpResponse):
         super(HttpResponseSendFile, self).__init__('', status=status,
                                                    content_type=content_type)
         header_path = self.path
-        if isinstance(header_path, unicode):
+        if isinstance(header_path, str):
             header_path = header_path.encode('utf8')
         if settings.XSENDFILE:
             self[settings.XSENDFILE_HEADER] = header_path
@@ -785,7 +786,7 @@ def escape_all(v, linkify_only_full=False):
         for i, lv in enumerate(v):
             v[i] = escape_all(lv, linkify_only_full=linkify_only_full)
     elif isinstance(v, dict):
-        for k, lv in v.iteritems():
+        for k, lv in v.items():
             v[k] = escape_all(lv, linkify_only_full=linkify_only_full)
     elif isinstance(v, Translation):
         v = jinja2.escape(force_text(v))
@@ -871,8 +872,7 @@ def attach_trans_dict(model, objs):
            and LinkifiedTranslations work) and return locale / string tuple."""
         converted_translation = new_class()
         converted_translation.__dict__ = translation.__dict__
-        return (converted_translation.locale.lower(),
-                unicode(converted_translation))
+        return converted_translation.locale.lower(), str(converted_translation)
 
     # Build and attach translations for each field on each object.
     for obj in objs:

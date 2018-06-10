@@ -1,3 +1,4 @@
+from six import text_type as str
 from functools import partial
 
 from django.contrib import messages as django_messages
@@ -51,10 +52,10 @@ def _is_dupe(msg, request):
         return False
 
     try:
-        smsg = unicode(msg)
+        smsg = str(msg)
         is_dupe = False
         for message in storage:
-            if unicode(message) == smsg:
+            if str(message) == smsg:
                 # We can't return from here because we need to tell Django not
                 # to consume the messages.
                 is_dupe = True

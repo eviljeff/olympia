@@ -230,7 +230,7 @@ class TestAvgDailyUserCountTestCase(TestCase):
 
         assert (
             82708 + 78793 + 99586 + 104426 + 105431 + 106065 + 98093 +
-            81710 + 78843 + 99383 + 104431 + 105943) / 12 == 95451
+            81710 + 78843 + 99383 + 104431 + 105943 // 12) == 95451
 
         assert addon.average_daily_users == 95451
 

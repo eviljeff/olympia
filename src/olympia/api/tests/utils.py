@@ -1,3 +1,4 @@
+from six import text_type as str
 from datetime import datetime
 
 from rest_framework.test import APITestCase

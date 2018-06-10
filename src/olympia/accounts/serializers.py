@@ -1,3 +1,4 @@
+from six import text_type as str
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils.translation import ugettext
@@ -25,7 +26,7 @@ log = olympia.core.logger.getLogger('accounts')
 class BaseUserSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = UserProfile
         fields = ('id', 'name', 'url', 'username')
 
@@ -84,7 +85,7 @@ class UserProfileSerializer(PublicUserProfileSerializer):
         read_only_fields = tuple(set(fields) - set(writeable_fields))
 
     def validate_biography(self, value):
-        if has_links(clean_nl(unicode(value))):
+        if has_links(clean_nl(str(value))):
             # There's some links, we don't want them.
             raise serializers.ValidationError(
                 ugettext(u'No links are allowed.'))
@@ -166,7 +167,7 @@ class AccountSuperCreateSerializer(serializers.Serializer):
     username = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
     fxa_id = serializers.CharField(required=False)
-    group = serializers.ChoiceField(choices=group_rules.items(),
+    group = serializers.ChoiceField(choices=list(group_rules.items()),
                                     required=False)
 
     def validate_email(self, email):

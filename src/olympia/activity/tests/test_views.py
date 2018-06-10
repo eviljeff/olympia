@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
-import StringIO
+
+from six import text_type as str
+from io import StringIO
 
 from django.test.utils import override_settings
 
@@ -276,7 +278,7 @@ class TestReviewNotesViewSetCreate(TestCase):
         reply = logs[0]
         rdata = response.data
         assert reply.pk == rdata['id']
-        assert (unicode(reply.details['comments']) == rdata['comments'] ==
+        assert (str(reply.details['comments']) == rdata['comments'] ==
                 u'comménty McCómm€nt')
         assert reply.user == self.user
         assert reply.user.name == rdata['user']['name'] == self.user.name
@@ -301,7 +303,7 @@ class TestReviewNotesViewSetCreate(TestCase):
         reply = logs[0]
         rdata = response.data
         assert reply.pk == rdata['id']
-        assert (unicode(reply.details['comments']) == rdata['comments'] ==
+        assert (str(reply.details['comments']) == rdata['comments'] ==
                 u'comménty McCómm€nt')
         assert reply.user == self.user
         assert reply.user.name == rdata['user']['name'] == self.user.name
@@ -392,7 +394,7 @@ class TestEmailApi(TestCase):
         req.META['REMOTE_ADDR'] = '10.10.10.10'
         req.META['CONTENT_LENGTH'] = len(datastr)
         req.META['CONTENT_TYPE'] = 'application/json'
-        req._stream = StringIO.StringIO(datastr)
+        req._stream = StringIO(datastr)
         return req
 
     def get_validation_request(self, data):

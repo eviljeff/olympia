@@ -1,3 +1,4 @@
+from six.moves import range
 import mock
 
 from rest_framework import generics, serializers, status
@@ -19,7 +20,7 @@ class TestCustomPageNumberPagination(TestCase):
         self.factory = APIRequestFactory()
         self.view = generics.ListAPIView.as_view(
             serializer_class=PassThroughSerializer,
-            queryset=range(1, 101),
+            queryset=list(range(1, 101)),
             pagination_class=CustomPageNumberPagination
         )
 
@@ -30,7 +31,7 @@ class TestCustomPageNumberPagination(TestCase):
         assert response.data == {
             'page_size': 10,
             'page_count': 10,
-            'results': range(11, 21),
+            'results': list(range(11, 21)),
             'previous': 'http://testserver/?page_size=10',
             'next': 'http://testserver/?page=3&page_size=10',
             'count': 100
@@ -43,7 +44,7 @@ class TestCustomPageNumberPagination(TestCase):
         assert response.data == {
             'page_size': 25,
             'page_count': 4,
-            'results': range(1, 26),
+            'results': list(range(1, 26)),
             'previous': None,
             'next': 'http://testserver/?page=2',
             'count': 100
@@ -91,7 +92,7 @@ class TestOneOrZeroPageNumberPagination(TestCase):
         self.factory = APIRequestFactory()
         self.view = generics.ListAPIView.as_view(
             serializer_class=PassThroughSerializer,
-            queryset=range(1, 101),
+            queryset=list(range(1, 101)),
             pagination_class=OneOrZeroPageNumberPagination
         )
 
@@ -102,7 +103,7 @@ class TestOneOrZeroPageNumberPagination(TestCase):
         assert response.data == {
             'page_size': 1,
             'page_count': 1,
-            'results': range(1, 2),
+            'results': list(range(1, 2)),
             'previous': None,
             'next': None,
             'count': 1

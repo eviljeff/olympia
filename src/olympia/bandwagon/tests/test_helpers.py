@@ -1,3 +1,4 @@
+from six import text_type as str
 from mock import Mock, patch
 from pyquery import PyQuery as pq
 
@@ -41,7 +42,7 @@ class TestHelpers(BaseTestCase):
         c2 = Collection(uuid='61780943-e159-4206-8acd-0ae9f63f294c',
                         nickname='my_collection')
         heading = 'My Heading'
-        response = unicode(user_collection_list([c1, c2], heading))
+        response = str(user_collection_list([c1, c2], heading))
 
         # heading
         assert pq(response)('h3').text() == heading
@@ -53,5 +54,5 @@ class TestHelpers(BaseTestCase):
             'Collection nickname link missing.')
 
         # empty collection, empty response
-        response = unicode(user_collection_list([], heading))
+        response = str(user_collection_list([], heading))
         assert not response, 'empty collection should not create a list'

@@ -7,7 +7,7 @@ from olympia.api.serializers import BaseESSerializer
 
 class BasicSerializer(BaseESSerializer):
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ()
 

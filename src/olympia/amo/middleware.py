@@ -6,8 +6,8 @@ Note: didn't make sense to use localeurl since we need to capture app as well
 import contextlib
 import re
 import socket
-import urllib
 import uuid
+from six.moves.urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware
@@ -67,7 +67,7 @@ class LocaleAndAppURLMiddleware(object):
 
         if full_path != request.path:
             query_string = request.META.get('QUERY_STRING', '')
-            full_path = urllib.quote(full_path.encode('utf-8'))
+            full_path = quote(full_path.encode('utf-8'))
 
             if query_string:
                 query_string = query_string.decode('utf-8', 'ignore')

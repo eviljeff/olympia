@@ -1,3 +1,5 @@
+from six import text_type as str
+
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -25,7 +27,7 @@ class AddonFeedMixin(object):
 
     def item_description(self, addon):
         """Description for particular add-on (<item><description>)"""
-        return unicode(addon.description) or ''
+        return str(addon.description) or ''
 
     def item_author_name(self, addon):
         """Author for a particuar add-on (<item><dc:creator>)"""
@@ -121,7 +123,7 @@ class FeaturedRss(AddonFeedMixin, NonAtomicFeed):
     def get_object(self, request):
         self.request = request
         self.app = request.APP
-        self.appname = unicode(request.APP.pretty)
+        self.appname = str(request.APP.pretty)
 
     def title(self):
         """Title for the feed"""

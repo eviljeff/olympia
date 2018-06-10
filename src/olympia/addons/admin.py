@@ -1,4 +1,4 @@
-from urllib import urlencode
+from six.moves.urllib.parse import urlencode
 
 from django import forms
 from django.conf import settings
@@ -16,7 +16,7 @@ from . import models
 
 
 class AddonAdmin(admin.ModelAdmin):
-    class Media:
+    class Media(object):
         css = {
             'all': ('css/admin/l10n.css',)
         }

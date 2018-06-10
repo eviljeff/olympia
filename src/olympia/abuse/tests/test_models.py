@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from django.conf import settings
 from django.core import mail
 
@@ -13,7 +14,7 @@ class TestAbuse(TestCase):
         report = AbuseReport(user_id=999)
         report.send()
         assert (
-            unicode(report) ==
+            str(report) ==
             u'[User] Abuse Report for regularuser التطب')
         assert (
             mail.outbox[0].subject ==
@@ -25,7 +26,7 @@ class TestAbuse(TestCase):
     def test_addon(self):
         report = AbuseReport(addon_id=3615)
         assert (
-            unicode(report) ==
+            str(report) ==
             u'[Extension] Abuse Report for Delicious Bookmarks')
         report.send()
         assert (
@@ -37,7 +38,7 @@ class TestAbuse(TestCase):
         with self.activate(locale='fr'):
             report = AbuseReport(addon_id=3615)
             assert (
-                unicode(report) ==
+                str(report) ==
                 u'[Extension] Abuse Report for Delicious Bookmarks')
             report.send()
         assert (
@@ -48,7 +49,7 @@ class TestAbuse(TestCase):
         report = AbuseReport(guid='foo@bar.org')
         report.send()
         assert (
-            unicode(report) ==
+            str(report) ==
             u'[Addon] Abuse Report for foo@bar.org')
         assert (
             mail.outbox[0].subject ==

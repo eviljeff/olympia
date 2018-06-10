@@ -269,7 +269,7 @@ class TestBuildStaticThemeXpiFromLwt(TestCase):
             manifest = xpi.read('manifest.json')
             manifest_json = json.loads(manifest)
             assert manifest_json['name'] == lwt.slug
-            assert 'description' not in manifest_json.keys()
+            assert 'description' not in manifest_json
             assert manifest_json['theme']['images']['headerURL'] == (
                 u'weta.png')
             assert manifest_json['theme']['colors']['accentcolor'] == (

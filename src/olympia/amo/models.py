@@ -2,6 +2,8 @@ import contextlib
 import os
 import threading
 import time
+from six.moves import map
+from six import text_type as str
 
 from django.conf import settings
 from django.core.files.storage import default_storage as storage
@@ -403,7 +405,7 @@ class UncachedModelBase(SearchMixin, SaveUpdateMixin, models.Model):
 
     objects = UncachedManagerBase()
 
-    class Meta:
+    class Meta(object):
         abstract = True
         get_latest_by = 'created'
 
@@ -464,7 +466,7 @@ class SlugField(models.SlugField):
 class FakeEmail(ModelBase):
     message = models.TextField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'fake_email'
 
 
@@ -482,12 +484,12 @@ class BasePreview(object):
             modified = int(time.mktime(self.modified.timetuple()))
         else:
             modified = 0
-        args = [self.id / 1000, self.id, modified]
+        args = [self.id // 1000, self.id, modified]
         return user_media_url(self.media_folder) + url_template % tuple(args)
 
     def _image_path(self, url_template):
         from olympia.amo.templatetags.jinja_helpers import user_media_path
-        args = [user_media_path(self.media_folder), self.id / 1000, self.id]
+        args = [user_media_path(self.media_folder), self.id // 1000, self.id]
         return url_template % tuple(args)
 
     @property

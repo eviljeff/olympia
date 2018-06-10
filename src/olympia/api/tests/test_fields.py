@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from django.core.exceptions import ValidationError
 
 from mock import Mock
@@ -59,9 +60,9 @@ class TestTranslationSerializerField(TestCase):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
         expected = {
-            'en-US': unicode(Translation.objects.get(id=self.addon.name.id,
+            'en-US': str(Translation.objects.get(id=self.addon.name.id,
                                                      locale='en-US')),
-            'es': unicode(Translation.objects.get(id=self.addon.name.id,
+            'es': str(Translation.objects.get(id=self.addon.name.id,
                                                   locale='es')),
         }
         assert result == expected
@@ -78,13 +79,13 @@ class TestTranslationSerializerField(TestCase):
     def _test_expected_single_string(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.name)
+        expected = str(self.addon.name)
         assert result == expected
 
         field.source = None
         field.bind('description', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.description)
+        expected = str(self.addon.description)
         assert result == expected
 
     def test_to_representation(self):
@@ -142,9 +143,9 @@ class TestTranslationSerializerField(TestCase):
         field = self.field_class(source='mymock.mymocked_field')
         result = field.to_internal_value(field.get_attribute(self.addon))
         expected = {
-            'en-US': unicode(Translation.objects.get(id=self.addon.name.id,
+            'en-US': str(Translation.objects.get(id=self.addon.name.id,
                                                      locale='en-US')),
-            'es': unicode(Translation.objects.get(id=self.addon.name.id,
+            'es': str(Translation.objects.get(id=self.addon.name.id,
                                                   locale='es')),
         }
         assert result == expected
@@ -283,13 +284,13 @@ class TestESTranslationSerializerField(TestTranslationSerializerField):
     def _test_expected_single_string(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.name_translations['en-US'])
+        expected = str(self.addon.name_translations['en-US'])
         assert result == expected
 
         field.source = None
         field.bind('description', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = unicode(self.addon.description_translations['en-US'])
+        expected = str(self.addon.description_translations['en-US'])
         assert result == expected
 
     def test_get_attribute_source(self):

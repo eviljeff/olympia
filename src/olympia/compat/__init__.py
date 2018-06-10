@@ -1,3 +1,4 @@
+from six.moves import range
 import olympia.core.logger
 from olympia import amo
 from olympia.search.utils import floor_version

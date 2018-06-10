@@ -30,7 +30,7 @@ def main():
     ctx['z_cron'] = '%s cron' % ctx['django']
 
     if opts.user:
-        for k, v in ctx.iteritems():
+        for k, v in ctx.items():
             ctx[k] = '%s %s' % (opts.user, v)
 
     # Needs to stay below the opts.user injection.

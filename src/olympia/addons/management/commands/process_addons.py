@@ -98,7 +98,7 @@ class Command(BaseCommand):
         task = tasks.get(options.get('task'))
         if not task:
             raise CommandError('Unknown task provided. Options are: %s'
-                               % ', '.join(tasks.keys()))
+                               % ', '.join(tasks))
         if options.get('with_deleted'):
             addon_manager = Addon.unfiltered
         else:

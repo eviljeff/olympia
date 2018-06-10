@@ -1,3 +1,4 @@
+from six import text_type as str
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from rest_framework import serializers
@@ -20,7 +21,7 @@ class CollectionSerializer(serializers.ModelSerializer):
     author = BaseUserSerializer(default=serializers.CurrentUserDefault())
     public = serializers.BooleanField(source='listed', default=True)
 
-    class Meta:
+    class Meta(object):
         model = Collection
         fields = ('id', 'uuid', 'url', 'addon_count', 'author', 'description',
                   'modified', 'name', 'slug', 'public', 'default_locale')
@@ -44,7 +45,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         # if we have a localised dict of values validate them all.
         if isinstance(value, dict):
             return {locale: self.validate_name(sub_value)
-                    for locale, sub_value in value.iteritems()}
+                    for locale, sub_value in value.items()}
         if value.strip() == u'':
             raise serializers.ValidationError(
                 ugettext(u'Name cannot be empty.'))
@@ -54,7 +55,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         return value
 
     def validate_description(self, value):
-        if has_links(clean_nl(unicode(value))):
+        if has_links(clean_nl(str(value))):
             # There's some links, we don't want them.
             raise serializers.ValidationError(
                 ugettext(u'No links are allowed.'))
@@ -91,7 +92,7 @@ class CollectionAddonSerializer(serializers.ModelSerializer):
     notes = TranslationSerializerField(source='comments', required=False)
     collection = serializers.HiddenField(default=ThisCollectionDefault())
 
-    class Meta:
+    class Meta(object):
         model = CollectionAddon
         fields = ('addon', 'downloads', 'notes', 'collection')
         validators = [

@@ -1,3 +1,5 @@
+from six import text_type as str
+from six.moves import zip
 from operator import attrgetter
 
 from olympia.amo.indexers import BaseSearchIndexer
@@ -65,6 +67,6 @@ class CollectionIndexer(BaseSearchIndexer):
 
         # Finally, add the special sort field, coercing the current translation
         # into an unicode object first.
-        data['name_sort'] = unicode(obj.name).lower()
+        data['name_sort'] = str(obj.name).lower()
 
         return data

@@ -1,10 +1,12 @@
 import json
 import sys
+from six import text_type as str
+from six.moves import zip
+from email.Utils import formatdate
+from six.moves.urllib.parse import parse_qsl
+from time import time
 
 from django.utils.encoding import force_bytes
-from email.Utils import formatdate
-from time import time
-from urlparse import parse_qsl
 
 from services.utils import (
     get_cdn_url, log_configure, mypool, settings, PLATFORM_NAMES_TO_CONSTANTS)
@@ -239,12 +241,12 @@ class Update(object):
         result = self.cursor.fetchone()
 
         if result:
-            row = dict(zip([
+            row = dict(list(zip([
                 'guid', 'type', 'disabled_by_user', 'min', 'max',
                 'file_id', 'file_status', 'hash', 'filename', 'version_id',
                 'datestatuschanged', 'strict_compat', 'releasenotes',
                 'version'],
-                list(result)))
+                list(result))))
             row['type'] = base.ADDON_SLUGS_UPDATE[row['type']]
             row['url'] = get_cdn_url(data['id'], row)
             row['appguid'] = applications.APPS_ALL[data['app_id']].guid

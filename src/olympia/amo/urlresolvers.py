@@ -2,8 +2,8 @@
 import hashlib
 import hmac
 import re
-import urllib
-
+from six import text_type as str
+from six.moves.urllib.parse import quote
 from threading import local
 
 from django.conf import settings
@@ -196,7 +196,7 @@ def get_outgoing_url(url):
     # Let '&=' through so query params aren't escaped.  We probably shouldn't
     # bother to quote the query part at all.
     return '/'.join([settings.REDIRECT_URL.rstrip('/'), sig,
-                     urllib.quote(url, safe='/&=')])
+                     quote(url, safe='/&=')])
 
 
 def linkify_bounce_url_callback(attrs, new=False):
@@ -239,7 +239,7 @@ def linkify_escape(text):
         # Parameters are already escaped.
         return u'<a href="{0}">{0}</a>'.format(match.group(0))
 
-    return URL_RE.sub(linkify, unicode(jinja2.escape(text)))
+    return URL_RE.sub(linkify, str(jinja2.escape(text)))
 
 
 def linkify_with_outgoing(text, nofollow=True, only_full=False):
@@ -248,7 +248,7 @@ def linkify_with_outgoing(text, nofollow=True, only_full=False):
     callbacks.append(linkify_bounce_url_callback)
     if nofollow:
         callbacks.append(bleach.callbacks.nofollow)
-    return bleach.linkify(unicode(text), callbacks=callbacks)
+    return bleach.linkify(str(text), callbacks=callbacks)
 
 
 def lang_from_accept_header(header):

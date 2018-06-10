@@ -120,8 +120,8 @@ def test_pre_setup(request, tmpdir, settings):
     translation.trans_real._translations = {}
     translation.trans_real.activate(settings.LANGUAGE_CODE)
 
-    settings.MEDIA_ROOT = str(tmpdir.mkdir('media'))
-    settings.TMP_PATH = str(tmpdir.mkdir('tmp'))
+    settings.MEDIA_ROOT = tmpdir.mkdir('media').strpath
+    settings.TMP_PATH = tmpdir.mkdir('tmp').strpath
     settings.NETAPP_STORAGE = settings.TMP_PATH
 
     # Reset the prefixer and urlconf after updating media root

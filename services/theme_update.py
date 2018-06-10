@@ -3,6 +3,7 @@ import json
 import os
 import posixpath
 import re
+from six import text_type as str
 from time import time
 from wsgiref.handlers import format_date_time
 
@@ -98,11 +99,11 @@ class ThemeUpdate(object):
         row = self.cursor.fetchone()
 
         def row_to_dict(row):
-            return dict(zip((
+            return dict(list(zip((
                 'persona_id', 'addon_id', 'slug', 'current_version', 'name',
                 'description', 'username', 'header', 'footer', 'accentcolor',
                 'textcolor', 'modified', 'checksum'),
-                list(row)))
+                list(row))))
 
         if row:
             self.data['row'] = row_to_dict(row)

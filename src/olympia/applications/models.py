@@ -11,7 +11,7 @@ class AppVersion(ModelBase):
     version = models.CharField(max_length=255, default='')
     version_int = models.BigIntegerField(editable=False)
 
-    class Meta:
+    class Meta(object):
         db_table = 'appversions'
         ordering = ['-version_int']
         unique_together = ('application', 'version')

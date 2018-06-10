@@ -1,3 +1,5 @@
+from six import text_type as str
+from six import string_types as basestring
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils.encoding import smart_text
@@ -75,11 +77,11 @@ class TranslationSerializerField(fields.Field):
     def fetch_all_translations(self, obj, source, field):
         translations = field.__class__.objects.filter(
             id=field.id, localized_string__isnull=False)
-        return {to_language(trans.locale): unicode(trans)
+        return {to_language(trans.locale): str(trans)
                 for trans in translations} if translations else None
 
     def fetch_single_translation(self, obj, source, field, requested_language):
-        return unicode(field) if field else None
+        return str(field) if field else None
 
     def get_attribute(self, obj):
         source = self.source or self.field_name
@@ -112,7 +114,7 @@ class TranslationSerializerField(fields.Field):
             for key, value in data.items():
                 data[key] = value and value.strip()
             return data
-        return unicode(data)
+        return str(data)
 
     def validate(self, value):
         value_too_short = True

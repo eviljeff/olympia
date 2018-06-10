@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from six import text_type as str
 import os
 import sys
 import shlex

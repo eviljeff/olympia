@@ -96,7 +96,7 @@ if os.environ.get('RUNNING_IN_CI'):
 
     LOG_LEVEL = logging.ERROR
 
-    class MockProductDetails:
+    class MockProductDetails(object):
         """Main information we need in tests.
 
         We don't want to rely on the product_details that are automatically

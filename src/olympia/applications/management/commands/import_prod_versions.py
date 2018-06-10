@@ -1,3 +1,4 @@
+from six.moves import range
 from django.core.management.base import BaseCommand
 
 from pyquery import PyQuery

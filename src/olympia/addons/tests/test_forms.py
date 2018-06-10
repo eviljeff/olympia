@@ -2,6 +2,8 @@
 import os
 import tempfile
 import shutil
+from six import text_type as str
+from six.moves import range
 
 from django.conf import settings
 from django.core.files.storage import default_storage as storage
@@ -268,7 +270,7 @@ class TestIconForm(TestCase):
         self.temp_dir = tempfile.mkdtemp(dir=settings.TMP_PATH)
         self.addon = Addon.objects.get(pk=3615)
 
-        class DummyRequest:
+        class DummyRequest(object):
             FILES = None
         self.request = DummyRequest()
         self.icon_path = os.path.join(settings.TMP_PATH, 'icon')

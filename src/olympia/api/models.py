@@ -1,5 +1,6 @@
 import os
 import random
+from six.moves import zip
 
 from django.db import models
 
@@ -30,13 +31,14 @@ class APIKey(ModelBase):
     # is_active=False when revoking keys).
     is_active = models.NullBooleanField(default=True)
     type = models.PositiveIntegerField(
-        choices=dict(zip(API_KEY_TYPES, API_KEY_TYPES)).items(), default=0)
+        choices=list(dict(zip(API_KEY_TYPES, API_KEY_TYPES)).items()),
+        default=0)
     key = models.CharField(max_length=255, db_index=True, unique=True)
     # TODO: use RSA public keys instead? If we were to use JWT RSA keys
     # then we'd only need to store the public key.
     secret = AESField(aes_key='api_key:secret')
 
-    class Meta:
+    class Meta(object):
         db_table = 'api_key'
         unique_together = (('user', 'is_active'),)
 

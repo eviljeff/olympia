@@ -1,3 +1,5 @@
+from six import text_type as str
+from six import string_types as basestring
 import datetime
 import random
 
@@ -42,7 +44,7 @@ class TestCollections(TestCase):
             description='<a href="http://example.com">example.com</a> '
                         'http://example.com <b>foo</b> some text')
         # All markup escaped, links are stripped.
-        assert unicode(c.description) == '&lt;b&gt;foo&lt;/b&gt; some text'
+        assert str(c.description) == '&lt;b&gt;foo&lt;/b&gt; some text'
 
     def test_icon_url(self):
         # Has no icon.
@@ -69,7 +71,7 @@ class TestCollections(TestCase):
     def test_translation_default(self):
         """Make sure we're getting strings from the default locale."""
         c = Collection.objects.get(pk=512)
-        assert unicode(c.name) == 'yay'
+        assert str(c.name) == 'yay'
 
     def test_listed(self):
         """Make sure the manager's listed() filter works."""

@@ -117,7 +117,7 @@ class TestModelBase(TestCase):
 
     def test_change_is_not_recursive(self):
 
-        class fn:
+        class fn(object):
             called = False
 
         def callback(old_attr=None, new_attr=None, instance=None,

@@ -1,3 +1,4 @@
+from six import text_type as str
 import json
 import os
 import re
@@ -74,7 +75,7 @@ def handler403(request):
 def handler404(request):
     if re.match(settings.DRF_API_REGEX, request.path_info):
         return JsonResponse(
-            {'detail': unicode(NotFound.default_detail)}, status=404)
+            {'detail': str(NotFound.default_detail)}, status=404)
     elif request.path_info.startswith('/api/'):
         # Pass over to handler404 view in api if api was targeted.
         return legacy_api.views.handler404(request)

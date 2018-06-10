@@ -3,9 +3,11 @@ import json as jsonlib
 import os
 import random
 import re
+from six.moves import range
+from six import text_type as str
 
 from operator import attrgetter
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -43,7 +45,7 @@ library.global_function(utils.randslice)
 
 # Mark a lazy marked instance as safe but keep
 # it lazy
-mark_safe_lazy = lazy(mark_safe, unicode)
+mark_safe_lazy = lazy(mark_safe, str)
 
 
 @library.global_function
@@ -164,7 +166,7 @@ class PaginationRenderer(object):
         self.pager = pager
 
         self.max = 10
-        self.span = (self.max - 1) / 2
+        self.span = (self.max - 1) // 2
 
         self.page = pager.number
         self.num_pages = pager.paginator.num_pages
@@ -185,7 +187,7 @@ class PaginationRenderer(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,
@@ -243,15 +245,15 @@ def strip_controls(s):
     Strips control characters from a string.
     """
     # Translation table of control characters.
-    control_trans = dict((n, None) for n in xrange(32) if n not in [10, 13])
-    rv = unicode(s).translate(control_trans)
+    control_trans = dict((n, None) for n in range(32) if n not in [10, 13])
+    rv = str(s).translate(control_trans)
     return jinja2.Markup(rv) if isinstance(s, jinja2.Markup) else rv
 
 
 @library.filter
 def external_url(url):
     """Bounce a URL off outgoing.prod.mozaws.net."""
-    return urlresolvers.get_outgoing_url(unicode(url))
+    return urlresolvers.get_outgoing_url(str(url))
 
 
 @library.filter
@@ -266,7 +268,7 @@ def license_link(license):
     """Link to a code license, including icon where applicable."""
     # If passed in an integer, try to look up the License.
     from olympia.versions.models import License
-    if isinstance(license, (long, int)):
+    if isinstance(license, int):
         if license in PERSONA_LICENSES_IDS:
             # Grab built-in license.
             license = PERSONA_LICENSES_IDS[license]
@@ -548,7 +550,7 @@ def id_to_path(pk):
     12 => 2/12/12
     123456 => 6/56/123456
     """
-    pk = unicode(pk)
+    pk = str(pk)
     path = [pk[-1]]
     if len(pk) >= 2:
         path.append(pk[-2:])

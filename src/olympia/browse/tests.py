@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 
-from urlparse import urlparse
+from six import text_type as str
+from six.moves import range, zip
+from six.moves.urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -247,7 +249,7 @@ class TestLanguageTools(TestCase):
         assert len(ca.dicts) == 1
         assert len(ca.packs) == 3
         this_locale = dict(self.this_locale_addons)
-        assert this_locale.keys() == ['en-US']
+        assert list(this_locale.keys()) == ['en-US']
         assert len(this_locale['en-US'].dicts) == 2
         assert len(this_locale['en-US'].packs) == 0
 
@@ -364,11 +366,11 @@ class TestFeeds(TestCase):
 
         # We have to set `parser=xml` because of
         # https://github.com/gawel/pyquery/issues/93
-        items_urls = zip(
+        items_urls = list(zip(
             sorted((absolutify(pq(x).find('h3 a').attr('href')), pq(x))
                    for x in pg_items),
             sorted((pq(x).find('link').text(), pq(x, parser='xml'))
-                   for x in rss_items))
+                   for x in rss_items)))
         for (pg_url, pg_item), (rss_url, rss_item) in items_urls:
             abs_url = pg_url.split('?')[0]
             assert rss_url.endswith(abs_url), 'Unexpected URL: %s' % abs_url
@@ -389,7 +391,7 @@ class TestFeeds(TestCase):
             slug, title = options
             url = '%s?sort=%s' % (self.url, slug)
             assert item.attr('href') == url
-            assert item.text() == unicode(title)
+            assert item.text() == str(title)
             self._check_feed(url, self.rss_url, slug)
 
     def test_extensions_feed(self):
@@ -761,7 +763,7 @@ class TestSearchToolsPages(BaseSearchToolsTest):
         for prefix, app in (
                 ('/en-US/firefox', amo.FIREFOX.pretty),
                 ('/en-US/seamonkey', amo.SEAMONKEY.pretty)):
-            app = unicode(app)  # get the proxied unicode obj
+            app = str(app)  # get the proxied unicode obj
             response = self.client.get('%s/search-tools/' % prefix)
             assert response.status_code == 200
             doc = pq(response.content)
@@ -1052,7 +1054,7 @@ class TestPersonas(TestCase):
     def create_personas(self, number, persona_extras=None):
         persona_extras = persona_extras or {}
         addon = Addon.objects.get(id=15679)
-        for i in xrange(number):
+        for i in range(number):
             a = Addon(type=amo.ADDON_PERSONA)
             a.name = 'persona-%s' % i
             a.all_categories = []

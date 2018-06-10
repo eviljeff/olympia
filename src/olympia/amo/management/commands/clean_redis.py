@@ -1,5 +1,6 @@
 import socket
 import time
+from six.moves import next, range, zip
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -28,7 +29,7 @@ def cleanup(master, slave):
 
     def keys():
         try:
-            ks = slave.keys()
+            ks = list(slave.keys())
         except RedisError:
             log.error('Cannot fetch keys.')
             raise
@@ -37,7 +38,7 @@ def cleanup(master, slave):
         ks = iter(ks)
         while 1:
             buffer = []
-            for _ in xrange(CHUNK):
+            for _ in range(CHUNK):
                 try:
                     buffer.append(next(ks))
                 except StopIteration:

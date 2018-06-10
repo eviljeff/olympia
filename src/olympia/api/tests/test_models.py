@@ -1,3 +1,5 @@
+from six import text_type as str
+from six.moves import range
 import mock
 
 from django.db import IntegrityError

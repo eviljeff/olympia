@@ -1,3 +1,4 @@
+from __future__ import division
 from math import ceil
 
 from django.conf import settings
@@ -41,7 +42,7 @@ class ESPaginator(Paginator):
                     self.max_result_window,
                     max(1, self.count - self.orphans))
 
-                self._num_pages = int(ceil(hits / float(self.per_page)))
+                self._num_pages = int(ceil(hits / self.per_page))
         return self._num_pages
     num_pages = property(_get_num_pages)
 

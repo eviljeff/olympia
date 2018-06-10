@@ -1,4 +1,6 @@
 import json
+from six.moves import range
+from six import text_type as str
 
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -19,7 +21,7 @@ class AddonAbuseViewSetTestBase(object):
         raise NotImplementedError
 
     def check_report(self, report, text):
-        assert unicode(report) == text
+        assert str(report) == text
         assert report.ip_address == '123.45.67.89'
         assert mail.outbox[0].subject == text
         self.check_reporter(report)
@@ -28,7 +30,7 @@ class AddonAbuseViewSetTestBase(object):
         addon = addon_factory()
         response = self.client.post(
             self.url,
-            data={'addon': unicode(addon.id), 'message': 'abuse!'},
+            data={'addon': str(addon.id), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 201
 
@@ -86,7 +88,7 @@ class AddonAbuseViewSetTestBase(object):
         addon = addon_factory(status=amo.STATUS_NULL)
         response = self.client.post(
             self.url,
-            data={'addon': unicode(addon.id), 'message': 'abuse!'},
+            data={'addon': str(addon.id), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 201
 
@@ -107,7 +109,7 @@ class AddonAbuseViewSetTestBase(object):
         addon = addon_factory()
         response = self.client.post(
             self.url,
-            data={'addon': unicode(addon.id),
+            data={'addon': str(addon.id),
                   'message': ''})
         assert response.status_code == 400
         assert json.loads(response.content) == {
@@ -117,23 +119,23 @@ class AddonAbuseViewSetTestBase(object):
         addon = addon_factory()
         response = self.client.post(
             self.url,
-            data={'addon': unicode(addon.id)})
+            data={'addon': str(addon.id)})
         assert response.status_code == 400
         assert json.loads(response.content) == {
             'detail': 'Abuse reports need a message'}
 
     def test_throttle(self):
         addon = addon_factory()
-        for x in xrange(20):
+        for x in range(20):
             response = self.client.post(
                 self.url,
-                data={'addon': unicode(addon.id), 'message': 'abuse!'},
+                data={'addon': str(addon.id), 'message': 'abuse!'},
                 REMOTE_ADDR='123.45.67.89')
             assert response.status_code == 201, x
 
         response = self.client.post(
             self.url,
-            data={'addon': unicode(addon.id), 'message': 'abuse!'},
+            data={'addon': str(addon.id), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 429
 
@@ -163,7 +165,7 @@ class UserAbuseViewSetTestBase(object):
         raise NotImplementedError
 
     def check_report(self, report, text):
-        assert unicode(report) == text
+        assert str(report) == text
         assert report.ip_address == '123.45.67.89'
         assert mail.outbox[0].subject == text
         self.check_reporter(report)
@@ -172,7 +174,7 @@ class UserAbuseViewSetTestBase(object):
         user = user_factory()
         response = self.client.post(
             self.url,
-            data={'user': unicode(user.id), 'message': 'abuse!'},
+            data={'user': str(user.id), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 201
 
@@ -185,7 +187,7 @@ class UserAbuseViewSetTestBase(object):
         user = user_factory()
         response = self.client.post(
             self.url,
-            data={'user': unicode(user.username), 'message': 'abuse!'},
+            data={'user': str(user.username), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 201
 
@@ -206,7 +208,7 @@ class UserAbuseViewSetTestBase(object):
         user = user_factory()
         response = self.client.post(
             self.url,
-            data={'user': unicode(user.username), 'message': ''})
+            data={'user': str(user.username), 'message': ''})
         assert response.status_code == 400
         assert json.loads(response.content) == {
             'detail': 'Abuse reports need a message'}
@@ -215,23 +217,23 @@ class UserAbuseViewSetTestBase(object):
         user = user_factory()
         response = self.client.post(
             self.url,
-            data={'user': unicode(user.username)})
+            data={'user': str(user.username)})
         assert response.status_code == 400
         assert json.loads(response.content) == {
             'detail': 'Abuse reports need a message'}
 
     def test_throttle(self):
         user = user_factory()
-        for x in xrange(20):
+        for x in range(20):
             response = self.client.post(
                 self.url,
-                data={'user': unicode(user.username), 'message': 'abuse!'},
+                data={'user': str(user.username), 'message': 'abuse!'},
                 REMOTE_ADDR='123.45.67.89')
             assert response.status_code == 201, x
 
         response = self.client.post(
             self.url,
-            data={'user': unicode(user.username), 'message': 'abuse!'},
+            data={'user': str(user.username), 'message': 'abuse!'},
             REMOTE_ADDR='123.45.67.89')
         assert response.status_code == 429
 

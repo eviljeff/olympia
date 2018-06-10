@@ -4,6 +4,8 @@ import time
 import uuid
 
 from datetime import datetime
+from six import text_type as str
+from six.moves import map, range
 
 from django.conf import settings
 from django.core.cache import cache
@@ -88,7 +90,7 @@ class CollectionManager(UncachedManagerBase):
 
 
 class Collection(UncachedModelBase):
-    TYPE_CHOICES = amo.COLLECTION_CHOICES.items()
+    TYPE_CHOICES = list(amo.COLLECTION_CHOICES.items())
 
     # TODO: Use models.UUIDField but it uses max_length=32 hex (no hyphen)
     # uuids so needs some migration.
@@ -146,7 +148,7 @@ class Collection(UncachedModelBase):
 
     def save(self, **kw):
         if not self.uuid:
-            self.uuid = unicode(uuid.uuid4())
+            self.uuid = str(uuid.uuid4())
         if not self.slug:
             self.slug = self.uuid[:30]
         self.clean_slug()
@@ -290,7 +292,7 @@ class Collection(UncachedModelBase):
             (CollectionAddon.objects.filter(collection=self.id, addon=addon)
              .update(ordering=ordering, modified=now))
 
-        for addon, comment in comments.iteritems():
+        for addon, comment in comments.items():
             try:
                 c = (CollectionAddon.objects.using('default')
                      .get(collection=self.id, addon=addon))
@@ -453,7 +455,7 @@ class CollectionUser(models.Model):
     # role is unused & will be dropped in #6496 when collections are simplified
     role = models.SmallIntegerField(default=1)
 
-    class Meta:
+    class Meta(object):
         db_table = 'collections_users'
 
 
@@ -463,7 +465,7 @@ class CollectionVote(models.Model):
     vote = models.SmallIntegerField(default=0)
     created = models.DateTimeField(null=True, auto_now_add=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'collections_votes'
 
     @staticmethod
@@ -488,7 +490,7 @@ class FeaturedCollection(UncachedModelBase):
     collection = models.ForeignKey(Collection)
     locale = models.CharField(max_length=10, null=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'featured_collections'
 
     def __unicode__(self):
@@ -514,5 +516,5 @@ class MonthlyPick(UncachedModelBase):
     locale = models.CharField(max_length=10, unique=True, null=True,
                               blank=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'monthly_pick'

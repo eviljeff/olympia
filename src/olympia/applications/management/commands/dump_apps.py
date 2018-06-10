@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kw):
         apps = {}
-        for id, app in amo.APP_IDS.iteritems():
+        for id, app in amo.APP_IDS.items():
             apps[id] = dict(guid=app.guid, versions=[],
                             name=amo.APPS_ALL[id].short)
         versions = (AppVersion.objects.values_list('application', 'version')

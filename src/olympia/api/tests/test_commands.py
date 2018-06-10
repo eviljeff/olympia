@@ -1,6 +1,6 @@
 import os.path
 
-from StringIO import StringIO
+from io import StringIO
 
 from django.conf import settings
 from django.core.management import call_command

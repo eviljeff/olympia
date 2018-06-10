@@ -1,7 +1,7 @@
 import os
-
 from datetime import datetime
-from urlparse import urlsplit
+from six.moves import map, zip
+from six.moves.urllib.parse import urlsplit
 
 from django import forms
 from django.conf import settings
@@ -56,7 +56,7 @@ def clean_addon_slug(slug, instance):
 
 def clean_tags(request, tags):
     target = [slugify(t, spaces=True, lower=True) for t in tags.split(',')]
-    target = set(filter(None, target))
+    target = set([target_ for target_ in target if target_])
 
     min_len = amo.MIN_TAG_LENGTH
     max_len = Tag._meta.get_field('tag_text').max_length
@@ -111,7 +111,7 @@ class AddonFormBase(TranslationFormMixin, happyforms.ModelForm):
         self.request = kw.pop('request')
         super(AddonFormBase, self).__init__(*args, **kw)
 
-    class Meta:
+    class Meta(object):
         models = Addon
         fields = ('name', 'slug', 'summary', 'tags')
 
@@ -146,7 +146,7 @@ class AddonFormBasic(AddonFormBase):
     is_experimental = forms.BooleanField(required=False)
     requires_payment = forms.BooleanField(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('name', 'slug', 'summary', 'tags', 'is_experimental',
                   'requires_payment', 'contributions')
@@ -194,7 +194,7 @@ class AddonFormBasicUnlisted(AddonFormBase):
     summary = TransField(widget=TransTextarea(attrs={'rows': 4}),
                          max_length=250)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('name', 'slug', 'summary')
 
@@ -241,7 +241,7 @@ class CategoryForm(forms.Form):
                 'You can have only {0} categories.',
                 max_cat).format(max_cat))
 
-        has_misc = filter(lambda x: x.misc, categories)
+        has_misc = [x for x in categories if x.misc]
         if has_misc and total > 1:
             raise forms.ValidationError(ugettext(
                 'The miscellaneous category cannot be combined with '
@@ -257,7 +257,7 @@ class BaseCategoryFormSet(BaseFormSet):
         self.request = kw.pop('request', None)
         super(BaseCategoryFormSet, self).__init__(*args, **kw)
         self.initial = []
-        apps = sorted(self.addon.compatible_apps.keys(), key=lambda x: x.id)
+        apps = sorted(list(self.addon.compatible_apps), key=lambda x: x.id)
 
         # Drop any apps that don't have appropriate categories.
         qs = Category.objects.filter(type=self.addon.type)
@@ -314,7 +314,7 @@ class AddonFormMedia(AddonFormBase):
         renderer=IconWidgetRenderer, choices=[]), required=False)
     icon_upload_hash = forms.CharField(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('icon_upload_hash', 'icon_type')
 
@@ -345,7 +345,7 @@ class AddonFormDetails(AddonFormBase):
     default_locale = forms.TypedChoiceField(choices=LOCALES)
     homepage = TransField.adapt(HttpHttpsOnlyURLField)(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('description', 'default_locale', 'homepage')
 
@@ -357,7 +357,7 @@ class AddonFormDetails(AddonFormBase):
             fields = dict((k, getattr(self.instance, k + '_id'))
                           for k in required)
             locale = self.cleaned_data['default_locale']
-            ids = filter(None, fields.values())
+            ids = [id_ for id_ in fields.values() if id_]
             qs = (Translation.objects.filter(locale=locale, id__in=ids,
                                              localized_string__isnull=False)
                   .values_list('id', flat=True))
@@ -376,7 +376,7 @@ class AddonFormDetails(AddonFormBase):
 class AddonFormDetailsUnlisted(AddonFormBase):
     homepage = TransField.adapt(HttpHttpsOnlyURLField)(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('description', 'homepage')
 
@@ -385,7 +385,7 @@ class AddonFormSupport(AddonFormBase):
     support_url = TransField.adapt(HttpHttpsOnlyURLField)(required=False)
     support_email = TransField.adapt(forms.EmailField)(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('support_email', 'support_url')
 
@@ -399,14 +399,14 @@ class AddonFormSupport(AddonFormBase):
 class AddonFormTechnical(AddonFormBase):
     developer_comments = TransField(widget=TransTextarea, required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('developer_comments', 'view_source', 'external_software',
                   'auto_repackage', 'public_stats')
 
 
 class AddonFormTechnicalUnlisted(AddonFormBase):
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ()
 
@@ -473,7 +473,7 @@ class ThemeForm(ThemeFormBase):
     # show them if there were form errors. It's really clever.
     unsaved_data = forms.CharField(required=False, widget=forms.HiddenInput)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('name', 'slug', 'description', 'tags')
 
@@ -547,7 +547,7 @@ class EditThemeForm(AddonFormBase):
     header = forms.FileField(required=False)
     header_hash = forms.CharField(widget=forms.HiddenInput, required=False)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('name', 'slug', 'description', 'tags')
 
@@ -609,7 +609,7 @@ class EditThemeForm(AddonFormBase):
             'display_username': self.request.user.name
         }
         changed = False
-        for k, v in persona_data.iteritems():
+        for k, v in persona_data.items():
             if v != getattr(persona, k):
                 changed = True
                 setattr(persona, k, v)

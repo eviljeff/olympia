@@ -1,4 +1,5 @@
 import os
+from six.moves import map, zip
 
 from django import forms
 from django.conf import settings
@@ -27,7 +28,7 @@ privacy_choices = (
 
 apps = (('', None),) + tuple((a.id, a.pretty) for a in amo.APP_USAGE)
 collection_types = (
-    (k, v) for k, v in amo.COLLECTION_CHOICES.iteritems()
+    (k, v) for k, v in amo.COLLECTION_CHOICES.items()
     if k not in (amo.COLLECTION_ANONYMOUS, amo.COLLECTION_RECOMMENDED))
 
 
@@ -66,7 +67,7 @@ class AddonsForm(happyforms.Form):
     def clean_addon_comment(self):
         fields = 'addon', 'addon_comment'
         rv = {}
-        for addon, comment in zip(*map(self.data.getlist, fields)):
+        for addon, comment in zip(*list(map(self.data.getlist, fields))):
             try:
                 rv[int(addon)] = comment
             except ValueError:
@@ -243,6 +244,6 @@ class CollectionForm(happyforms.ModelForm):
 
         return collection
 
-    class Meta:
+    class Meta(object):
         model = Collection
         fields = ('name', 'slug', 'description', 'listed')

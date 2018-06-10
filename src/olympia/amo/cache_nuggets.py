@@ -1,3 +1,4 @@
+from six import text_type as str
 import functools
 import hashlib
 import itertools
@@ -72,7 +73,7 @@ def memoize(prefix, time=60):
     return decorator
 
 
-class Message:
+class Message(object):
     """
     A simple class to store an item in memcache, given a key.
     """
@@ -92,7 +93,7 @@ class Message:
         return res
 
 
-class Token:
+class Token(object):
     """
     A simple token stored in the cache.
     """

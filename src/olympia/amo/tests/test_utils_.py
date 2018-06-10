@@ -1,3 +1,4 @@
+from six import text_type as str
 import collections
 import tempfile
 
@@ -41,7 +42,7 @@ class TestAttachTransDict(TestCase):
         # it for __unicode__. We depend on this behaviour later in the test.
         assert '<script>' in addon.description.localized_string
         assert '<script>' not in addon.description.localized_string_clean
-        assert '<script>' not in unicode(addon.description)
+        assert '<script>' not in str(addon.description)
 
         # Attach trans dict.
         attach_trans_dict(Addon, [addon])
@@ -57,16 +58,16 @@ class TestAttachTransDict(TestCase):
 
         # Build expected translations dict.
         expected_translations = {
-            addon.eula_id: [('en-us', unicode(addon.eula))],
+            addon.eula_id: [('en-us', str(addon.eula))],
             addon.description_id: [
-                ('en-us', unicode(addon.description))],
+                ('en-us', str(addon.description))],
             addon.developer_comments_id:
-                [('en-us', unicode(addon.developer_comments))],
-            addon.summary_id: [('en-us', unicode(addon.summary))],
-            addon.homepage_id: [('en-us', unicode(addon.homepage))],
-            addon.name_id: [('en-us', unicode(addon.name))],
-            addon.support_email_id: [('en-us', unicode(addon.support_email))],
-            addon.support_url_id: [('en-us', unicode(addon.support_url))]
+                [('en-us', str(addon.developer_comments))],
+            addon.summary_id: [('en-us', str(addon.summary))],
+            addon.homepage_id: [('en-us', str(addon.homepage))],
+            addon.name_id: [('en-us', str(addon.name))],
+            addon.support_email_id: [('en-us', str(addon.support_email))],
+            addon.support_url_id: [('en-us', str(addon.support_url))]
         }
         assert translations == expected_translations
 

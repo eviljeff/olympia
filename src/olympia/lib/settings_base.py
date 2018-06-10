@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Django settings for addons-server project.
-
 import logging
 import os
 import socket
@@ -1436,12 +1435,12 @@ REDIS_LOCATION = os.environ.get(
 
 
 def get_redis_settings(uri):
-    import urlparse
-    urlparse.uses_netloc.append('redis')
+    from six.moves.urllib.parse import parse_qsl, uses_netloc, urlparse
+    uses_netloc.append('redis')
 
-    result = urlparse.urlparse(uri)
+    result = urlparse(uri)
 
-    options = dict(urlparse.parse_qsl(result.query))
+    options = dict(parse_qsl(result.query))
 
     if 'socket_timeout' in options:
         options['socket_timeout'] = float(options['socket_timeout'])

@@ -1,4 +1,5 @@
 import csv
+from six import text_type as str
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -10,7 +11,7 @@ class Command(BaseCommand):
     help = 'Revoke the API (secret, key) tuples from specified csv file.'
 
     def add_arguments(self, parser):
-        parser.add_argument('csv_file', type=unicode)
+        parser.add_argument('csv_file', type=str)
 
     def handle(self, *args, **options):
         revoked_count = 0

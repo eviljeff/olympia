@@ -4,6 +4,8 @@ import os
 import time
 
 from datetime import datetime, timedelta
+from six import text_type as str
+from six.moves import range
 
 from django import forms
 from django.conf import settings
@@ -1935,7 +1937,7 @@ class TestCategoryModel(TestCase):
 
     def test_category_url(self):
         """Every type must have a url path for its categories."""
-        for t in amo.ADDON_TYPE.keys():
+        for t in amo.ADDON_TYPE:
             if t == amo.ADDON_DICT:
                 continue  # Language packs don't have categories.
             cat = Category(type=t, slug='omg')
@@ -2040,12 +2042,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == str(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == str(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))
@@ -2079,12 +2081,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == str(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == str(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))

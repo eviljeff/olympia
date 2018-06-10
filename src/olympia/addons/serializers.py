@@ -1,4 +1,5 @@
 import re
+from six import text_type as str, string_types as basestring
 
 from django.conf import settings
 
@@ -28,23 +29,24 @@ from .models import (
 
 class AddonFeatureCompatibilitySerializer(serializers.ModelSerializer):
     e10s = ReverseChoiceField(
-        choices=amo.E10S_COMPATIBILITY_CHOICES_API.items())
+        choices=list(amo.E10S_COMPATIBILITY_CHOICES_API.items()))
 
-    class Meta:
+    class Meta(object):
         model = AddonFeatureCompatibility
         fields = ('e10s', )
 
 
 class FileSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
-    platform = ReverseChoiceField(choices=amo.PLATFORM_CHOICES_API.items())
-    status = ReverseChoiceField(choices=amo.STATUS_CHOICES_API.items())
+    platform = ReverseChoiceField(
+        choices=list(amo.PLATFORM_CHOICES_API.items()))
+    status = ReverseChoiceField(choices=list(amo.STATUS_CHOICES_API.items()))
     permissions = serializers.ListField(
         source='webext_permissions_list',
         child=serializers.CharField())
     is_restart_required = serializers.BooleanField()
 
-    class Meta:
+    class Meta(object):
         model = File
         fields = ('id', 'created', 'hash', 'is_restart_required',
                   'is_webextension', 'is_mozilla_signed_extension',
@@ -61,7 +63,7 @@ class PreviewSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         # Note: this serializer can also be used for VersionPreview.
         model = Preview
         fields = ('id', 'caption', 'image_size', 'image_url', 'thumbnail_size',
@@ -93,7 +95,7 @@ class LicenseSerializer(serializers.ModelSerializer):
     text = TranslationSerializerField()
     url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = License
         fields = ('id', 'name', 'text', 'url')
 
@@ -127,15 +129,15 @@ class LicenseSerializer(serializers.ModelSerializer):
             request = self.context.get('request', None)
             if request and request.method == 'GET' and 'lang' in request.GET:
                 # A single lang requested so return a flat string
-                return unicode(license_constant.name)
+                return str(license_constant.name)
             else:
                 # Otherwise mock the dict with the default lang.
                 lang = getattr(request, 'LANG', None) or settings.LANGUAGE_CODE
-                return {lang: unicode(license_constant.name)}
+                return {lang: str(license_constant.name)}
 
 
 class CompactLicenseSerializer(LicenseSerializer):
-    class Meta:
+    class Meta(object):
         model = License
         fields = ('id', 'name', 'url')
 
@@ -143,7 +145,7 @@ class CompactLicenseSerializer(LicenseSerializer):
 class MinimalVersionSerializer(serializers.ModelSerializer):
     files = FileSerializer(source='all_files', many=True)
 
-    class Meta:
+    class Meta(object):
         model = Version
         fields = ('id', 'files', 'reviewed', 'version')
 
@@ -156,7 +158,7 @@ class SimpleVersionSerializer(MinimalVersionSerializer):
     release_notes = TranslationSerializerField(source='releasenotes')
     url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = Version
         fields = ('id', 'compatibility', 'edit_url', 'files',
                   'is_strict_compatibility_enabled', 'license',
@@ -190,7 +192,7 @@ class SimpleVersionSerializer(MinimalVersionSerializer):
 
 
 class SimpleESVersionSerializer(SimpleVersionSerializer):
-    class Meta:
+    class Meta(object):
         model = Version
         # In ES, we don't have license and release notes info, so instead of
         # returning null, which is not necessarily true, we omit those fields
@@ -201,10 +203,10 @@ class SimpleESVersionSerializer(SimpleVersionSerializer):
 
 
 class VersionSerializer(SimpleVersionSerializer):
-    channel = ReverseChoiceField(choices=amo.CHANNEL_CHOICES_API.items())
+    channel = ReverseChoiceField(choices=list(amo.CHANNEL_CHOICES_API.items()))
     license = LicenseSerializer()
 
-    class Meta:
+    class Meta(object):
         model = Version
         fields = ('id', 'channel', 'compatibility', 'edit_url', 'files',
                   'is_strict_compatibility_enabled', 'license',
@@ -215,7 +217,7 @@ class AddonEulaPolicySerializer(serializers.ModelSerializer):
     eula = TranslationSerializerField()
     privacy_policy = TranslationSerializerField()
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = (
             'eula',
@@ -252,16 +254,16 @@ class AddonSerializer(serializers.ModelSerializer):
     ratings = serializers.SerializerMethodField()
     ratings_url = serializers.SerializerMethodField()
     review_url = serializers.SerializerMethodField()
-    status = ReverseChoiceField(choices=amo.STATUS_CHOICES_API.items())
+    status = ReverseChoiceField(choices=list(amo.STATUS_CHOICES_API.items()))
     summary = TranslationSerializerField()
     support_email = TranslationSerializerField()
     support_url = TranslationSerializerField()
     tags = serializers.SerializerMethodField()
     theme_data = serializers.SerializerMethodField()
-    type = ReverseChoiceField(choices=amo.ADDON_TYPE_CHOICES_API.items())
+    type = ReverseChoiceField(choices=list(amo.ADDON_TYPE_CHOICES_API.items()))
     url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = (
             'id',
@@ -340,7 +342,7 @@ class AddonSerializer(serializers.ModelSerializer):
         # slugs for keys and values instead of objects.
         return {
             app.short: [cat.slug for cat in obj.app_categories[app]]
-            for app in obj.app_categories.keys()
+            for app in obj.app_categories
         }
 
     def get_has_eula(self, obj):
@@ -436,7 +438,7 @@ class AddonSerializer(serializers.ModelSerializer):
 class AddonSerializerWithUnlistedData(AddonSerializer):
     latest_unlisted_version = SimpleVersionSerializer()
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = AddonSerializer.Meta.fields + ('latest_unlisted_version',)
 
@@ -659,7 +661,7 @@ class LanguageToolsSerializer(AddonSerializer):
     locale_disambiguation = serializers.CharField()
     current_compatible_version = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('id', 'current_compatible_version', 'default_locale', 'guid',
                   'locale_disambiguation', 'name', 'slug', 'target_locale',
@@ -698,7 +700,7 @@ class ReplacementAddonSerializer(serializers.ModelSerializer):
     COLLECTION_PATH_REGEX = (
         r"""/collections/(?P<user_id>[^/<>"']+)/(?P<coll_slug>[^/]+)/$""")
 
-    class Meta:
+    class Meta(object):
         model = ReplacementAddon
         fields = ('guid', 'replacement')
 
@@ -757,7 +759,7 @@ class CompatOverrideSerializer(serializers.ModelSerializer):
     version_ranges = VersionRangeSerializer(
         source='collapsed_ranges', many=True)
 
-    class Meta:
+    class Meta(object):
         model = CompatOverride
         fields = ('addon_id', 'addon_guid', 'name', 'version_ranges')
 

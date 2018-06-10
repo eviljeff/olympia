@@ -4,7 +4,8 @@ import os
 import posixpath
 import re
 import sys
-import urllib
+from six import text_type as str
+from six.moves.urllib.parse import urlencode
 
 import MySQLdb as mysql
 import sqlalchemy.pool as pool
@@ -51,7 +52,7 @@ def user_media_url(what):
 
 
 PLATFORM_NAMES_TO_CONSTANTS = {
-    platform.api_name: platform.id for platform in PLATFORMS.values()
+    platform.api_name: platform.id for platform in list(PLATFORMS.values())
 }
 
 ADDON_SLUGS_UPDATE = {
@@ -78,7 +79,7 @@ version_re = re.compile(r"""(?P<major>\d+)         # major (x in x.y)
 def get_cdn_url(id, row):
     host = user_media_url('addons')
     url = posixpath.join(host, str(id), row['filename'])
-    params = urllib.urlencode({'filehash': row['hash']})
+    params = urlencode({'filehash': row['hash']})
     return '{0}?{1}'.format(url, params)
 
 

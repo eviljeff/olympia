@@ -1,3 +1,4 @@
+from six import text_type as str
 from django import http
 from django.utils.translation import ugettext
 
@@ -18,10 +19,10 @@ class CollectionFeedMixin(NonAtomicFeed):
         return absolutify(c.get_url_path())
 
     def item_title(self, c):
-        return unicode(c.name or '')
+        return str(c.name or '')
 
     def item_description(self, c):
-        return unicode(c.description or '')
+        return str(c.description or '')
 
     def item_author_name(self, c):
         return c.author_username

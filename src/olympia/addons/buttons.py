@@ -1,3 +1,4 @@
+from six import text_type as str
 from django.template.loader import render_to_string
 from django.utils.translation import (
     pgettext_lazy, ugettext, ugettext_lazy as _)
@@ -176,7 +177,7 @@ class PersonaInstallButton(InstallButton):
     install_class = ['persona']
 
     def links(self):
-        return [Link(ugettext(u'Add to {0}').format(unicode(self.app.pretty)),
+        return [Link(ugettext(u'Add to {0}').format(str(self.app.pretty)),
                      reverse('addons.detail', args=[amo.PERSONAS_ADDON_ID]))]
 
     def attrs(self):

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from importlib import import_module
 
 from django.conf import settings
@@ -40,6 +41,6 @@ def test_cron_command_invalid_job():
 
 
 def test_cron_jobs_setting():
-    for name, path in settings.CRON_JOBS.iteritems():
+    for name, path in settings.CRON_JOBS.items():
         module = import_module(path)
         getattr(module, name)

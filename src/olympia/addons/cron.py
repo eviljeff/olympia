@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 import time
 
@@ -247,7 +248,7 @@ def deliver_hotness():
         for addon in addons:
             this, three = thisweek.get(addon.id, 0), threeweek.get(addon.id, 0)
             if this > 1000 and three > 1:
-                addon.update(hotness=(this - three) / float(three))
+                addon.update(hotness=(this - three) / three)
             else:
                 addon.update(hotness=0)
         # Let the database catch its breath.

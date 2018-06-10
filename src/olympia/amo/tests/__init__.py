@@ -5,11 +5,14 @@ import random
 import shutil
 import time
 import uuid
+
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import partial
+from six import string_types as basestring, text_type as str
+from six.moves import map
+from six.moves.urllib.parse import parse_qs, urlparse, urlsplit, urlunsplit
 from tempfile import NamedTemporaryFile
-from urlparse import parse_qs, urlparse, urlsplit, urlunsplit
 
 from django import forms, test
 from django.conf import settings
@@ -74,7 +77,7 @@ translation.activate('en-us')
 # override_settings() on ES_INDEXES we'd be in trouble.
 ES_INDEX_SUFFIXES = {
     key: timestamp_index('')
-    for key in settings.ES_INDEXES.keys()}
+    for key in list(settings.ES_INDEXES)}
 
 
 def get_es_index_name(key):
@@ -98,8 +101,8 @@ def setup_es_test_data(es):
             list(e.args[1:]))
         raise
 
-    aliases_and_indexes = set(settings.ES_INDEXES.values() +
-                              es.indices.get_alias().keys())
+    aliases_and_indexes = set(list(settings.ES_INDEXES.values()) +
+                              list(es.indices.get_alias()))
 
     for key in aliases_and_indexes:
         if key.startswith('test_'):
@@ -110,7 +113,7 @@ def setup_es_test_data(es):
     # has been prefixed by pytest, we need to add a suffix that is unique
     # to this test run.
     actual_indices = {key: get_es_index_name(key)
-                      for key in settings.ES_INDEXES.keys()}
+                      for key in list(settings.ES_INDEXES)}
 
     # Create new search and stats indexes with the timestamped name.
     # This is crucial to set up the correct mappings before we start
@@ -206,8 +209,8 @@ def check_links(expected, elements, selected=None, verify=True):
 
 def assert_url_equal(url, expected, compare_host=False):
     """Compare url paths and query strings."""
-    parsed = urlparse(unicode(url))
-    parsed_expected = urlparse(unicode(expected))
+    parsed = urlparse(str(url))
+    parsed_expected = urlparse(str(expected))
     compare_url_part(parsed.path, parsed_expected.path)
     compare_url_part(parse_qs(parsed.query), parse_qs(parsed_expected.query))
     if compare_host:
@@ -480,7 +483,7 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
             # There are multiple contexts so iter all of them.
             tpl = response.context
         for ctx in tpl:
-            for k, v in ctx.iteritems():
+            for k, v in ctx.items():
                 if isinstance(v, (forms.BaseForm, forms.formsets.BaseFormSet)):
                     if isinstance(v, forms.formsets.BaseFormSet):
                         # Concatenate errors from each form in the formset.
@@ -545,7 +548,7 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
         assert 'API-Status' in res['Access-Control-Expose-Headers']
         assert 'API-Version' in res['Access-Control-Expose-Headers']
 
-        verbs = map(str.upper, verbs) + ['OPTIONS']
+        verbs = list(map(str.upper, verbs)) + ['OPTIONS']
         actual = res['Access-Control-Allow-Methods'].split(', ')
         self.assertSetEqual(verbs, actual)
         assert res['Access-Control-Allow-Headers'] == (
@@ -663,7 +666,7 @@ def addon_factory(
     default_locale = kw.get('default_locale', settings.LANGUAGE_CODE)
 
     # Keep as much unique data as possible in the uuid: '-' aren't important.
-    name = kw.pop('name', u'Addôn %s' % unicode(uuid.uuid4()).replace('-', ''))
+    name = kw.pop('name', u'Addôn %s' % str(uuid.uuid4()).replace('-', ''))
     slug = kw.pop('slug', None)
     if slug is None:
         slug = name.replace(' ', '-').lower()[:30]
@@ -687,7 +690,7 @@ def addon_factory(
         kwargs['summary'] = u'Summary for %s' % name
     if type_ not in [amo.ADDON_PERSONA, amo.ADDON_SEARCH]:
         # Personas and search engines don't need guids
-        kwargs['guid'] = kw.pop('guid', '{%s}' % unicode(uuid.uuid4()))
+        kwargs['guid'] = kw.pop('guid', '{%s}' % str(uuid.uuid4()))
     kwargs.update(kw)
 
     # Save 1.
@@ -717,7 +720,7 @@ def addon_factory(
     application = version_kw.get('application', amo.FIREFOX.id)
     if not category:
         static_category = random.choice(
-            CATEGORIES[application][addon.type].values())
+            list(CATEGORIES[application][addon.type].values()))
         category = Category.from_static_category(static_category, True)
     AddonCategory.objects.create(addon=addon, category=category)
 

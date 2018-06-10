@@ -1,3 +1,4 @@
+from six.moves import zip
 import mock
 import os
 import pytest

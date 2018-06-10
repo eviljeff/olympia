@@ -14,7 +14,7 @@ class ActivityLogSerializer(serializers.ModelSerializer):
     user = BaseUserSerializer()
     highlight = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = ActivityLog
         fields = ('id', 'action', 'action_label', 'comments', 'user', 'date',
                   'highlight')

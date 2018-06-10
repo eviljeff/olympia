@@ -2,6 +2,8 @@
 import json
 import random
 import re
+from six import text_type as str
+from six.moves import map, range
 
 from django.conf import settings
 from django.core import mail
@@ -76,7 +78,7 @@ def _test_hovercards(self, doc, addons, src=''):
         hc = btn.parents('.addon.hovercard')
         assert hc.find('a').attr('href') == (
             urlparams(addon.get_url_path(), src=src))
-        assert hc.find('h3').text() == unicode(addon.name)
+        assert hc.find('h3').text() == str(addon.name)
 
 
 class TestHomepage(TestCase):
@@ -162,7 +164,7 @@ class TestHomepageFeatures(TestCase):
             '#featured-themes': browse_personas,
             '#featured-collections': browse_collections + '?sort=featured',
         }
-        for id_, url in sections.iteritems():
+        for id_, url in sections.items():
             # Check that the "See All" link points to the correct page.
             assert doc.find('%s .seeall' % id_).attr('href') == url
 
@@ -447,9 +449,9 @@ class TestDetailPage(TestCase):
         For add-ons incompatible with the current app, redirect to one
         that's supported.
         """
-        comp_app = self.addon.compatible_apps.keys()[0]
+        comp_app = list(self.addon.compatible_apps.keys())[0]
         not_comp_app = [a for a in amo.APP_USAGE
-                        if a not in self.addon.compatible_apps.keys()][0]
+                        if a not in self.addon.compatible_apps][0]
 
         # no SeaMonkey version => redirect
         prefixer = amo.urlresolvers.get_url_prefix()
@@ -937,7 +939,7 @@ class TestDetailPage(TestCase):
         cache.clear()
         d = self.get_pq()('.dependencies .hovercard')
         assert d.length == 1
-        assert d.find('h3').text() == unicode(req.name)
+        assert d.find('h3').text() == str(req.name)
         assert d.find('a').attr('href').endswith('?src=dp-dl-dependencies')
         assert d.find('.install-button a').attr('href').endswith(
             '?src=dp-hc-dependencies')
@@ -1013,7 +1015,7 @@ class TestDetailPage(TestCase):
 
     def test_categories(self):
         links = self.get_more_pq()('#related ul:first').find('a')
-        expected = [(unicode(c.name), c.get_url_path())
+        expected = [(str(c.name), c.get_url_path())
                     for c in self.addon.categories.filter(
                         application=amo.FIREFOX.id)]
         amo.tests.check_links(expected, links)
@@ -1152,7 +1154,7 @@ class TestStatus(TestCase):
         assert self.client.get(self.url).status_code == 404
 
     def test_persona(self):
-        for status in Persona.STATUS_CHOICES.keys():
+        for status in Persona.STATUS_CHOICES:
             if status == amo.STATUS_DELETED:
                 continue
             self.persona.status = status
@@ -1162,7 +1164,7 @@ class TestStatus(TestCase):
                 else 404)
 
     def test_persona_disabled(self):
-        for status in Persona.STATUS_CHOICES.keys():
+        for status in Persona.STATUS_CHOICES:
             if status == amo.STATUS_DELETED:
                 continue
             self.persona.status = status
@@ -2226,7 +2228,7 @@ class TestAddonSearchView(ESTestCase):
 
         response = qset.execute()
 
-        source_keys = response.hits.hits[0]['_source'].keys()
+        source_keys = list(response.hits.hits[0]['_source'].keys())
 
         # TODO: 'name', 'description', 'hotness' and 'summary' are in there...
         # for some reason I don't yet understand... (cgrebs 0717)
@@ -2902,7 +2904,7 @@ class TestAddonSearchView(ESTestCase):
         # Exclude addon1 and addon2 by pk.
         data = self.perform_search(
             self.url, {'exclude_addons': u','.join(
-                map(unicode, (addon2.pk, addon1.pk)))})
+                map(str, (addon2.pk, addon1.pk)))})
 
         assert len(data['results']) == 1
         assert data['count'] == 1
@@ -2911,7 +2913,7 @@ class TestAddonSearchView(ESTestCase):
         # Exclude addon1 by pk and addon3 by slug.
         data = self.perform_search(
             self.url, {'exclude_addons': u','.join(
-                (unicode(addon1.pk), addon3.slug))})
+                (str(addon1.pk), addon3.slug))})
 
         assert len(data['results']) == 1
         assert data['count'] == 1

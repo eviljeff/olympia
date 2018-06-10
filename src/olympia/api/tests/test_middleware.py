@@ -1,5 +1,5 @@
 from gzip import GzipFile
-from StringIO import StringIO
+from io import StringIO
 
 from django.conf import settings
 

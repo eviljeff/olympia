@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import string_types as basestring
 from django import test
 from django.test.client import RequestFactory
 

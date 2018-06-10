@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from django.utils.translation import override
 
 from rest_framework.test import APIRequestFactory
@@ -222,7 +223,7 @@ class AddonSerializerOutputTestMixin(object):
         assert result['has_eula'] is False
         assert result['has_privacy_policy'] is False
         assert result['homepage'] == {
-            'en-US': unicode(self.addon.homepage),
+            'en-US': str(self.addon.homepage),
         }
         assert result['icon_url'] == absolutify(self.addon.get_icon_url(64))
         assert result['icons'] == {
@@ -282,7 +283,7 @@ class AddonSerializerOutputTestMixin(object):
         assert result['summary'] == {'en-US': self.addon.summary}
         assert result['support_email'] == {'en-US': self.addon.support_email}
         assert result['support_url'] == {
-            'en-US': unicode(self.addon.support_url),
+            'en-US': str(self.addon.support_url),
         }
         assert 'theme_data' not in result
         assert set(result['tags']) == set(['some_tag', 'some_other_tag'])
@@ -300,12 +301,12 @@ class AddonSerializerOutputTestMixin(object):
         self.request = APIRequestFactory().get('/', {'wrap_outgoing_links': 1})
         result = self.serialize()
         assert result['contributions_url'] == (
-            get_outgoing_url(unicode(self.addon.contributions)))
+            get_outgoing_url(str(self.addon.contributions)))
         assert result['homepage'] == {
-            'en-US': get_outgoing_url(unicode(self.addon.homepage)),
+            'en-US': get_outgoing_url(str(self.addon.homepage)),
         }
         assert result['support_url'] == {
-            'en-US': get_outgoing_url(unicode(self.addon.support_url)),
+            'en-US': get_outgoing_url(str(self.addon.support_url)),
         }
 
         # Try a single translation.
@@ -313,12 +314,12 @@ class AddonSerializerOutputTestMixin(object):
             'lang': 'en-US', 'wrap_outgoing_links': 1})
         result = self.serialize()
         assert result['contributions_url'] == (
-            get_outgoing_url(unicode(self.addon.contributions)))
+            get_outgoing_url(str(self.addon.contributions)))
         assert result['homepage'] == (
-            get_outgoing_url(unicode(self.addon.homepage))
+            get_outgoing_url(str(self.addon.homepage))
         )
         assert result['support_url'] == (
-            get_outgoing_url(unicode(self.addon.support_url))
+            get_outgoing_url(str(self.addon.support_url))
         )
 
         # Try with empty strings/None. Annoyingly, contribution model field
@@ -863,7 +864,7 @@ class TestVersionSerializerOutput(TestCase):
         # A request with no ?lang gets you the site default l10n in a dict to
         # match how non-constant values are returned.
         assert result['name'] == {
-            'en-US': unicode(LICENSES_BY_BUILTIN[18].name)}
+            'en-US': str(LICENSES_BY_BUILTIN[18].name)}
 
         accept_request = APIRequestFactory().get('/')
         accept_request.LANG = 'de'
@@ -871,13 +872,13 @@ class TestVersionSerializerOutput(TestCase):
             context={'request': accept_request}).to_representation(license)
         # An Accept-Language should result in a different default though.
         assert result['name'] == {
-            'de': unicode(LICENSES_BY_BUILTIN[18].name)}
+            'de': str(LICENSES_BY_BUILTIN[18].name)}
 
         # But a requested lang returns a flat string
         lang_request = APIRequestFactory().get('/?lang=fr')
         result = LicenseSerializer(
             context={'request': lang_request}).to_representation(license)
-        assert result['name'] == unicode(LICENSES_BY_BUILTIN[18].name)
+        assert result['name'] == str(LICENSES_BY_BUILTIN[18].name)
 
     def test_file_webext_permissions(self):
         self.version = addon_factory().current_version
@@ -1030,7 +1031,7 @@ class TestESAddonAutoCompleteSerializer(ESTestCase):
         result = self.serialize()
         assert set(result.keys()) == set(['id', 'name', 'icon_url', u'url'])
         assert result['id'] == self.addon.pk
-        assert result['name'] == {'en-US': unicode(self.addon.name)}
+        assert result['name'] == {'en-US': str(self.addon.name)}
         assert result['icon_url'] == absolutify(self.addon.get_icon_url(64))
         assert result['url'] == absolutify(self.addon.get_url_path())
 

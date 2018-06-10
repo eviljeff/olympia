@@ -19,7 +19,7 @@ class Group(ModelBase):
                                    related_name='groups')
     notes = models.TextField(blank=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'groups'
 
     def __unicode__(self):
@@ -31,7 +31,7 @@ class GroupUser(models.Model):
     group = models.ForeignKey(Group)
     user = models.ForeignKey('users.UserProfile')
 
-    class Meta:
+    class Meta(object):
         db_table = u'groups_users'
 
     def invalidate_groups_list(self):

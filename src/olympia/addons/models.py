@@ -6,11 +6,13 @@ import os
 import posixpath
 import re
 import time
-import urlparse
 import uuid
 
 from datetime import datetime
 from operator import attrgetter
+from six import string_types as basestring, text_type as str
+from six.moves import map, range
+from six.moves.urllib.parse import parse
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -280,10 +282,11 @@ class Addon(OnChangeMixin, ModelBase):
                                       db_column='defaultlocale')
 
     type = models.PositiveIntegerField(
-        choices=amo.ADDON_TYPE.items(), db_column='addontype_id',
+        choices=list(amo.ADDON_TYPE.items()), db_column='addontype_id',
         default=amo.ADDON_EXTENSION)
     status = models.PositiveIntegerField(
-        choices=STATUS_CHOICES.items(), db_index=True, default=amo.STATUS_NULL)
+        choices=list(STATUS_CHOICES.items()),
+        db_index=True, default=amo.STATUS_NULL)
     icon_type = models.CharField(max_length=25, blank=True,
                                  db_column='icontype')
     icon_hash = models.CharField(max_length=8, blank=True, null=True)
@@ -371,7 +374,7 @@ class Addon(OnChangeMixin, ModelBase):
     unfiltered = AddonManager(include_deleted=True)
     objects = AddonManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'addons'
         index_together = [
             ['weekly_downloads', 'type'],
@@ -506,7 +509,7 @@ class Addon(OnChangeMixin, ModelBase):
             self._ratings.all().delete()
             # The last parameter is needed to automagically create an AddonLog.
             activity.log_create(amo.LOG.DELETE_ADDON, self.pk,
-                                unicode(self.guid), self)
+                                str(self.guid), self)
             self.update(status=amo.STATUS_DELETED, slug=None,
                         _current_version=None, modified=datetime.now())
             models.signals.post_delete.send(sender=Addon, instance=self)
@@ -793,7 +796,7 @@ class Addon(OnChangeMixin, ModelBase):
         # as File's) when deleting a version. If so, we should avoid putting
         # that version-being-deleted in any fields.
         if ignore is not None:
-            updated = {k: v for k, v in updated.iteritems() if v != ignore}
+            updated = {k: v for k, v in updated.items() if v != ignore}
 
         if updated:
             diff = [self._current_version, new_current_version]
@@ -873,7 +876,7 @@ class Addon(OnChangeMixin, ModelBase):
 
     def get_icon_dir(self):
         return os.path.join(jinja_helpers.user_media_path('addon_icons'),
-                            '%s' % (self.id / 1000))
+                            '%s' % self.id // 1000)
 
     def get_icon_url(self, size, use_default=True):
         """
@@ -986,7 +989,8 @@ class Addon(OnChangeMixin, ModelBase):
         if addon_dict is None:
             addon_dict = dict((a.id, a) for a in addons)
 
-        all_ids = set(filter(None, (a._current_version_id for a in addons)))
+        all_ids = set([
+            id_ for id_ in (a._current_version_id for a in addons) if id_])
         versions = list(Version.objects.filter(id__in=all_ids).order_by())
         for version in versions:
             try:
@@ -1035,7 +1039,7 @@ class Addon(OnChangeMixin, ModelBase):
 
         qs = (
             AddonCategory.objects
-            .filter(addon__in=addon_dict.values())
+            .filter(addon__in=list(addon_dict.values()))
             .values_list('addon_id', 'category_id'))
 
         for addon_id, cats_iter in itertools.groupby(qs, key=lambda x: x[0]):
@@ -1300,8 +1304,10 @@ class Addon(OnChangeMixin, ModelBase):
 
     @cached_property
     def all_categories(self):
-        return filter(
-            None, [cat.to_static_category() for cat in self.categories.all()])
+        return [
+            scat for scat in [cat.to_static_category()
+                              for cat in self.categories.all()]
+            if scat]
 
     @cached_property
     def current_previews(self):
@@ -1346,7 +1352,7 @@ class Addon(OnChangeMixin, ModelBase):
             files = (self.current_version.files
                          .filter(platform=amo.PLATFORM_ANDROID.id))
             try:
-                return unicode(files[0].get_localepicker(), 'utf-8')
+                return str(files[0].get_localepicker(), 'utf-8')
             except IndexError:
                 pass
         return ''
@@ -1559,11 +1565,11 @@ class Persona(caching.CachingMixin, models.Model):
 
     objects = caching.CachingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'personas'
 
     def __unicode__(self):
-        return unicode(self.addon.name)
+        return str(self.addon.name)
 
     def is_new(self):
         return self.persona_id == 0
@@ -1671,15 +1677,15 @@ class Persona(caching.CachingMixin, models.Model):
 
         addon = self.addon
         return {
-            'id': unicode(self.addon.id),  # Personas dislikes ints
-            'name': unicode(addon.name),
+            'id': str(self.addon.id),  # Personas dislikes ints
+            'name': str(addon.name),
             'accentcolor': hexcolor(self.accentcolor),
             'textcolor': hexcolor(self.textcolor),
-            'category': (unicode(addon.all_categories[0].name) if
+            'category': (str(addon.all_categories[0].name) if
                          addon.all_categories else ''),
             # TODO: Change this to be `addons_users.user.display_name`.
             'author': self.display_username,
-            'description': (unicode(addon.description)
+            'description': (str(addon.description)
                             if addon.description is not None
                             else addon.description),
             'header': self.header_url,
@@ -1723,7 +1729,7 @@ class MigratedLWT(OnChangeMixin, ModelBase):
     static_theme = models.ForeignKey(
         Addon, unique=True, related_name='migrated_from_lwt')
 
-    class Meta:
+    class Meta(object):
         db_table = 'migrated_personas'
 
     def __init__(self, *args, **kw):
@@ -1739,7 +1745,7 @@ class AddonCategory(caching.CachingMixin, models.Model):
 
     objects = caching.CachingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'addons_categories'
         unique_together = ('addon', 'category')
 
@@ -1764,7 +1770,7 @@ class AddonUser(caching.CachingMixin, OnChangeMixin, SaveUpdateMixin,
         self._original_role = self.role
         self._original_user_id = self.user_id
 
-    class Meta:
+    class Meta(object):
         db_table = 'addons_users'
 
 
@@ -1780,7 +1786,7 @@ class AddonDependency(models.Model):
     addon = models.ForeignKey(Addon, related_name='addons_dependencies')
     dependent_addon = models.ForeignKey(Addon, related_name='dependent_on')
 
-    class Meta:
+    class Meta(object):
         db_table = 'addons_dependencies'
         unique_together = ('addon', 'dependent_addon')
 
@@ -1792,7 +1798,7 @@ class AddonFeatureCompatibility(ModelBase):
         choices=amo.E10S_COMPATIBILITY_CHOICES, default=amo.E10S_UNKNOWN)
 
     def __unicode__(self):
-        return unicode(self.addon) if self.pk else u""
+        return str(self.addon) if self.pk else u""
 
     def get_e10s_classname(self):
         return amo.E10S_COMPATIBILITY_CHOICES_API[self.e10s]
@@ -1816,7 +1822,7 @@ class AddonApprovalsCounter(ModelBase):
     last_content_review = models.DateTimeField(null=True)
 
     def __unicode__(self):
-        return u'%s: %d' % (unicode(self.pk), self.counter) if self.pk else u''
+        return u'%s: %d' % (str(self.pk), self.counter) if self.pk else u''
 
     @classmethod
     def increment_for_addon(cls, addon):
@@ -1862,7 +1868,7 @@ class DeniedGuid(ModelBase):
     guid = models.CharField(max_length=255, unique=True)
     comments = models.TextField(default='', blank=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'denied_guids'
 
     def __unicode__(self):
@@ -1888,7 +1894,7 @@ class Category(OnChangeMixin, ModelBase):
 
     addons = models.ManyToManyField(Addon, through='AddonCategory')
 
-    class Meta:
+    class Meta(object):
         db_table = 'categories'
         verbose_name_plural = 'Categories'
 
@@ -1900,10 +1906,10 @@ class Category(OnChangeMixin, ModelBase):
             # If we can't find the category in the constants dict, fall back
             # to the db field.
             value = self.db_name
-        return unicode(value)
+        return str(value)
 
     def __unicode__(self):
-        return unicode(self.name)
+        return str(self.name)
 
     def get_url_path(self):
         try:
@@ -1946,7 +1952,7 @@ class Preview(BasePreview, ModelBase):
     position = models.IntegerField(default=0)
     sizes = JSONField(default={})
 
-    class Meta:
+    class Meta(object):
         db_table = 'previews'
         ordering = ('position', 'created')
 
@@ -1968,7 +1974,7 @@ class AppSupport(ModelBase):
     min = models.BigIntegerField("Minimum app version", null=True)
     max = models.BigIntegerField("Maximum app version", null=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'appsupport'
         unique_together = ('addon', 'app')
 
@@ -1976,7 +1982,7 @@ class AppSupport(ModelBase):
 class DeniedSlug(ModelBase):
     name = models.CharField(max_length=255, unique=True, default='')
 
-    class Meta:
+    class Meta(object):
         db_table = 'addons_denied_slug'
 
     def __unicode__(self):
@@ -1991,7 +1997,7 @@ class FrozenAddon(models.Model):
     """Add-ons in this table never get a hotness score."""
     addon = models.ForeignKey(Addon)
 
-    class Meta:
+    class Meta(object):
         db_table = 'frozen_addons'
 
     def __unicode__(self):
@@ -2013,7 +2019,7 @@ class CompatOverride(ModelBase):
                               help_text='Fill this out to link an override '
                                         'to a hosted add-on')
 
-    class Meta:
+    class Meta(object):
         db_table = 'compat_override'
         unique_together = ('addon', 'guid')
 
@@ -2026,7 +2032,7 @@ class CompatOverride(ModelBase):
 
     def __unicode__(self):
         if self.addon:
-            return unicode(self.addon)
+            return str(self.addon)
         elif self.name:
             return '%s (%s)' % (self.name, self.guid)
         else:
@@ -2097,7 +2103,7 @@ class CompatOverrideRange(ModelBase):
     min_app_version = models.CharField(max_length=255, default='0')
     max_app_version = models.CharField(max_length=255, default='*')
 
-    class Meta:
+    class Meta(object):
         db_table = 'compat_override_range'
 
     def override_type(self):
@@ -2125,7 +2131,7 @@ class IncompatibleVersions(ModelBase):
     max_app_version_int = models.BigIntegerField(blank=True, null=True,
                                                  editable=False, db_index=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'incompatible_versions'
 
     def __unicode__(self):
@@ -2157,12 +2163,12 @@ class ReplacementAddon(ModelBase):
                             help_text=_('Addon and collection paths need to '
                                         'end with "/"'))
 
-    class Meta:
+    class Meta(object):
         db_table = 'replacement_addons'
 
     @staticmethod
     def path_is_external(path):
-        return urlparse.urlsplit(path).scheme in ['http', 'https']
+        return parse.urlsplit(path).scheme in ['http', 'https']
 
     def has_external_url(self):
         return self.path_is_external(self.path)

@@ -109,7 +109,7 @@ def extension_detail(request, addon):
     comp_apps = addon.compatible_apps
     if comp_apps and request.APP not in comp_apps:
         prefixer = get_url_prefix()
-        prefixer.app = comp_apps.keys()[0].short
+        prefixer.app = list(comp_apps.keys())[0].short
         return redirect('addons.detail', addon.slug, permanent=True)
 
     # Popular collections this addon is part of.
@@ -790,7 +790,7 @@ class StaticCategoryView(ListAPIView):
     serializer_class = StaticCategorySerializer
 
     def get_queryset(self):
-        return sorted(CATEGORIES_BY_ID.values(), key=lambda x: x.id)
+        return sorted(list(CATEGORIES_BY_ID.values()), key=lambda x: x.id)
 
     @classmethod
     def as_view(cls, **kwargs):

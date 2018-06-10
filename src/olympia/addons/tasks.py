@@ -2,6 +2,7 @@ import hashlib
 import os
 import uuid
 from datetime import datetime
+from six import text_type as str
 
 from django.conf import settings
 from django.core.files.storage import default_storage as storage
@@ -439,7 +440,7 @@ def extract_strict_compatibility_value_for_addon(addon):
         # existing, etc. In any case, that means the add-on is in a weird
         # state and should be ignored (this is a one off task).
         log.exception(u'bump_appver_for_legacy_addons: ignoring addon %d, '
-                      u'received %s when extracting.', addon.pk, unicode(exp))
+                      u'received %s when extracting.', addon.pk, str(exp))
     return strict_compatibility
 
 

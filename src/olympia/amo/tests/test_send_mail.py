@@ -1,5 +1,7 @@
 import mimetypes
 import os.path
+from six.moves import next
+from six import text_type as str
 
 from django.conf import settings
 from django.core import mail
@@ -212,7 +214,7 @@ class TestSendMail(BaseTestCase):
         assert '<a href' not in message1, 'text-only email contained HTML!'
         assert '<a href' in message2, 'HTML email did not contain HTML!'
 
-        unsubscribe_msg = unicode(notifications.individual_contact.label)
+        unsubscribe_msg = str(notifications.individual_contact.label)
         assert unsubscribe_msg in message1
         assert unsubscribe_msg in message2
 

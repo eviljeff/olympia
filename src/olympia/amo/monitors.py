@@ -1,7 +1,7 @@
 import os
 import socket
-import StringIO
 import traceback
+from io import BytesIO
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -67,7 +67,7 @@ def libraries():
     libraries_results = []
     status = ''
     try:
-        Image.new('RGB', (16, 16)).save(StringIO.StringIO(), 'JPEG')
+        Image.new('RGB', (16, 16)).save(BytesIO(), 'JPEG')
         libraries_results.append(('PIL+JPEG', True, 'Got it!'))
     except Exception as e:
         msg = "Failed to create a jpeg image: %s" % e

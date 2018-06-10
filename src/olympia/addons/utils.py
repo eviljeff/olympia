@@ -2,6 +2,8 @@ import json
 import random
 import uuid
 import zipfile
+from six import text_type as str
+from six.moves import map
 
 from django import forms
 from django.conf import settings
@@ -62,7 +64,7 @@ def get_featured_ids(app=None, lang=None, type=None, types=None):
     random.shuffle(ids)
     random.shuffle(other_ids)
     ids += other_ids
-    return map(int, ids)
+    return list(map(int, ids))
 
 
 @memoize('addons:creatured', time=60 * 10)
@@ -102,7 +104,7 @@ def get_creatured_ids(category, lang=None):
     per_locale = list(per_locale)
     random.shuffle(others)
     random.shuffle(per_locale)
-    return map(int, filter(None, per_locale + others))
+    return list(map(int, [id_ for id_ in per_locale + others if id_]))
 
 
 def verify_mozilla_trademark(name, user):
@@ -192,7 +194,7 @@ def build_static_theme_xpi_from_lwt(lwt, upload_zip):
     textcolor = '#%s' % (lwt.persona.textcolor or '000')
     manifest = {
         "manifest_version": 2,
-        "name": unicode(lwt.name or lwt.slug),
+        "name": str(lwt.name or lwt.slug),
         "version": '1.0',
         "theme": {
             "images": {
@@ -205,7 +207,7 @@ def build_static_theme_xpi_from_lwt(lwt, upload_zip):
         }
     }
     if lwt.description:
-        manifest['description'] = unicode(lwt.description)
+        manifest['description'] = str(lwt.description)
 
     # build zip with manifest and background file
     with zipfile.ZipFile(upload_zip, 'w', zipfile.ZIP_DEFLATED) as dest:

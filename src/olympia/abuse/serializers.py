@@ -8,7 +8,7 @@ class AddonAbuseReportSerializer(serializers.ModelSerializer):
     addon = serializers.SerializerMethodField()
     reporter = BaseUserSerializer(read_only=True)
 
-    class Meta:
+    class Meta(object):
         model = AbuseReport
         fields = ('reporter', 'addon', 'message')
 
@@ -27,6 +27,6 @@ class UserAbuseReportSerializer(serializers.ModelSerializer):
     reporter = BaseUserSerializer(read_only=True)
     user = BaseUserSerializer()
 
-    class Meta:
+    class Meta(object):
         model = AbuseReport
         fields = ('reporter', 'user', 'message')

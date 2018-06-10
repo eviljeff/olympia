@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+from six import string_types as basestring
+
 import json
 
 import django.test
@@ -438,7 +441,7 @@ class TestCRUD(TestCase):
         assert r.request['PATH_INFO'].decode('utf-8') == (
             '/en-US/firefox/collections/admin/%s/' % self.slug)
         c = Collection.objects.get(slug=self.slug)
-        assert unicode(c.name) == self.data['name']
+        assert str(c.name) == self.data['name']
         assert c.description == ''
         assert c.addons.all()[0].id == 3615
 
@@ -486,7 +489,7 @@ class TestCRUD(TestCase):
         url = reverse('collections.edit', args=['admin', self.slug])
         r = self.client.get(url, follow=True)
         assert Collection.objects.get(slug=self.slug).author_id == (
-            long(pq(r.content)('#contributor-ac').attr('data-owner')))
+            int(pq(r.content)('#contributor-ac').attr('data-owner')))
 
     def test_edit_post(self):
         """Test edit of collection."""
@@ -497,7 +500,7 @@ class TestCRUD(TestCase):
                                    'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'HALP'
+        assert str(c.name) == 'HALP'
 
     def test_edit_description(self):
         self.create_collection()
@@ -507,7 +510,7 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
+        assert str(Collection.objects.get(slug=self.slug).description) == (
             'abc')
 
     def test_edit_no_description(self):
@@ -519,7 +522,7 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
+        assert str(Collection.objects.get(slug=self.slug).description) == (
             '')
 
     def test_edit_spaces(self):
@@ -532,7 +535,7 @@ class TestCRUD(TestCase):
                               'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'H A L  P'
+        assert str(c.name) == 'H A L  P'
 
     def test_forbidden_edit(self):
         self.create_collection()
@@ -647,7 +650,7 @@ class TestCRUD(TestCase):
         assert r.status_code == 302
 
         c = Collection.objects.get(id=fav.id)
-        assert unicode(c.name) == 'xxx'
+        assert str(c.name) == 'xxx'
 
     def test_edit_contrib_tab(self):
         self.create_collection()
@@ -798,7 +801,7 @@ class TestCRUD(TestCase):
 
         newc = Collection.objects.get(slug=self.slug,
                                       author__username=c.author_username)
-        assert unicode(newc.name) == 'new name'
+        assert str(newc.name) == 'new name'
 
 
 class TestChangeAddon(TestCase):
@@ -1158,7 +1161,7 @@ class TestCollectionDetailFeed(TestCase):
 
         assert data['addons'][0]['type'] == 'background-theme'
         assert data['addons'][0]['theme']['id'] == (
-            unicode(theme.persona.persona_id))
+            str(theme.persona.persona_id))
 
         assert data['addons'][0]['theme']['header']
         assert data['addons'][0]['theme']['footer'] == ''
@@ -1493,7 +1496,7 @@ class TestCollectionViewSetDetail(TestCase):
         addon_data = response.data['addons'][0]['addon']
         assert addon_data['id'] == addon.id
         assert isinstance(addon_data['name'], dict)
-        assert addon_data['name'] == {'en-US': unicode(addon.name)}
+        assert addon_data['name'] == {'en-US': str(addon.name)}
 
         # Now test the limit of addons returned
         self.collection.add_addon(addon_factory())
@@ -1519,13 +1522,13 @@ class TestCollectionViewSetDetail(TestCase):
         addon_data = response.data['addons'][0]['addon']
         assert addon_data['id'] == addon.id
         assert isinstance(addon_data['name'], basestring)
-        assert addon_data['name'] == unicode(addon.name)
+        assert addon_data['name'] == str(addon.name)
         assert isinstance(addon_data['homepage'], basestring)
         assert addon_data['homepage'] == get_outgoing_url(
-            unicode(addon.homepage))
+            str(addon.homepage))
         assert isinstance(addon_data['support_url'], basestring)
         assert addon_data['support_url'] == get_outgoing_url(
-            unicode(addon.support_url))
+            str(addon.support_url))
 
 
 class CollectionViewSetDataMixin(object):
@@ -1555,7 +1558,7 @@ class CollectionViewSetDataMixin(object):
         return self._user
 
     def check_data(self, collection, data, json):
-        for prop, value in data.iteritems():
+        for prop, value in data.items():
             assert json[prop] == value
 
         with self.activate('fr'):

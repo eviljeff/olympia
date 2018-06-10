@@ -2,8 +2,10 @@ import json
 import string
 import uuid
 
+from six.moves import next
 from copy import copy
 from datetime import datetime
+from six import string_types as basestring, text_type as str
 
 from django.apps import apps
 from django.conf import settings
@@ -43,7 +45,7 @@ class ActivityLogToken(ModelBase):
         default=0,
         help_text='Stores the number of times the token has been used')
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_tokens'
         unique_together = ('version', 'user')
 
@@ -69,7 +71,7 @@ class ActivityLogEmails(ModelBase):
     them."""
     messageid = models.CharField(max_length=255, unique=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_emails'
 
 
@@ -80,7 +82,7 @@ class AddonLog(ModelBase):
     addon = models.ForeignKey(Addon)
     activity_log = models.ForeignKey('ActivityLog')
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_addon'
         ordering = ('-created',)
 
@@ -112,7 +114,7 @@ class CommentLog(ModelBase):
     activity_log = models.ForeignKey('ActivityLog')
     comments = models.TextField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_comment'
         ordering = ('-created',)
 
@@ -124,7 +126,7 @@ class VersionLog(ModelBase):
     activity_log = models.ForeignKey('ActivityLog')
     version = models.ForeignKey(Version)
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_version'
         ordering = ('-created',)
 
@@ -137,7 +139,7 @@ class UserLog(ModelBase):
     activity_log = models.ForeignKey('ActivityLog')
     user = models.ForeignKey(UserProfile)
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_user'
         ordering = ('-created',)
 
@@ -149,7 +151,7 @@ class GroupLog(ModelBase):
     activity_log = models.ForeignKey('ActivityLog')
     group = models.ForeignKey(Group)
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity_group'
         ordering = ('-created',)
 
@@ -283,7 +285,7 @@ class ActivityLog(ModelBase):
 
     formatter = SafeFormatter()
 
-    class Meta:
+    class Meta(object):
         db_table = 'log_activity'
         ordering = ('-created',)
 
@@ -307,7 +309,7 @@ class ActivityLog(ModelBase):
         objs = []
         for item in d:
             # item has only one element.
-            model_name, pk = item.items()[0]
+            model_name, pk = list(item.items())[0]
             if model_name in ('str', 'int', 'null'):
                 objs.append(pk)
             else:
@@ -338,14 +340,14 @@ class ActivityLog(ModelBase):
         for arg in args:
             if isinstance(arg, basestring):
                 serialize_me.append({'str': arg})
-            elif isinstance(arg, (int, long)):
+            elif isinstance(arg, (int, int)):
                 serialize_me.append({'int': arg})
             elif isinstance(arg, tuple):
                 # Instead of passing an addon instance you can pass a tuple:
                 # (Addon, 3) for Addon with pk=3
-                serialize_me.append(dict(((unicode(arg[0]._meta), arg[1]),)))
+                serialize_me.append(dict(((str(arg[0]._meta), arg[1]),)))
             else:
-                serialize_me.append(dict(((unicode(arg._meta), arg.pk),)))
+                serialize_me.append(dict(((str(arg._meta), arg.pk),)))
 
         self._arguments = json.dumps(serialize_me)
 
