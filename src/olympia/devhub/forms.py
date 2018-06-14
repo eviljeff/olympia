@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+from six.moves import map
+from six.moves import range
+
 import os
 
 from django import forms
@@ -40,7 +44,7 @@ from . import tasks
 
 
 class AuthorForm(happyforms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = AddonUser
         exclude = ('addon',)
 
@@ -63,8 +67,8 @@ class BaseAuthorFormSet(BaseModelFormSet):
         if any(self.errors):
             return
         # cleaned_data could be None if it's the empty extra form.
-        data = filter(None, [f.cleaned_data for f in self.forms
-                             if not f.cleaned_data.get('DELETE', False)])
+        data = [_f for _f in [f.cleaned_data for f in self.forms
+                             if not f.cleaned_data.get('DELETE', False)] if _f]
         if not any(d['role'] == amo.AUTHOR_ROLE_OWNER for d in data):
             raise forms.ValidationError(
                 ugettext('Must have at least one owner.'))
@@ -108,7 +112,7 @@ class LicenseRadioChoiceInput(forms.widgets.RadioChoiceInput):
             self.choice_label = mark_safe(self.choice_label + ' ' + details)
         if hasattr(license, 'icons'):
             self.attrs['data-cc'] = license.icons
-        self.attrs['data-name'] = unicode(license)
+        self.attrs['data-name'] = str(license)
 
 
 class LicenseRadioFieldRenderer(forms.widgets.RadioFieldRenderer):
@@ -155,7 +159,7 @@ class LicenseForm(AMOModelForm):
                 self.version.channel == amo.RELEASE_CHANNEL_UNLISTED):
             self.fields['builtin'].required = False
 
-    class Meta:
+    class Meta(object):
         model = License
         fields = ('builtin', 'name', 'text')
 
@@ -249,7 +253,7 @@ class PolicyForm(TranslationFormMixin, AMOModelForm):
         n = getattr(self.addon, u'%s_id' % name)
         return any(map(bool, Translation.objects.filter(id=n)))
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('eula', 'privacy_policy')
 
@@ -308,7 +312,7 @@ class VersionForm(WithSourceMixin, happyforms.ModelForm):
     source = forms.FileField(required=False, widget=SourceFileInput)
     clear_pending_info_request = forms.BooleanField(required=False)
 
-    class Meta:
+    class Meta(object):
         model = Version
         fields = ('releasenotes', 'clear_pending_info_request',
                   'approvalnotes', 'source',)
@@ -354,7 +358,7 @@ class CompatForm(happyforms.ModelForm):
     min = AppVersionChoiceField(AppVersion.objects.none())
     max = AppVersionChoiceField(AppVersion.objects.none())
 
-    class Meta:
+    class Meta(object):
         model = ApplicationsVersions
         fields = ('application', 'min', 'max')
 
@@ -421,8 +425,8 @@ class BaseCompatFormSet(BaseModelFormSet):
         if any(self.errors):
             return
 
-        apps = filter(None, [f.cleaned_data for f in self.forms
-                             if not f.cleaned_data.get('DELETE', False)])
+        apps = [_f for _f in [f.cleaned_data for f in self.forms
+                             if not f.cleaned_data.get('DELETE', False)] if _f]
 
         if not apps:
             raise forms.ValidationError(
@@ -504,7 +508,7 @@ class NewUploadForm(AddonUploadForm):
         # If we have a version reset platform choices to just those compatible.
         if self.version:
             platforms = self.fields['supported_platforms']
-            compat_platforms = self.version.compatible_platforms().values()
+            compat_platforms = list(self.version.compatible_platforms().values())
             platforms.choices = sorted(
                 (p.id, p.name) for p in compat_platforms)
             # Don't allow platforms we already have.
@@ -562,7 +566,7 @@ class NewUploadForm(AddonUploadForm):
 class FileForm(happyforms.ModelForm):
     platform = File._meta.get_field('platform').formfield()
 
-    class Meta:
+    class Meta(object):
         model = File
         fields = ('platform',)
 
@@ -574,7 +578,7 @@ class FileForm(happyforms.ModelForm):
         else:
             compat = kw['instance'].version.compatible_platforms()
             pid = int(kw['instance'].platform)
-            plats = [(p.id, p.name) for p in compat.values()]
+            plats = [(p.id, p.name) for p in list(compat.values())]
             if pid not in compat:
                 plats.append([pid, amo.PLATFORMS[pid].name])
             self.fields['platform'].choices = plats
@@ -620,7 +624,7 @@ class DescribeForm(AddonFormBase):
         widget=TransTextarea(), required=False,
         label=_(u'Please specify your add-on\'s Privacy Policy:'))
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('name', 'slug', 'summary', 'is_experimental', 'support_url',
                   'support_email', 'privacy_policy', 'requires_payment')
@@ -667,7 +671,7 @@ class PreviewForm(happyforms.ModelForm):
                     upload_path, self.instance.pk,
                     set_modified_on=self.instance.serializable_reference())
 
-    class Meta:
+    class Meta(object):
         model = Preview
         fields = ('caption', 'file_upload', 'upload_hash', 'id', 'position')
 
@@ -698,7 +702,7 @@ class AdminForm(happyforms.ModelForm):
     def __init__(self, request=None, *args, **kw):
         super(AdminForm, self).__init__(*args, **kw)
 
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = (
             'type', 'reputation', 'target_locale', 'locale_disambiguation'
@@ -748,7 +752,7 @@ def DependencyFormSet(*args, **kw):
         addon = forms.CharField(required=False, widget=forms.HiddenInput)
         dependent_addon = forms.ModelChoiceField(qs, widget=forms.HiddenInput)
 
-        class Meta:
+        class Meta(object):
             model = AddonDependency
             fields = ('addon', 'dependent_addon')
 
@@ -812,7 +816,7 @@ class SingleCategoryForm(happyforms.Form):
         # Hack because we know this is only used for Static Themes that only
         # support Firefox.  Hoping to unify per-app categories in the meantime.
         app = amo.FIREFOX
-        sorted_cats = sorted(CATEGORIES[app.id][self.addon.type].items(),
+        sorted_cats = sorted(list(CATEGORIES[app.id][self.addon.type].items()),
                              key=lambda slug_cat: slug_cat[0])
         self.fields['category'].choices = [
             (c.id, c.name) for _, c in sorted_cats]

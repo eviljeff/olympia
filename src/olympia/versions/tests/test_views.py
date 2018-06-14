@@ -442,11 +442,11 @@ class TestDownloadSource(TestCase):
         assert response[settings.XSENDFILE_HEADER]
         assert 'Content-Disposition' in response
         filename = self.filename
-        if not isinstance(filename, unicode):
+        if not isinstance(filename, str):
             filename = filename.decode('utf8')
         assert filename in response['Content-Disposition'].decode('utf8')
         path = self.version.source.path
-        if not isinstance(path, unicode):
+        if not isinstance(path, str):
             path = path.decode('utf8')
         assert response[settings.XSENDFILE_HEADER].decode('utf8') == path
 
@@ -469,11 +469,11 @@ class TestDownloadSource(TestCase):
         assert response[settings.XSENDFILE_HEADER]
         assert 'Content-Disposition' in response
         filename = self.filename
-        if not isinstance(filename, unicode):
+        if not isinstance(filename, str):
             filename = filename.decode('utf8')
         assert filename in response['Content-Disposition'].decode('utf8')
         path = self.version.source.path
-        if not isinstance(path, unicode):
+        if not isinstance(path, str):
             path = path.decode('utf8')
         assert response[settings.XSENDFILE_HEADER].decode('utf8') == path
 

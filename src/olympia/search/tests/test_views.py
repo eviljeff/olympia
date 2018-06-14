@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+from future import standard_library
+standard_library.install_aliases()
+from six.moves import zip
+from six import text_type as str
+from six.moves import range
 import json
-import urlparse
+import urllib.parse
 
 from django.http import QueryDict
 from django.test.client import RequestFactory
@@ -90,7 +95,7 @@ class SearchBase(ESTestCaseWithAddons):
         if sort_by:
             results = response.context['pager'].object_list
             if sort_by == 'name':
-                expected = sorted(results, key=lambda x: unicode(x.name))
+                expected = sorted(results, key=lambda x: str(x.name))
             else:
                 expected = sorted(results, key=lambda x: getattr(x, sort_by),
                                   reverse=reverse)
@@ -204,10 +209,10 @@ class TestESSearch(SearchBase):
         assert response.status_code == 302
         expected_params = 'q=f%C3%B4o&atype=1'
         redirected = response.url
-        parsed = urlparse.urlparse(redirected)
+        parsed = urllib.parse.urlparse(redirected)
         params = parsed.query
         assert parsed.path == self.url
-        assert urlparse.parse_qs(params) == urlparse.parse_qs(expected_params)
+        assert urllib.parse.parse_qs(params) == urllib.parse.parse_qs(expected_params)
 
     def test_legacy_redirects(self):
         response = self.client.get(self.url + '?sort=averagerating')
@@ -223,10 +228,10 @@ class TestESSearch(SearchBase):
         r = self.client.get(url + from_)
         assert r.status_code == 301
         redirected = r.url
-        parsed = urlparse.urlparse(redirected)
+        parsed = urllib.parse.urlparse(redirected)
         params = parsed.query
         assert parsed.path == url
-        assert urlparse.parse_qs(params) == urlparse.parse_qs(to[1:])
+        assert urllib.parse.parse_qs(params) == urllib.parse.parse_qs(to[1:])
 
     def check_platform_filters(self, platform, expected=None):
         r = self.client.get('%s?platform=%s' % (self.url, platform),
@@ -234,7 +239,7 @@ class TestESSearch(SearchBase):
         plats = r.context['platforms']
         for idx, plat in enumerate(plats):
             name, selected = expected[idx]
-            label = unicode(plat.text)
+            label = str(plat.text)
             assert label == name
             assert plat.selected == selected
 
@@ -287,7 +292,7 @@ class TestESSearch(SearchBase):
     def test_platform_legacy_params(self):
         ALL = (amo.PLATFORM_ALL, amo.PLATFORM_ANY)
         listed = ALL + (amo.PLATFORM_LINUX, amo.PLATFORM_MAC, amo.PLATFORM_WIN)
-        for idx, platform in amo.PLATFORMS.iteritems():
+        for idx, platform in amo.PLATFORMS.items():
             expected = [
                 ('All Systems', platform in ALL),
                 ('Linux', platform == amo.PLATFORM_LINUX),
@@ -314,7 +319,7 @@ class TestESSearch(SearchBase):
                                    {'appver': floor_version(appver)}, facets)
 
         all_ = versions.pop(0)
-        assert all_.text == 'Any %s' % unicode(request.APP.pretty)
+        assert all_.text == 'Any %s' % str(request.APP.pretty)
         assert not all_.selected == expected
 
         return [v.__dict__ for v in versions]
@@ -428,7 +433,7 @@ class TestESSearch(SearchBase):
         expected = [
             ('All Add-ons', self.url),
             ('Extensions', urlparams(self.url, atype=amo.ADDON_EXTENSION)),
-            (unicode(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
+            (str(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
                                           cat=cat.id)),
         ]
         amo.tests.check_links(expected, links, selected, verify=False)
@@ -451,7 +456,7 @@ class TestESSearch(SearchBase):
         cat = self.addons[0].all_categories[0]
         self.check_cat_filters(
             {'atype': amo.ADDON_EXTENSION, 'cat': cat.id},
-            selected=unicode(cat.name))
+            selected=str(cat.name))
 
     def test_cat_facet_stale(self):
         AddonCategory.objects.all().delete()
@@ -827,7 +832,7 @@ class TestPersonaSearch(SearchBase):
             assert r.status_code == 200
             results = list(r.context['pager'].object_list)
             first = results[0]
-            assert unicode(first.name) == expected_name, (
+            assert str(first.name) == expected_name, (
                 'Was not first result for %r. Results: %s' % (sort, results))
             assert first.persona.popularity == expected_popularity, (
                 'Incorrect popularity for %r. Got %r. Expected %r.' % (
@@ -880,7 +885,7 @@ class TestCollectionSearch(SearchBase):
         # Add some public collections.
         count = 3
         self.public_collections = []
-        for x in xrange(count):
+        for x in range(count):
             collection = amo.tests.collection_factory(name='Collection %s' % x)
             collection.update(modified=self.days_ago(x - count))
             self.all_collections.append(collection)
@@ -1072,7 +1077,7 @@ class TestCollectionSearch(SearchBase):
             results = list(r.context['pager'].object_list)
             assert len(results) == len(webdev_collections)
             for coll, expected in zip(results, sorted_webdev_collections):
-                assert unicode(coll.name) == expected[0], (
+                assert str(coll.name) == expected[0], (
                     'Wrong order for sort %r.' % sort)
                 assert coll.subscribers == expected[1], (
                     'Incorrect subscribers for sort %r.' % sort)
@@ -1152,7 +1157,7 @@ class TestCollectionSearch(SearchBase):
 ])
 def test_search_redirects(test_input, expected):
     assert views.fix_search_query(QueryDict(test_input)) == (
-        dict(urlparse.parse_qsl(expected)))
+        dict(urllib.parse.parse_qsl(expected)))
 
 
 @pytest.mark.parametrize("test_input", [
@@ -1183,7 +1188,7 @@ class TestAjaxSearch(ESTestCaseWithAddons):
                 sorted(addons, key=lambda x: x.id)):
             expected.reload()
             assert int(got['id']) == expected.id
-            assert got['name'] == unicode(expected.name)
+            assert got['name'] == str(expected.name)
             expected_url = expected.get_url_path()
             if src:
                 expected_url += '?src=ss'
@@ -1250,7 +1255,7 @@ class TestGenericAjaxSearch(TestAjaxSearch):
         )
         self._addons.append(addon)
         self.refresh()
-        self.search_addons('q=' + unicode(addon.name), [addon])
+        self.search_addons('q=' + str(addon.name), [addon])
 
     def test_ajax_search_by_bad_name(self):
         self.search_addons('q=some+filthy+bad+word', [])
@@ -1308,7 +1313,7 @@ class TestSearchSuggestions(TestAjaxSearch):
         assert len(data) == len(apps)
         for got, expected in zip(data, apps):
             assert int(got['id']) == expected.id
-            assert got['name'] == '%s Add-ons' % unicode(expected.pretty)
+            assert got['name'] == '%s Add-ons' % str(expected.pretty)
             assert got['url'] == locale_url(expected.short)
             assert got['cls'] == 'app ' + expected.short
 

@@ -1,3 +1,5 @@
+from six import text_type as str
+
 from django.utils.translation import ugettext
 
 from rest_framework import serializers
@@ -10,7 +12,7 @@ from olympia.versions.models import Version
 
 
 class DiscoveryVersionSerializer(VersionSerializer):
-    class Meta:
+    class Meta(object):
         fields = ('compatibility', 'files',)
         model = Version
 
@@ -18,7 +20,7 @@ class DiscoveryVersionSerializer(VersionSerializer):
 class DiscoveryAddonSerializer(AddonSerializer):
     current_version = DiscoveryVersionSerializer()
 
-    class Meta:
+    class Meta(object):
         fields = ('id', 'current_version', 'guid', 'icon_url', 'name',
                   'slug', 'theme_data', 'type', 'url',)
         model = Addon
@@ -34,7 +36,7 @@ class DiscoverySerializer(serializers.Serializer):
         data = super(DiscoverySerializer, self).to_representation(instance)
         authors = u', '.join(
             author.name for author in instance.addon.listed_authors)
-        addon_name = unicode(instance.addon_name or instance.addon.name)
+        addon_name = str(instance.addon_name or instance.addon.name)
         url = absolutify(instance.addon.get_url_path())
 
         if data['heading'] is None:

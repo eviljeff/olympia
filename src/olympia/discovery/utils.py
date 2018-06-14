@@ -1,5 +1,7 @@
+from future import standard_library
+standard_library.install_aliases()
 import json
-import urlparse
+import urllib.parse
 from collections import OrderedDict
 
 from django.conf import settings
@@ -19,8 +21,8 @@ log = olympia.core.logger.getLogger('z.amo')
 
 
 def call_recommendation_server(id_or_guid, params, server):
-    params = OrderedDict(sorted(params.items(), key=lambda t: t[0]))
-    endpoint = urlparse.urljoin(
+    params = OrderedDict(sorted(list(params.items()), key=lambda t: t[0]))
+    endpoint = urllib.parse.urljoin(
         server,
         '%s/%s%s' % (id_or_guid, '?' if params else '', urlencode(params)))
     log.debug(u'Calling recommendation server: {0}'.format(endpoint))

@@ -71,18 +71,18 @@ class Command(BaseCommand):
             print('Skipping mozilla collections as user does not exist.')
 
         print('Fetching 5 top-rated extensions/themes from each category.')
-        for cat in CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION].values():
+        for cat in list(CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION].values()):
             addons.update(Addon.objects.public().filter(
                 category=cat.id).order_by('-bayesian_rating')[:5])
-        for cat in CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values():
+        for cat in list(CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()):
             addons.update(Addon.objects.public().filter(
                 category=cat.id).order_by('-bayesian_rating')[:5])
 
         print('Fetching 5 trending extensions/themes from each category.')
-        for cat in CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION].values():
+        for cat in list(CATEGORIES[amo.FIREFOX.id][amo.ADDON_EXTENSION].values()):
             addons.update(Addon.objects.public().filter(
                 category=cat.id).order_by('-hotness')[:5])
-        for cat in CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values():
+        for cat in list(CATEGORIES[amo.FIREFOX.id][amo.ADDON_PERSONA].values()):
             addons.update(Addon.objects.public().filter(
                 category=cat.id).order_by('-hotness')[:5])
 

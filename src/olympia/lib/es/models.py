@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.utils import timezone
 
@@ -62,5 +63,5 @@ class Reindexing(models.Model):
 
     objects = ReindexingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'zadmin_reindexing'

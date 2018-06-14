@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 import mimetypes
 import os
 import shutil
@@ -32,7 +33,7 @@ def get_file(filename):
 def make_file(pk, file_path, **kwargs):
     obj = Mock()
     obj.id = obj.pk = pk
-    for k, v in kwargs.items():
+    for k, v in list(kwargs.items()):
         setattr(obj, k, v)
     obj.file_path = file_path
     obj.current_file_path = file_path
@@ -221,7 +222,7 @@ class TestFileViewer(TestCase):
         os.mkdir(subdir)
         open(os.path.join(subdir, 'foo'), 'w')
         cache.clear()
-        files = self.viewer.get_files().keys()
+        files = list(self.viewer.get_files().keys())
         rt = files.index(u'chrome')
         assert files[rt:rt + 3] == [u'chrome', u'chrome/foo', u'dictionaries']
 

@@ -1,3 +1,5 @@
+from six.moves import map
+from six import text_type as str
 from django.conf import settings
 from django.template import engines, loader
 from django.utils import translation
@@ -27,7 +29,7 @@ def locale_html(translatedfield):
     if locale == site_locale:
         return ''
     else:
-        rtl_locales = map(translation.to_locale, settings.LANGUAGES_BIDI)
+        rtl_locales = list(map(translation.to_locale, settings.LANGUAGES_BIDI))
         textdir = 'rtl' if locale in rtl_locales else 'ltr'
         return jinja2.Markup(' lang="%s" dir="%s"' % (
             jinja2.escape(translatedfield.locale), textdir))
@@ -58,8 +60,8 @@ def truncate(s, length=255, killwords=True, end='...'):
 def l10n_menu(context, default_locale='en-us', remove_locale_url=''):
     """Generates the locale menu for zamboni l10n."""
     default_locale = default_locale.lower()
-    languages = dict((i.lower(), j) for i, j in settings.LANGUAGES.items())
-    c = dict(context.items())
+    languages = dict((i.lower(), j) for i, j in list(settings.LANGUAGES.items()))
+    c = dict(list(context.items()))
     if 'addon' in c:
         remove_locale_url = c['addon'].get_dev_url('remove-locale')
     c.update({'languages': languages, 'default_locale': default_locale,
@@ -96,9 +98,9 @@ def clean(string, strip_all_html=False):
         string = string.__html__()
 
     if strip_all_html:
-        string = bleach.clean(unicode(string), tags=[], strip=True)
+        string = bleach.clean(str(string), tags=[], strip=True)
     else:
-        string = bleach.clean(unicode(string))
+        string = bleach.clean(str(string))
 
     return jinja2.Markup(clean_nl(string).strip())
 

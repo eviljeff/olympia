@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from six.moves import next
+from six import text_type as str
 import csv
 import json
 import os
 
-from cStringIO import StringIO
+from io import StringIO
 
 from django.conf import settings
 from django.core import mail
@@ -570,7 +572,7 @@ class TestCompat(TestCompatibilityReportCronMixin, amo.tests.ESTestCase):
 
         name = tr.find('.name')
         assert name.find('.version').text() == 'v' + version
-        assert name.remove('.version').text() == unicode(addon.name)
+        assert name.remove('.version').text() == str(addon.name)
         assert name.find('a').attr('href') == addon.get_url_path()
 
         assert tr.find('.maxver').text() == (

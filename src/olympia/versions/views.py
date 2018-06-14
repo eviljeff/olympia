@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import os
 
 from django import http
@@ -63,7 +65,7 @@ def _find_version_page(qs, addon, version_num):
     url = reverse('addons.versions', args=[addon.slug])
     ids = list(qs.values_list('version', flat=True))
     if version_num in ids:
-        page = 1 + ids.index(version_num) / PER_PAGE
+        page = 1 + old_div(ids.index(version_num), PER_PAGE)
         to = urlparams(url, 'version-%s' % version_num, page=page)
         return http.HttpResponseRedirect(to)
     else:
@@ -180,7 +182,7 @@ def download_source(request, version_id):
             raise http.Http404  # Not listed, not owner or unlisted reviewer.
     res = HttpResponseSendFile(request, version.source.path)
     path = version.source.path
-    if not isinstance(path, unicode):
+    if not isinstance(path, str):
         path = path.decode('utf8')
     name = os.path.basename(path.replace(u'"', u''))
     disposition = u'attachment; filename="{0}"'.format(name).encode('utf8')

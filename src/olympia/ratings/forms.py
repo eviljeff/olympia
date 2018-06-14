@@ -1,6 +1,11 @@
+from future import standard_library
+standard_library.install_aliases()
+from six.moves import zip
+from six.moves import range
+
 import re
 
-from urllib2 import unquote
+from urllib.parse import unquote
 
 from django import forms
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -40,7 +45,7 @@ class RatingForm(RatingReplyForm):
         label='Review',
     )
     rating = forms.ChoiceField(
-        zip(range(1, 6), range(1, 6)), label=_(u'Rating')
+        list(zip(list(range(1, 6)), list(range(1, 6)))), label=_(u'Rating')
     )
     flags = re.I | re.L | re.U | re.M
     # This matches the following three types of patterns:
@@ -65,7 +70,7 @@ class RatingForm(RatingReplyForm):
 
 class RatingFlagForm(forms.ModelForm):
 
-    class Meta:
+    class Meta(object):
         model = RatingFlag
         fields = ('flag', 'note', 'rating', 'user')
 

@@ -1,3 +1,7 @@
+from __future__ import division
+from six.moves import zip
+from six import text_type as str
+from past.utils import old_div
 import json
 import os
 import shutil
@@ -312,7 +316,7 @@ class TestMeasureValidationTime(TestValidator):
 
         # Validation times for files larger than 1MB should be scaled.
         rough_delta = self.approximate_upload_time()
-        rough_scaled_delta = Decimal(rough_delta) / file_size_in_mb
+        rough_scaled_delta = old_div(Decimal(rough_delta), file_size_in_mb)
         actual_scaled_delta = statsd_calls[
             'devhub.validation_results_processed_per_mb']
         self.assert_milleseconds_are_close(actual_scaled_delta,

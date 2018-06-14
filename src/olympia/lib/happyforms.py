@@ -1,3 +1,5 @@
+from six import string_types as basestring
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.fields import FileField
@@ -12,7 +14,7 @@ class BaseFormMixin(object):
     """
 
     def _clean_fields(self):
-        for name, field in self.fields.items():
+        for name, field in list(self.fields.items()):
             # value_from_datadict() gets the data from the data dictionaries.
             # Each widget type knows how to retrieve its own data, because some
             # widgets split data over several HTML fields.

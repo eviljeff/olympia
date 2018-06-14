@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+
 import datetime
 import os
 
@@ -221,7 +223,7 @@ class Version(OnChangeMixin, ModelBase):
                 channel == amo.RELEASE_CHANNEL_LISTED):
             dst_root = os.path.join(user_media_path('addons'), str(addon.id))
             theme_data = parsed_data.get('theme', {})
-            version_root = os.path.join(dst_root, unicode(version.id))
+            version_root = os.path.join(dst_root, str(version.id))
 
             utils.extract_header_img(
                 version.all_files[0].file_path, theme_data, version_root)
@@ -267,7 +269,7 @@ class Version(OnChangeMixin, ModelBase):
             new_plats = []
             for platform in platforms:
                 if platform == amo.PLATFORM_ALL.id:
-                    plats = amo.DESKTOP_PLATFORMS.keys()
+                    plats = list(amo.DESKTOP_PLATFORMS.keys())
                     plats.remove(amo.PLATFORM_ALL.id)
                     new_plats.extend(plats)
                 else:
@@ -381,7 +383,7 @@ class Version(OnChangeMixin, ModelBase):
 
     @cached_property
     def compatible_apps_ordered(self):
-        apps = self.compatible_apps.items()
+        apps = list(self.compatible_apps.items())
         return sorted(apps, key=lambda v: v[0].short)
 
     def compatible_platforms(self):
@@ -477,7 +479,7 @@ class Version(OnChangeMixin, ModelBase):
               self.channel == amo.RELEASE_CHANNEL_LISTED):
             return False
         else:
-            compatible = (v for k, v in self.compatible_platforms().items()
+            compatible = (v for k, v in list(self.compatible_platforms().items())
                           if k != amo.PLATFORM_ALL.id)
             return bool(set(compatible) - set(self.supported_platforms))
 
@@ -518,8 +520,7 @@ class Version(OnChangeMixin, ModelBase):
 
     @property
     def is_unreviewed(self):
-        return filter(lambda f: f.status in amo.UNREVIEWED_FILE_STATUSES,
-                      self.all_files)
+        return [f for f in self.all_files if f.status in amo.UNREVIEWED_FILE_STATUSES]
 
     @property
     def is_all_unreviewed(self):
@@ -661,9 +662,9 @@ class Version(OnChangeMixin, ModelBase):
         if self.addon.type != amo.ADDON_STATICTHEME:
             return []
         background_images_folder = os.path.join(
-            user_media_path('addons'), str(self.addon.id), unicode(self.id))
+            user_media_path('addons'), str(self.addon.id), str(self.id))
         background_images_url = '/'.join(
-            (user_media_url('addons'), str(self.addon.id), unicode(self.id)))
+            (user_media_url('addons'), str(self.addon.id), str(self.id)))
         out = [
             background.replace(background_images_folder, background_images_url)
             for background in walkfiles(background_images_folder)]
@@ -684,7 +685,7 @@ class VersionPreview(BasePreview, ModelBase):
     sizes = JSONField(default={})
     media_folder = 'version-previews'
 
-    class Meta:
+    class Meta(object):
         db_table = 'version_previews'
 
     @cached_property
@@ -832,12 +833,12 @@ class License(ModelBase):
 
     objects = LicenseManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'licenses'
 
     def __unicode__(self):
         license = self._constant or self
-        return unicode(license.name)
+        return str(license.name)
 
     @property
     def _constant(self):
@@ -861,12 +862,12 @@ class ApplicationsVersions(caching.base.CachingMixin, models.Model):
 
     objects = caching.base.CachingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = u'applications_versions'
         unique_together = (("application", "version"),)
 
     def get_application_display(self):
-        return unicode(amo.APPS_ALL[self.application].pretty)
+        return str(amo.APPS_ALL[self.application].pretty)
 
     def __unicode__(self):
         if (self.version.is_compatible_by_default and

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from django.utils.translation import string_concat, ugettext_lazy as _
 
 from olympia import amo

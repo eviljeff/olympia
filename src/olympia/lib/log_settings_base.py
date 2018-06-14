@@ -86,7 +86,7 @@ def log_configure():
     dynamic configuration.
 
     This needs to be called explicitely before doing any logging."""
-    for key, value in settings.LOGGING.items():
+    for key, value in list(settings.LOGGING.items()):
         if isinstance(cfg[key], dict):
             cfg[key].update(value)
         else:
@@ -110,7 +110,7 @@ def log_configure():
         default_handlers = ['console']
 
     # Set the level and handlers for all loggers.
-    for logger in cfg['loggers'].values() + [cfg['root']]:
+    for logger in list(cfg['loggers'].values()) + [cfg['root']]:
         if 'handlers' not in logger:
             logger['handlers'] = default_handlers
         if 'level' not in logger:

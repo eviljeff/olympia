@@ -1,4 +1,5 @@
 
+
 from django.db import models
 
 import caching.base
@@ -21,7 +22,7 @@ class AddonCollectionCount(models.Model):
     count = models.PositiveIntegerField()
     date = models.DateField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'stats_addons_collections_counts'
 
 
@@ -39,7 +40,7 @@ class CollectionCount(StatsSearchMixin, models.Model):
     # index name in our dev/stage/prod database: `date`
     date = models.DateField(db_index=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'stats_collections_counts'
 
 
@@ -50,7 +51,7 @@ class CollectionStats(models.Model):
     count = models.PositiveIntegerField()
     date = models.DateField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'stats_collections'
 
 
@@ -63,7 +64,7 @@ class DownloadCount(StatsSearchMixin, models.Model):
     date = models.DateField()
     sources = StatsDictField(db_column='src', null=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'download_counts'
 
         # additional indices on this table (in dev, stage and prod):
@@ -88,7 +89,7 @@ class UpdateCount(StatsSearchMixin, models.Model):
     oses = StatsDictField(db_column='os', null=True)
     locales = StatsDictField(db_column='locale', null=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'update_counts'
 
         # Additional indices on this table (on dev, stage and prod):
@@ -118,7 +119,7 @@ class ThemeUpdateCount(StatsSearchMixin, models.Model):
 
     objects = ThemeUpdateCountManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'theme_update_counts'
 
 
@@ -134,7 +135,7 @@ class ThemeUpdateCountBulk(models.Model):
     popularity = models.PositiveIntegerField()
     movers = models.FloatField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'theme_update_counts_bulk'
 
 
@@ -145,7 +146,7 @@ class GlobalStat(caching.base.CachingMixin, models.Model):
 
     objects = caching.base.CachingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'global_stats'
         unique_together = ('name', 'date')
         get_latest_by = 'date'
@@ -162,6 +163,6 @@ class ThemeUserCount(StatsSearchMixin, models.Model):
     count = models.PositiveIntegerField()
     date = models.DateField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'theme_user_counts'
         index_together = ('date', 'addon')

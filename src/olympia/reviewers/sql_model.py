@@ -1,3 +1,6 @@
+from six.moves import zip
+from six import text_type as str
+
 import copy
 import re
 
@@ -6,6 +9,7 @@ from django.db import connection
 from django.db.models import Q
 from django.db.models.sql.query import AND, OR
 from django.utils.tree import Node
+from future.utils import with_metaclass
 
 
 ORDER_PATTERN = re.compile(r'^[-+]?[a-zA-Z0-9_]+$')
@@ -128,7 +132,7 @@ class RawSQLManager(object):
             else:
                 raise TypeError(
                     'non keyword args should be Q objects, got %r' % arg)
-        for field, val in kw.items():
+        for field, val in list(kw.items()):
             clone.base_query['where'].append(clone._kw_filter_to_clause(field,
                                                                         val))
         return clone
@@ -304,7 +308,7 @@ class RawSQLManager(object):
     def _compile(self, parts):
         sep = u",\n"
         and_ = u' %s\n' % AND
-        select = [u'%s AS `%s`' % (v, k) for k, v in parts['select'].items()]
+        select = [u'%s AS `%s`' % (v, k) for k, v in list(parts['select'].items())]
         stmt = u"SELECT\n%s\nFROM\n%s" % (sep.join(select),
                                           u"\n".join(parts['from']))
         if parts.get('where'):
@@ -326,7 +330,7 @@ class RawSQLManager(object):
         self._cursor.execute(sql, self.base_query['_args'])
 
     def _param(self, val):
-        param_k = 'param_%s' % len(self.base_query['_args'].keys())
+        param_k = 'param_%s' % len(list(self.base_query['_args'].keys()))
         self.base_query['_args'][param_k] = val
         return param_k
 
@@ -347,7 +351,7 @@ class RawSQLManager(object):
             yield self._make_row(row, col_names)
 
     def _make_row(self, row, col_names):
-        values = dict(zip(col_names, row))
+        values = dict(list(zip(col_names, row)))
         return self.sql_model.__class__(**values)
 
     def _check_limit(self, i):
@@ -366,7 +370,7 @@ class RawSQLModelMeta(type):
         return cls
 
 
-class RawSQLModel(object):
+class RawSQLModel(with_metaclass(RawSQLModelMeta, object)):
     """Very minimal model-like object based on a SQL query.
 
     It supports barely enough for django-tables and the Django paginator.
@@ -375,7 +379,6 @@ class RawSQLModel(object):
     This is for rare cases when you need the speed and optimization of
     building a query with many different types of where clauses.
     """
-    __metaclass__ = RawSQLModelMeta
 
     # django-tables2 looks for this to decide what Columns to add.
     class _meta(object):
@@ -387,7 +390,7 @@ class RawSQLModel(object):
     MultipleObjectsReturned = MultipleObjectsReturned
 
     def __init__(self, **kwargs):
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             field = getattr(self.__class__, key, None)
             if field is None:
                 raise TypeError(

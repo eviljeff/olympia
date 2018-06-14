@@ -1,3 +1,6 @@
+from six.moves import zip
+from six import text_type as str
+
 import json
 import os
 
@@ -114,7 +117,7 @@ class TestAddonSubmitAgreementWithPostReviewEnabled(TestSubmitBase):
             'review_policy': [u'This field is required.'],
         }
         doc = pq(response.content)
-        for id_ in form.errors.keys():
+        for id_ in list(form.errors.keys()):
             selector = 'li input#id_%s + a + .errorlist' % id_
             assert doc(selector).text() == 'This field is required.'
 
@@ -910,7 +913,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': str(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -927,7 +930,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': str(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -947,7 +950,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': str(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -1703,9 +1706,9 @@ class TestVersionSubmitDetails(TestSubmitBase):
         # metadata is missing, name, slug, summary and category are required to
         # be present.
         data = {
-            'name': unicode(self.addon.name),
+            'name': str(self.addon.name),
             'slug': self.addon.slug,
-            'summary': unicode(self.addon.summary),
+            'summary': str(self.addon.summary),
 
             'form-0-categories': [22, 1],
             'form-0-application': 1,

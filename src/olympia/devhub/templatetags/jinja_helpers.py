@@ -1,4 +1,5 @@
-import urllib
+from six import text_type as str
+import urllib.request, urllib.parse, urllib.error
 
 from collections import defaultdict
 
@@ -78,8 +79,8 @@ def dev_files_status(files):
     for file in files:
         status_count[file.status] += 1
 
-    return [(count, unicode(choices[status])) for
-            (status, count) in status_count.items()]
+    return [(count, str(choices[status])) for
+            (status, count) in list(status_count.items())]
 
 
 @library.global_function
@@ -126,7 +127,7 @@ def display_url(url):
     Note: returns a Unicode object, not a valid URL.
     """
     url = force_bytes(url, errors='replace')
-    return urllib.unquote(url).decode('utf-8', errors='replace')
+    return urllib.parse.unquote(url).decode('utf-8', errors='replace')
 
 
 @library.global_function

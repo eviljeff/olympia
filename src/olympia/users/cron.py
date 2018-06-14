@@ -1,3 +1,4 @@
+from six.moves import map
 from django.db import connections
 
 import multidb

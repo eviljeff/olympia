@@ -1,8 +1,12 @@
 # coding=utf-8
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+
 import json
 import os
 import shutil
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -457,7 +461,7 @@ class TestFileViewer(FilesBase, TestCase):
         assert res.status_code == 200
 
     def test_unicode_fails_with_wrong_configured_basepath(self):
-        with override_settings(TMP_PATH=unicode(settings.TMP_PATH)):
+        with override_settings(TMP_PATH=str(settings.TMP_PATH)):
             file_viewer = FileViewer(self.file)
             file_viewer.src = unicode_filenames
 
@@ -484,7 +488,7 @@ class TestFileViewer(FilesBase, TestCase):
         res = self.client.get(self.files_redirect(binary))
         assert res.status_code == 302
         url = res['Location']
-        assert urlparse.urlparse(url).query.startswith('token=')
+        assert urllib.parse.urlparse(url).query.startswith('token=')
 
     def test_memcache_goes_bye_bye(self):
         self.file_viewer.extract()

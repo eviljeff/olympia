@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import datetime
 
 from django.core.management import call_command
@@ -162,13 +164,13 @@ class TestIndexStats(TestCase):
         # We add 1 because picking up 11 days means we have start/stop pairs at
         # [0, 5], [5, 10], [10, 15]
         len_ = len([c for c in calls if c[0][0] == tasks.index_update_counts])
-        assert len_ == (1 + (updates[0] - updates[-1]).days / 5)
+        assert len_ == (1 + old_div((updates[0] - updates[-1]).days, 5))
         len_ = len(
             [c for c in calls if c[0][0] == tasks.index_theme_user_counts])
-        assert len_ == (1 + (updates[0] - updates[-1]).days / 5)
+        assert len_ == (1 + old_div((updates[0] - updates[-1]).days, 5))
         len_ = len(
             [c for c in calls if c[0][0] == tasks.index_download_counts])
-        assert len_ == (1 + (downloads[0] - downloads[-1]).days / 5)
+        assert len_ == (1 + old_div((downloads[0] - downloads[-1]).days, 5))
 
 
 class TestIndexLatest(amo.tests.ESTestCase):

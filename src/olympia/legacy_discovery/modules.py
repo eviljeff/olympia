@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
@@ -10,6 +11,7 @@ from olympia.bandwagon.models import (
 from olympia.legacy_api.views import addon_filter
 from olympia.versions.compare import version_int
 from olympia.lib.cache import cached
+from future.utils import with_metaclass
 
 
 # The global registry for promo modules.  Managed through PromoModuleMeta.
@@ -26,14 +28,13 @@ class PromoModuleMeta(type):
         return cls
 
 
-class PromoModule(object):
+class PromoModule(with_metaclass(PromoModuleMeta, object)):
     """
     Base class for promo modules in the discovery pane.
 
     Subclasses should assign a slug and define render().  The slug is only used
     internally, so it doesn't have to really be a slug.
     """
-    __metaclass__ = PromoModuleMeta
     abstract = True
     slug = None
 
@@ -213,7 +214,7 @@ class SchoolCollection(CollectionPromo):
 
 
 # The add-ons that go with the promo modal. Not an actual PromoModule
-class PromoVideoCollection():
+class PromoVideoCollection(object):
     items = (349111, 349155, 349157, 52659, 5579, 252539, 11377, 2257)
 
     def get_items(self):

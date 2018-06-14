@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+
 import datetime
 
 from datetime import timedelta
@@ -102,11 +104,11 @@ class QueueSearchForm(happyforms.Form):
         required=False,
         label=_(u'Application'),
         choices=([('', '')] +
-                 [(a.id, a.pretty) for a in amo.APPS_ALL.values()]))
+                 [(a.id, a.pretty) for a in list(amo.APPS_ALL.values())]))
     addon_type_ids = forms.MultipleChoiceField(
         required=False,
         label=_(u'Add-on Types'),
-        choices=[(amo.ADDON_ANY, _(u'Any'))] + amo.ADDON_TYPES.items())
+        choices=[(amo.ADDON_ANY, _(u'Any'))] + list(amo.ADDON_TYPES.items()))
 
     def __init__(self, *args, **kw):
         super(QueueSearchForm, self).__init__(*args, **kw)
@@ -181,7 +183,7 @@ class AllAddonSearchForm(happyforms.Form):
         required=False,
         label=_(u'Application'),
         choices=([('', '')] +
-                 [(a.id, a.pretty) for a in amo.APPS_ALL.values()]))
+                 [(a.id, a.pretty) for a in list(amo.APPS_ALL.values())]))
     max_version = forms.ChoiceField(
         required=False,
         label=_(u'Max. Version'),
@@ -360,7 +362,7 @@ class ReviewForm(happyforms.Form):
         responses = CannedResponse.objects.filter(type=canned_type)
 
         # Loop through the actions (public, etc).
-        for k, action in self.helper.actions.iteritems():
+        for k, action in self.helper.actions.items():
             action_choices = [[c.response, c.name] for c in responses
                               if c.sort_group and k in c.sort_group.split(',')]
 
@@ -374,7 +376,7 @@ class ReviewForm(happyforms.Form):
                 canned_choices.append([r.response, r.name])
         self.fields['canned_response'].choices = canned_choices
         self.fields['action'].choices = [
-            (k, v['label']) for k, v in self.helper.actions.items()]
+            (k, v['label']) for k, v in list(self.helper.actions.items())]
 
     @property
     def unreviewed_files(self):
@@ -400,13 +402,13 @@ class ThemeReviewForm(happyforms.Form):
     theme = forms.ModelChoiceField(queryset=Persona.objects.all(),
                                    widget=forms.HiddenInput())
     action = forms.TypedChoiceField(
-        choices=amo.REVIEW_ACTIONS.items(),
+        choices=list(amo.REVIEW_ACTIONS.items()),
         widget=forms.HiddenInput(attrs={'class': 'action'}),
         coerce=int, empty_value=None
     )
     # Duplicate is the same as rejecting but has its own flow.
     reject_reason = forms.TypedChoiceField(
-        choices=amo.THEME_REJECT_REASONS.items() + [('duplicate', '')],
+        choices=list(amo.THEME_REJECT_REASONS.items()) + [('duplicate', '')],
         widget=forms.HiddenInput(attrs={'class': 'reject-reason'}),
         required=False, coerce=int, empty_value=None)
     comment = forms.CharField(
@@ -522,7 +524,7 @@ class ReviewThemeLogForm(ReviewLogForm):
 
 class WhiteboardForm(forms.ModelForm):
 
-    class Meta:
+    class Meta(object):
         model = Whiteboard
         fields = ['private', 'public']
         labels = {
@@ -532,7 +534,7 @@ class WhiteboardForm(forms.ModelForm):
 
 
 class PublicWhiteboardForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = Whiteboard
         fields = ['public']
         labels = {
@@ -550,7 +552,7 @@ class ModerateRatingFlagForm(happyforms.ModelForm):
     action = forms.ChoiceField(choices=action_choices, required=False,
                                initial=0, widget=forms.RadioSelect())
 
-    class Meta:
+    class Meta(object):
         model = Rating
         fields = ('action',)
 

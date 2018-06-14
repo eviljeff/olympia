@@ -1,3 +1,5 @@
+from six import text_type as str
+
 import os
 import random
 import re
@@ -163,7 +165,7 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
     # newsletter
     basket_token = models.CharField(blank=True, default='', max_length=128)
 
-    class Meta:
+    class Meta(object):
         db_table = 'users'
 
     def __init__(self, *args, **kw):
@@ -524,7 +526,7 @@ class UserNotification(ModelBase):
     notification_id = models.IntegerField()
     enabled = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(object):
         db_table = 'users_notifications'
 
     @property
@@ -544,7 +546,7 @@ class DeniedName(ModelBase):
     """Denied User usernames and display_names + Collections' names."""
     name = models.CharField(max_length=255, unique=True, default='')
 
-    class Meta:
+    class Meta(object):
         db_table = 'users_denied_name'
 
     def __unicode__(self):
@@ -571,7 +573,7 @@ class UserHistory(ModelBase):
     email = models.EmailField(max_length=75)
     user = models.ForeignKey(UserProfile, related_name='history')
 
-    class Meta:
+    class Meta(object):
         db_table = 'users_history'
         ordering = ('-created',)
 

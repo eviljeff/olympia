@@ -1,3 +1,4 @@
+from six import text_type as str
 from django import http
 from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch, Q
@@ -111,7 +112,7 @@ def flag(request, addon, review_id):
         instance = RatingFlag.objects.get(**data)
     except RatingFlag.DoesNotExist:
         instance = None
-    data = dict(request.POST.items(), **data)
+    data = dict(list(request.POST.items()), **data)
     form = forms.RatingFlagForm(data, instance=instance)
     if form.is_valid():
         form.save()
@@ -214,7 +215,7 @@ def edit(request, addon, review_id):
     form = cls(request.POST)
     if form.is_valid():
         data = _review_details(request, addon, form, create=False)
-        for field, value in data.items():
+        for field, value in list(data.items()):
             setattr(rating, field, value)
         # Resist the temptation to use rating.update(): it'd be more direct but
         # doesn't work with extra fields that are not meant to be saved like

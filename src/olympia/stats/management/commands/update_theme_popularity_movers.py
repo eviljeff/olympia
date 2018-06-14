@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import datetime
 
 from django.core.management.base import BaseCommand
@@ -61,8 +63,8 @@ class Command(BaseCommand):
                 movers=0)
             # Set movers to 0 if values aren't high enough.
             if popularity > 100 and prev_3_weeks_avg > 1:
-                theme_update_count_bulk.movers = (
-                    popularity - prev_3_weeks_avg) / prev_3_weeks_avg
+                theme_update_count_bulk.movers = old_div((
+                    popularity - prev_3_weeks_avg), prev_3_weeks_avg)
 
             theme_user_count = ThemeUserCount(
                 addon_id=addon_id,

@@ -1,3 +1,6 @@
+from six.moves import zip
+from six import string_types as basestring
+
 from django import forms
 from django.conf import settings
 from django.db import models
@@ -195,7 +198,7 @@ class TranslationDescriptor(related.ReverseSingleRelatedObjectDescriptor):
         from olympia.amo.utils import to_language as amo_to_language
 
         rv = None
-        for locale, string in dict_.items():
+        for locale, string in list(dict_.items()):
             loc = amo_to_language(locale)
             if loc not in settings.AMO_LANGUAGES:
                 continue
@@ -231,14 +234,14 @@ class _TransField(object):
     def clean(self, value):
         errors = LocaleList()
 
-        value = dict((k, v.strip() if v else v) for (k, v) in value.items())
+        value = dict((k, v.strip() if v else v) for (k, v) in list(value.items()))
 
         # Raise an exception if the default locale is required and not present
         if self.default_locale.lower() not in value:
             value[self.default_locale.lower()] = None
 
         # Now, loop through them and validate them separately.
-        for locale, val in value.items():
+        for locale, val in list(value.items()):
             try:
                 # Only the default locale can be required; all non-default
                 # fields are automatically optional.
@@ -312,14 +315,14 @@ class LocaleList(dict):
         self.seq.extend(seq)
         self.locales.extend([locale] * len(seq))
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.seq)
 
     def __contains__(self, item):
         return item in self.seq
 
     def zip(self):
-        return zip(self.locales, self.seq)
+        return list(zip(self.locales, self.seq))
 
 
 def save_signal(sender, instance, **kw):

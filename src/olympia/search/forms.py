@@ -1,3 +1,4 @@
+from six.moves import map
 from django import forms
 from django.forms.utils import ErrorDict
 from django.utils.translation import ugettext_lazy as _
@@ -99,7 +100,7 @@ class ESSearchForm(happyforms.Form):
     platform = forms.CharField(required=False)
     appver = forms.CharField(required=False)
     atype = forms.TypedChoiceField(required=False, coerce=int,
-                                   choices=amo.ADDON_TYPES.iteritems())
+                                   choices=iter(amo.ADDON_TYPES.items()))
     cat = forms.CharField(required=False)
     sort = forms.CharField(required=False)
 
@@ -119,7 +120,7 @@ class ESSearchForm(happyforms.Form):
         cat = self.cleaned_data.get('cat')
         if ',' in cat:
             try:
-                self.cleaned_data['atype'], cat = map(int, cat.split(','))
+                self.cleaned_data['atype'], cat = list(map(int, cat.split(',')))
             except ValueError:
                 return None
         else:

@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 from django.db.models import Avg, Count, F
 
 import olympia.core.logger
@@ -40,7 +42,7 @@ def update_denorm(*pairs, **kw):
 @task
 @write
 def addon_rating_aggregates(addons, **kw):
-    if isinstance(addons, (int, long)):  # Got passed a single addon id.
+    if isinstance(addons, (int, int)):  # Got passed a single addon id.
         addons = [addons]
     log.info('[%s@%s] Updating total reviews and average ratings.' %
              (len(addons), addon_rating_aggregates.rate_limit))
@@ -102,7 +104,7 @@ def addon_bayesian_rating(*addons, **kw):
         if addon.total_ratings:
             num = mc + F('total_ratings') * F('average_rating')
             denom = avg['reviews'] + F('total_ratings')
-            qs.update(bayesian_rating=num / denom)
+            qs.update(bayesian_rating=old_div(num, denom))
         else:
             qs.update(bayesian_rating=0)
 

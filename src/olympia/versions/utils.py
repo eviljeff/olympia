@@ -1,5 +1,11 @@
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+
+from past.utils import old_div
 import os
-import StringIO
+import io
 import subprocess
 import tempfile
 from base64 import b64encode
@@ -43,7 +49,7 @@ def encode_header_image(path):
     try:
         with storage.open(path, 'rb') as image:
             header_blob = image.read()
-            with Image.open(StringIO.StringIO(header_blob)) as header_image:
+            with Image.open(io.StringIO(header_blob)) as header_image:
                 (width, height) = header_image.size
             src = 'data:image/%s;base64,%s' % (
                 header_image.format.lower(), b64encode(header_blob))
@@ -88,13 +94,13 @@ class AdditionalBackground(object):
         if align_x == 'right':
             self.pattern_x = svg_width - self.width
         elif align_x == 'center':
-            self.pattern_x = (svg_width - self.width) / 2
+            self.pattern_x = old_div((svg_width - self.width), 2)
         else:
             self.pattern_x = 0
         if align_y == 'bottom':
             self.pattern_y = svg_height - self.height
         elif align_y == 'center':
-            self.pattern_y = (svg_height - self.height) / 2
+            self.pattern_y = old_div((svg_height - self.height), 2)
         else:
             self.pattern_y = 0
 
@@ -111,4 +117,4 @@ def process_color_value(prop, value):
     prop = CHROME_COLOR_TO_CSS.get(prop, prop)
     if isinstance(value, list) and len(value) == 3:
         return prop, u'rgb(%s, %s, %s)' % tuple(value)
-    return prop, unicode(value)
+    return prop, str(value)

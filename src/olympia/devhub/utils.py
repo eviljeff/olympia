@@ -1,3 +1,4 @@
+
 import uuid
 
 from django.conf import settings
@@ -143,7 +144,7 @@ def fix_addons_linter_output(validation, listed=True):
 
     identified_files = {
         name: {'path': path}
-        for name, path in validation['metadata'].get('jsLibs', {}).items()
+        for name, path in list(validation['metadata'].get('jsLibs', {}).items())
     }
 
     # Essential metadata.

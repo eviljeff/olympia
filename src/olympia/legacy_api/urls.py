@@ -1,3 +1,4 @@
+from six.moves import range
 from django.conf.urls import include, url
 from django.db.transaction import non_atomic_requests
 

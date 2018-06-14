@@ -1,3 +1,5 @@
+from six import text_type as str
+
 from datetime import datetime
 
 from aesfield.field import AESField
@@ -8,7 +10,7 @@ from olympia import amo
 class FrozenAPIAccess(amo.models.ModelBase):
     secret = AESField(max_length=255, aes_key='api:access:secret')
 
-    class Meta:
+    class Meta(object):
         db_table = 'api_access'
 
 

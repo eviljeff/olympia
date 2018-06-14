@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from six import text_type as str
+from past.utils import old_div
 import datetime
 import hashlib
 import json
@@ -6,7 +9,7 @@ import os
 import socket
 import subprocess
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import shutil
 
 from copy import deepcopy
@@ -258,12 +261,12 @@ def handle_upload_validation_result(
     # Scale the upload / processing time by package size (in MB)
     # so we can normalize large XPIs which naturally take longer to validate.
     scaled_delta = None
-    size_in_mb = size / megabyte
+    size_in_mb = old_div(size, megabyte)
     if size > 0:
         # If the package is smaller than 1MB, don't scale it. This should
         # help account for validator setup time.
         unit = size_in_mb if size > megabyte else Decimal(1)
-        scaled_delta = Decimal(delta) / unit
+        scaled_delta = old_div(Decimal(delta), unit)
         statsd.timing('devhub.validation_results_processed_per_mb',
                       scaled_delta)
 
@@ -839,11 +842,11 @@ def failed_validation(*messages):
 
 def _fetch_content(url):
     try:
-        return urllib2.urlopen(url, timeout=15)
-    except urllib2.HTTPError as e:
+        return urllib.request.urlopen(url, timeout=15)
+    except urllib.error.HTTPError as e:
         raise Exception(
             ugettext('%s responded with %s (%s).') % (url, e.code, e.msg))
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         # Unpack the URLError to try and find a useful message.
         if isinstance(e.reason, socket.timeout):
             raise Exception(ugettext('Connection to "%s" timed out.') % url)

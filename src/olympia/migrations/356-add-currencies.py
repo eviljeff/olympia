@@ -136,8 +136,8 @@ currencies = {
 
 
 def run():
-    for currency, prices in currencies.items():
-        for k, v in prices.items():
+    for currency, prices in list(currencies.items()):
+        for k, v in list(prices.items()):
             try:
                 tier = Price.objects.get(name__localized_string=k)
                 PriceCurrency.objects.create(tier=tier,

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from datetime import date, datetime, timedelta
 
 import django  # noqa

@@ -1,3 +1,7 @@
+from six import text_type as str
+from six.moves import map
+from six import string_types as basestring
+
 import hashlib
 import json
 import os
@@ -63,7 +67,7 @@ class File(OnChangeMixin, ModelBase):
     original_hash = models.CharField(max_length=255, default='')
     jetpack_version = models.CharField(max_length=10, null=True)
     status = models.PositiveSmallIntegerField(
-        choices=STATUS_CHOICES.items(), default=amo.STATUS_AWAITING_REVIEW)
+        choices=list(STATUS_CHOICES.items()), default=amo.STATUS_AWAITING_REVIEW)
     datestatuschanged = models.DateTimeField(null=True, auto_now_add=True)
     is_restart_required = models.BooleanField(default=False)
     strict_compatibility = models.BooleanField(default=False)
@@ -101,7 +105,7 @@ class File(OnChangeMixin, ModelBase):
         db_table = 'files'
 
     def __unicode__(self):
-        return unicode(self.id)
+        return str(self.id)
 
     def get_platform_display(self):
         return force_text(amo.PLATFORMS[self.platform].name)
@@ -130,7 +134,7 @@ class File(OnChangeMixin, ModelBase):
             host = user_media_url('addons')
 
         return posixpath.join(
-            *map(force_bytes, [host, self.version.addon.id, self.filename]))
+            *list(map(force_bytes, [host, self.version.addon.id, self.filename])))
 
     def get_url_path(self, src, attachment=False):
         return self._make_download_url(
@@ -601,7 +605,7 @@ class FileUpload(ModelBase):
         db_table = 'file_uploads'
 
     def __unicode__(self):
-        return unicode(self.uuid.hex)
+        return str(self.uuid.hex)
 
     def save(self, *args, **kw):
         if self.validation:
@@ -707,7 +711,7 @@ class FileValidation(ModelBase):
     notices = models.IntegerField(default=0)
     validation = models.TextField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'file_validation'
 
     @classmethod
@@ -752,7 +756,7 @@ class WebextPermission(ModelBase):
     file = models.OneToOneField('File', related_name='_webext_permissions',
                                 on_delete=models.CASCADE)
 
-    class Meta:
+    class Meta(object):
         db_table = 'webext_permissions'
 
 
@@ -769,13 +773,13 @@ class WebextPermissionDescription(ModelBase):
     name = models.CharField(max_length=255, unique=True)
     description = TranslatedField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'webext_permission_descriptions'
         ordering = ['name']
 
 
 def nfd_str(u):
     """Uses NFD to normalize unicode strings."""
-    if isinstance(u, unicode):
+    if isinstance(u, str):
         return unicodedata.normalize('NFD', u).encode('utf-8')
     return u

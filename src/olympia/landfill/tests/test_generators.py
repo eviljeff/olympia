@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+
+from past.utils import old_div
 import collections
 
 from olympia import amo
@@ -32,7 +35,7 @@ class _BaseAddonGeneratorMixin(object):
         for addonname, category in data:
             categories[category.slug] += 1
         length = len(CATEGORIES[self.app.id][self.type])
-        assert set(categories.values()) == set([size / length])
+        assert set(categories.values()) == set([old_div(size, length)])
         assert len(set(addonname for addonname, cat in data)) == size
         assert not any(addonname[-1].isdigit() for addonname, cat in data)
 

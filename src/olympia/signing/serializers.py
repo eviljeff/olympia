@@ -1,3 +1,4 @@
+
 import json
 import os
 
@@ -26,7 +27,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
     validation_results = serializers.SerializerMethodField()
     validation_url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta(object):
         model = FileUpload
         fields = [
             'guid',

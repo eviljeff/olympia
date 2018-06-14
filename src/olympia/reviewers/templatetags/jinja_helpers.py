@@ -1,3 +1,4 @@
+from six import text_type as str
 import datetime
 
 from django.conf import settings
@@ -48,7 +49,7 @@ def file_review_status(addon, file):
 def version_status(addon, version):
     if version.deleted:
         return ugettext(u'Deleted')
-    return ','.join(unicode(s) for s in version.status)
+    return ','.join(str(s) for s in version.status)
 
 
 @library.global_function
@@ -166,7 +167,7 @@ def all_distinct_files(context, version):
             hashes_to_file[file_.original_hash] = [file_, display_name]
     return new_context(dict(
         # We don't need the hashes in the template.
-        distinct_files=hashes_to_file.values(),
+        distinct_files=list(hashes_to_file.values()),
         amo=context.get('amo'),
         addon=context.get('addon'),
         show_diff=context.get('show_diff'),

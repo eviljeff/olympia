@@ -1,3 +1,5 @@
+from six import text_type as str
+
 import os
 import re
 
@@ -114,7 +116,7 @@ class UserEditForm(happyforms.ModelForm):
             default = {
                 idx: notification.default_checked
                 for idx, notification
-                in notifications.NOTIFICATIONS_BY_ID.items()}
+                in list(notifications.NOTIFICATIONS_BY_ID.items())}
             user = {
                 notification.notification_id: notification.enabled
                 for notification in self.instance.notifications.all()}
@@ -124,7 +126,7 @@ class UserEditForm(happyforms.ModelForm):
                 newsletters = fetch_subscribed_newsletters(self.instance)
 
                 by_basket_id = notifications.REMOTE_NOTIFICATIONS_BY_BASKET_ID
-                for basket_id, notification in by_basket_id.items():
+                for basket_id, notification in list(by_basket_id.items()):
                     default[notification.id] = basket_id in newsletters
 
             # Add choices to Notification.
@@ -147,10 +149,10 @@ class UserEditForm(happyforms.ModelForm):
 
             self.fields['notifications'].choices = choices
             self.fields['notifications'].initial = [i for i, v
-                                                    in default.items() if v]
+                                                    in list(default.items()) if v]
             self.fields['notifications'].widget.form_instance = self
 
-    class Meta:
+    class Meta(object):
         model = UserProfile
         fields = (
             'username', 'email', 'display_name', 'location', 'occupation',
@@ -226,7 +228,7 @@ class UserEditForm(happyforms.ModelForm):
 
     def clean_biography(self):
         biography = self.cleaned_data['biography']
-        normalized = clean_nl(unicode(biography))
+        normalized = clean_nl(str(biography))
         if has_links(normalized):
             # There's some links, we don't want them.
             raise forms.ValidationError(ugettext('No links are allowed.'))
@@ -252,7 +254,7 @@ class UserEditForm(happyforms.ModelForm):
             notifications.NOTIFICATIONS_BY_ID if self.instance.is_developer
             else notifications.NOTIFICATIONS_BY_ID_NOT_DEV)
 
-        for (notification_id, notification) in visible_notifications.items():
+        for (notification_id, notification) in list(visible_notifications.items()):
             enabled = (notification.mandatory or
                        (str(notification_id) in data['notifications']))
             UserNotification.objects.update_or_create(
@@ -261,7 +263,7 @@ class UserEditForm(happyforms.ModelForm):
 
         if waffle.switch_is_active('activate-basket-sync'):
             by_basket_id = notifications.REMOTE_NOTIFICATIONS_BY_BASKET_ID
-            for basket_id, notification in by_basket_id.items():
+            for basket_id, notification in list(by_basket_id.items()):
                 needs_subscribe = str(notification.id) in data['notifications']
                 needs_unsubscribe = (
                     str(notification.id) not in data['notifications'])

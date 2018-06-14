@@ -1,3 +1,4 @@
+from six import text_type as str
 import hashlib
 import os
 import shutil
@@ -59,7 +60,7 @@ def call_signing(file_obj):
 
     log.debug(u'File signature contents: {0}'.format(jar.signatures))
 
-    signed_manifest = unicode(jar.signatures)
+    signed_manifest = str(jar.signatures)
 
     conf = settings.AUTOGRAPH_CONFIG
     log.debug('Calling autograph service: {0}'.format(conf['server_url']))
@@ -149,7 +150,7 @@ def sign_file(file_obj):
         return
 
     # Sign the file. If there's any exception, we skip the rest.
-    cert_serial_num = unicode(call_signing(file_obj))
+    cert_serial_num = str(call_signing(file_obj))
 
     size = storage.size(file_obj.file_path)
 

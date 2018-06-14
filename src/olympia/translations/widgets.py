@@ -1,3 +1,4 @@
+
 from django import forms
 from django.utils import translation
 from django.utils.encoding import force_text
@@ -20,7 +21,7 @@ class TranslationTextInput(forms.widgets.TextInput):
     """A simple textfield replacement for collecting translated names."""
 
     def _format_value(self, value):
-        if isinstance(value, long):
+        if isinstance(value, int):
             return get_string(value)
         return value
 
@@ -28,7 +29,7 @@ class TranslationTextInput(forms.widgets.TextInput):
 class TranslationTextarea(forms.widgets.Textarea):
 
     def render(self, name, value, attrs=None):
-        if isinstance(value, long):
+        if isinstance(value, int):
             value = get_string(value)
         return super(TranslationTextarea, self).render(name, value, attrs)
 
@@ -70,14 +71,14 @@ class TransMulti(forms.widgets.MultiWidget):
     def decompress(self, value):
         if not value:
             return []
-        elif isinstance(value, (long, int)):
+        elif isinstance(value, (int, int)):
             # We got a foreign key to the translation table.
             qs = Translation.objects.filter(id=value)
             return list(qs.filter(localized_string__isnull=False))
         elif isinstance(value, dict):
             # We're getting a datadict, there was a validation error.
             return [Translation(locale=k, localized_string=v)
-                    for k, v in value.items()]
+                    for k, v in list(value.items())]
 
     def value_from_datadict(self, data, files, name):
         # All the translations for this field are called {name}_{locale}, so

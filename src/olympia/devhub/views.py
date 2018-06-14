@@ -1,3 +1,6 @@
+from __future__ import division
+from six import text_type as str
+from past.utils import old_div
 import datetime
 import json
 import os
@@ -660,7 +663,7 @@ def bulk_compat_result(request, addon_id, addon, result_id):
 def _compat_result(request, revalidate_url, target_app, target_version,
                    validated_filename=None, validated_ts=None,
                    for_addon=None):
-    app_trans = dict((g, unicode(a.pretty)) for g, a in amo.APP_GUIDS.items())
+    app_trans = dict((g, str(a.pretty)) for g, a in list(amo.APP_GUIDS.items()))
     ff_versions = (AppVersion.objects.filter(application=amo.FIREFOX.id,
                                              version_int__gte=4000000000000)
                    .values_list('application', 'version')
@@ -747,7 +750,7 @@ def json_upload_detail(request, upload, addon_slug=None):
                 app_ids.remove(amo.ANDROID.id)
             if len(app_ids):
                 # Targets any other non-mobile app:
-                supported_platforms.extend(amo.DESKTOP_PLATFORMS.keys())
+                supported_platforms.extend(list(amo.DESKTOP_PLATFORMS.keys()))
             plat_exclude = (
                 set(amo.SUPPORTED_PLATFORMS.keys()) - set(supported_platforms))
             plat_exclude = [str(p) for p in plat_exclude]
@@ -1015,7 +1018,7 @@ def ajax_upload_image(request, upload_type, addon_id=None):
             if is_persona:
                 errors.append(
                     ugettext('Images cannot be larger than %dKB.')
-                    % (max_size / 1024))
+                    % (old_div(max_size, 1024)))
 
         if check.is_image() and is_persona:
             persona, img_type = upload_type.split('_')  # 'header' or 'footer'
@@ -1075,7 +1078,7 @@ def version_edit(request, addon_id, addon, version_id):
         data['compat_form'] = compat_form
 
     if (request.method == 'POST' and
-            all([form.is_valid() for form in data.values()])):
+            all([form.is_valid() for form in list(data.values())])):
         data['file_form'].save()
 
         if 'compat_form' in data:
@@ -1569,8 +1572,8 @@ def _submit_finish(request, addon, version, is_file=False):
         # We can use locale-prefixed URLs because the submitter probably
         # speaks the same language by the time he/she reads the email.
         context = {
-            'addon_name': unicode(addon.name),
-            'app': unicode(request.APP.pretty),
+            'addon_name': str(addon.name),
+            'app': str(request.APP.pretty),
             'detail_url': absolutify(addon.get_url_path()),
             'version_url': absolutify(addon.get_dev_url('versions')),
             'edit_url': absolutify(addon.get_dev_url('edit')),

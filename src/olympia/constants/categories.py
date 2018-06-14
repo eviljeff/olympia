@@ -1,3 +1,5 @@
+from six import text_type as str
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -30,7 +32,7 @@ class StaticCategory(object):
         object.__setattr__(self, 'description', description)
 
     def __unicode__(self):
-        return unicode(self.name)
+        return str(self.name)
 
     def __repr__(self):
         return u'<%s: %s (%s)>' % (

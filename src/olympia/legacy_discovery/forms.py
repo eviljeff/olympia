@@ -1,3 +1,4 @@
+
 from django import forms
 from django.conf import settings
 
@@ -6,7 +7,7 @@ from .models import DiscoveryModule
 
 class DiscoveryModuleForm(forms.ModelForm):
 
-    class Meta:
+    class Meta(object):
         model = DiscoveryModule
         fields = ('app', 'module', 'ordering', 'locales')
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from olympia.addons.models import Category
 from olympia.amo.tests import TestCase
 from olympia.constants.applications import APPS
@@ -21,7 +22,7 @@ class CategoriesTests(TestCase):
 
         category = Category.objects.get(
             id=CATEGORIES[APPS['android'].id][ADDON_EXTENSION]['shopping'].id)
-        assert unicode(category.name) == u'Shopping'
+        assert str(category.name) == u'Shopping'
 
         # Re-generating should not create any more.
         data = generate_categories(APPS['android'], ADDON_EXTENSION)
@@ -31,4 +32,4 @@ class CategoriesTests(TestCase):
         # Name should still be the same.
         category = Category.objects.get(
             id=CATEGORIES[APPS['android'].id][ADDON_EXTENSION]['shopping'].id)
-        assert unicode(category.name) == u'Shopping'
+        assert str(category.name) == u'Shopping'

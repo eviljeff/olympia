@@ -1,3 +1,4 @@
+
 from django.db import models
 
 from olympia import amo
@@ -17,7 +18,7 @@ class DiscoveryModule(ModelBase):
     ordering = models.IntegerField(null=True, blank=True)
     locales = models.CharField(max_length=255, blank=True, default='')
 
-    class Meta:
+    class Meta(object):
         db_table = 'discovery_modules'
         unique_together = ('app', 'module')
 

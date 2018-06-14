@@ -1,3 +1,4 @@
+from six import text_type as str
 import json
 import re
 
@@ -29,7 +30,7 @@ def incoming(request):
 
     try:
         data = [(snake_case(k), v)
-                for k, v in json.loads(request.body).items()]
+                for k, v in list(json.loads(request.body).items())]
     except Exception:
         return http.HttpResponseBadRequest()
 

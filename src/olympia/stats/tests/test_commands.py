@@ -1,3 +1,7 @@
+from __future__ import division
+from six.moves import range
+from past.utils import old_div
+
 import boto3
 import json
 import os
@@ -244,7 +248,7 @@ class TestADICommand(FixturesFolderMixin, TransactionTestCase):
         # previous_3_weeks: (sum(range(28) - sum(range(7))) * 100 / 21 == 1700.
         assert p1.movers == 0.0  # Because the popularity is <= 100.
         # We round the results to cope with floating point imprecision.
-        assert round(p2.movers, 5) == round((300.0 - 1700) / 1700, 5)
+        assert round(p2.movers, 5) == round(old_div((300.0 - 1700), 1700), 5)
 
     def test_is_valid_source(self):
         assert is_valid_source('foo',

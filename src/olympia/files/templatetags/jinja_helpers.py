@@ -1,3 +1,4 @@
+from six.moves import range
 from django.template import loader
 
 import jinja2
@@ -24,7 +25,7 @@ def file_tree(files, selected):
     depth = 0
     output = ['<ul class="root">']
     t = loader.get_template('files/node.html')
-    for k, v in files.items():
+    for k, v in list(files.items()):
         if v['depth'] > depth:
             output.append('<ul class="js-hidden">')
         elif v['depth'] < depth:

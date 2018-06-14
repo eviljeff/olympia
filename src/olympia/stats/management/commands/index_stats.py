@@ -1,3 +1,4 @@
+from six.moves import range
 import random
 
 from datetime import date, timedelta

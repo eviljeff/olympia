@@ -1,3 +1,4 @@
+
 from django import forms
 from django.template import loader
 from django.utils.safestring import mark_safe
@@ -19,7 +20,7 @@ class NotificationsSelectMultiple(forms.CheckboxSelectMultiple):
 
         # Mark the mandatory fields.
         mandatory = [k for k, v in
-                     email.NOTIFICATIONS_BY_ID.iteritems() if v.mandatory]
+                     email.NOTIFICATIONS_BY_ID.items() if v.mandatory]
         str_values = set(mandatory + str_values)
 
         for idx, label in sorted(self.choices):
@@ -47,7 +48,7 @@ class NotificationsSelectMultiple(forms.CheckboxSelectMultiple):
 
         output = []
         template_url = 'users/edit_notification_checkboxes.html'
-        for e, name in email.NOTIFICATION_GROUPS.items():
+        for e, name in list(email.NOTIFICATION_GROUPS.items()):
             if e in groups:
                 context = {'title': name, 'options': groups[e]}
                 output.append(

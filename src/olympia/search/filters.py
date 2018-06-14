@@ -1,3 +1,4 @@
+
 from django.utils import translation
 from django.utils.translation import ugettext
 
@@ -184,7 +185,7 @@ class AddonStatusQueryParam(AddonQueryParam):
 class AddonCategoryQueryParam(AddonQueryParam):
     query_param = 'category'
     es_field = 'category'
-    valid_values = CATEGORIES_BY_ID.keys()
+    valid_values = list(CATEGORIES_BY_ID.keys())
     operator = 'terms'
 
     def __init__(self, request):

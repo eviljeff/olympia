@@ -1,7 +1,9 @@
+from future import standard_library
+standard_library.install_aliases()
 import boto3
 import codecs
 from io import StringIO
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.core.files.storage import get_storage_class
 

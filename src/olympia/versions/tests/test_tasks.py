@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import os
 from base64 import b64encode
 
@@ -94,7 +96,7 @@ def test_generate_static_theme_preview(
         'thumbnail': list(amo.THEME_PREVIEW_SIZES['thumb'])}
 
     colors = ['class="%s" fill="%s"' % (key, color)
-              for (key, color) in theme_manifest['colors'].items()]
+              for (key, color) in list(theme_manifest['colors'].items())]
 
     check_render(image_svg_content, header_url, header_height,
                  preserve_aspect_ratio, mimetype, valid_img, colors,
@@ -147,7 +149,7 @@ def test_generate_static_theme_preview_with_chrome_properties(
         'frame': 'accentcolor',
         'tab_background_text': 'textcolor',
     }
-    for (chrome_prop, firefox_prop) in chrome_colors.items():
+    for (chrome_prop, firefox_prop) in list(chrome_colors.items()):
         color_list = theme_manifest['colors'][chrome_prop]
         color = 'rgb(%s, %s, %s)' % tuple(color_list)
         colors.append('class="%s" fill="%s"' % (firefox_prop, color))
@@ -162,7 +164,7 @@ def check_render_additional(svg_content, inner_svg_width):
     # check additional background pattern is correct
     image_width = 270
     image_height = 200
-    pattern_x_offset = (inner_svg_width - image_width) / 2
+    pattern_x_offset = old_div((inner_svg_width - image_width), 2)
     pattern_tag = (
         '<pattern id="AdditionalBackground1"\n'
         '                   width="%s" height="%s"\n'

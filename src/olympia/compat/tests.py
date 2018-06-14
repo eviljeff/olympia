@@ -1,3 +1,6 @@
+from six import text_type as str
+from six.moves import range
+
 import json
 
 from datetime import datetime
@@ -379,9 +382,9 @@ class TestCompatibilityReportCronMixin(object):
             'guid': addon.guid,
             'app_guid': app.guid,
             'app_version': app_version}
-        for x in xrange(good):
+        for x in range(good):
             CompatReport.objects.create(works_properly=True, **defaults)
-        for x in xrange(bad):
+        for x in range(bad):
             CompatReport.objects.create(works_properly=False, **defaults)
 
 

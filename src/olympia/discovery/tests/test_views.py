@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+
 from collections import OrderedDict
 
 import mock
@@ -42,7 +44,7 @@ class DiscoveryTestMixin(object):
     def _check_disco_addon(self, result, item):
         addon = self.addons[item.addon_id]
         assert result['addon']['id'] == item.addon_id == addon.pk
-        assert result['addon']['name'] == unicode(addon.name)
+        assert result['addon']['name'] == str(addon.name)
         assert result['addon']['slug'] == addon.slug
         assert result['addon']['icon_url'] == absolutify(
             addon.get_icon_url(64))
@@ -53,7 +55,7 @@ class DiscoveryTestMixin(object):
             # Predefined discopane items have a different heading format.
             assert u'<a href="{0}">{1} by {2}</a>'.format(
                 absolutify(addon.get_url_path()),
-                unicode(item.addon_name or addon.name),
+                str(item.addon_name or addon.name),
                 u', '.join(author.name for author in addon.listed_authors),
             ) in result['heading']
             assert '<span>' in result['heading']
@@ -61,7 +63,7 @@ class DiscoveryTestMixin(object):
         else:
             assert u'{1} <span>by <a href="{0}">{2}</a></span>'.format(
                 absolutify(addon.get_url_path()),
-                unicode(item.addon_name or addon.name),
+                str(item.addon_name or addon.name),
                 u', '.join(author.name for author in addon.listed_authors)
             ) == result['heading']
         assert result['description']
@@ -69,12 +71,12 @@ class DiscoveryTestMixin(object):
     def _check_disco_theme(self, result, item):
         addon = self.addons[item.addon_id]
         assert result['addon']['id'] == item.addon_id == addon.pk
-        assert result['addon']['name'] == unicode(addon.name)
+        assert result['addon']['name'] == str(addon.name)
         assert result['addon']['slug'] == addon.slug
 
         assert u'{1} <span>by <a href="{0}">{2}</a></span>'.format(
             absolutify(addon.get_url_path()),
-            unicode(item.addon_name or addon.name),
+            str(item.addon_name or addon.name),
             u', '.join(author.name for author in addon.listed_authors)
         ) == result['heading']
         description_output = (
@@ -124,13 +126,13 @@ class TestDiscoveryViewList(DiscoveryTestMixin, TestCase):
         assert response.data['results']
 
     def test_missing_addon(self):
-        addon_deleted = self.addons.values()[0]
+        addon_deleted = list(self.addons.values())[0]
         addon_deleted.delete()
 
-        disabled_by_user = self.addons.values()[1]
+        disabled_by_user = list(self.addons.values())[1]
         disabled_by_user.update(disabled_by_user=True)
 
-        nominated = self.addons.values()[2]
+        nominated = list(self.addons.values())[2]
         nominated.update(status=amo.STATUS_NOMINATED)
 
         response = self.client.get(self.url)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from collections import Counter
 
 from django.conf import settings
@@ -86,14 +87,14 @@ class Command(BaseCommand):
             set_reviewing_cache(version.addon.pk, settings.TASK_USER_ID)
         try:
             log.info('Processing %s version %s...',
-                     unicode(version.addon.name), unicode(version.version))
+                     str(version.addon.name), str(version.version))
             summary, info = AutoApprovalSummary.create_summary_for_version(
                 version, dry_run=self.dry_run)
             log.info('Auto Approval for %s version %s: %s',
-                     unicode(version.addon.name),
-                     unicode(version.version),
+                     str(version.addon.name),
+                     str(version.version),
                      summary.get_verdict_display())
-            self.stats.update({k: int(v) for k, v in info.items()})
+            self.stats.update({k: int(v) for k, v in list(info.items())})
             if summary.verdict == self.successful_verdict:
                 self.stats['auto_approved'] += 1
                 if summary.verdict == amo.AUTO_APPROVED:

@@ -1,3 +1,7 @@
+from __future__ import division
+from six import text_type as str
+
+from past.utils import old_div
 import json
 import time
 
@@ -372,7 +376,7 @@ def _performance_total(data):
     total_month = dict(usercount=0, teamamt=0, teamcount=0, teamavg=0)
     current_year = datetime.now().year
 
-    for k, val in data.items():
+    for k, val in list(data.items()):
         if k.startswith(str(current_year)):
             total_yr['usercount'] = total_yr['usercount'] + val['usercount']
             total_yr['teamamt'] = total_yr['teamamt'] + val['teamamt']
@@ -421,8 +425,8 @@ def _performance_by_month(user_id, months=12, end_month=None, end_year=None):
             monthly_data[label]['usercount'] = user_count + row.total
 
     # Calculate averages
-    for i, vals in monthly_data.items():
-        average = round(vals['teamcount'] / float(vals['teamamt']), 1)
+    for i, vals in list(monthly_data.items()):
+        average = round(old_div(vals['teamcount'], float(vals['teamamt'])), 1)
         monthly_data[i]['teamavg'] = str(average)  # floats aren't valid json
 
     return monthly_data
@@ -561,7 +565,7 @@ def queue_counts(admin_reviewer, limited_reviewer, extension_reviews,
                 admin_reviewer=admin_reviewer).count),
         'expired_info_requests': expired.count,
     }
-    return {queue: count() for (queue, count) in counts.iteritems()}
+    return {queue: count() for (queue, count) in counts.items()}
 
 
 @legacy_addons_or_themes_reviewer_required
@@ -702,7 +706,7 @@ def _get_comments_for_hard_deleted_versions(addon):
     for c in comments:
         c.version = c.activity_log.details.get('version', c.created)
         comment_versions[c.version].all_activity.append(c)
-    return comment_versions.values()
+    return list(comment_versions.values())
 
 
 def perform_review_permission_checks(
@@ -854,7 +858,7 @@ def review(request, addon, channel=None):
             if not file_.has_been_validated:
                 devhub_tasks.validate(file_)
 
-    actions = form.helper.actions.items()
+    actions = list(form.helper.actions.items())
 
     try:
         # Find the previously approved version to compare to.
@@ -1031,7 +1035,7 @@ def queue_viewing(request):
 def queue_version_notes(request, addon_id):
     addon = get_object_or_404(Addon.objects, pk=addon_id)
     version = addon.latest_version
-    return {'releasenotes': unicode(version.releasenotes),
+    return {'releasenotes': str(version.releasenotes),
             'approvalnotes': version.approvalnotes}
 
 

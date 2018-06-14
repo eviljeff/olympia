@@ -75,7 +75,7 @@ REVIEWS_ADMIN = AclPermission('Reviews', 'Admin')
 
 # All permissions, for easy introspection
 PERMISSIONS_LIST = [
-    x for x in vars().values() if isinstance(x, AclPermission)]
+    x for x in list(vars().values()) if isinstance(x, AclPermission)]
 
 # Mapping between django-style object permissions and our own. By default,
 # require superuser admins (which also have all other permissions anyway) to do

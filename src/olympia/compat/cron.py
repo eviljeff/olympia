@@ -1,3 +1,6 @@
+from __future__ import division
+from six import text_type as str
+from past.utils import old_div
 from collections import defaultdict
 
 from django.db.models import Count, Max
@@ -36,7 +39,7 @@ def compatibility_report(index=None):
                                     date=latest)
 
     updates = dict(qs.values_list('addon', 'count'))
-    for chunk in chunked(updates.items(), 50):
+    for chunk in chunked(list(updates.items()), 50):
         chunk = dict(chunk)
         for addon in Addon.objects.filter(id__in=chunk):
             if (amo.FIREFOX not in addon.compatible_apps or
@@ -52,7 +55,7 @@ def compatibility_report(index=None):
             doc = docs[addon.id]
             doc.update(id=addon.id, slug=addon.slug, guid=addon.guid,
                        binary=addon.binary_components,
-                       name=unicode(addon.name), created=addon.created,
+                       name=str(addon.name), created=addon.created,
                        current_version=current_version)
             doc['count'] = chunk[addon.id]
             doc['usage'] = updates[addon.id]
@@ -81,7 +84,7 @@ def compatibility_report(index=None):
                     w['success' if works_properly else 'failure'] += cnt
                     w['total'] += cnt
                     # Calculate % of incompatibility reports.
-                    w['failure_ratio'] = w['failure'] / float(w['total'])
+                    w['failure_ratio'] = old_div(w['failure'], float(w['total']))
 
             compat = addon.compatible_apps[amo.FIREFOX]
             doc['support'] = {'min': compat.min.version_int,
@@ -97,7 +100,7 @@ def compatibility_report(index=None):
 
     # Figure out which add-ons are in the top 95%.
     running_total = 0
-    for addon, count in sorted(updates.items(), key=lambda x: x[1],
+    for addon, count in sorted(list(updates.items()), key=lambda x: x[1],
                                reverse=True):
         # Ignore the updates we skipped because of bad app compatibility.
         if addon in docs:
@@ -109,7 +112,7 @@ def compatibility_report(index=None):
     for compat in FIREFOX_COMPAT:
         version = vint(compat['previous'])
         # Find all the docs that have a max_version compatible with version.
-        supported = [compat_doc for compat_doc in docs.values()
+        supported = [compat_doc for compat_doc in list(docs.values())
                      if compat_doc['support']['max'] >= version]
         # Sort by count so we can get the top 95% most-used add-ons.
         supported = sorted(supported, key=lambda d: d['count'], reverse=True)
@@ -122,7 +125,7 @@ def compatibility_report(index=None):
 
     # Send it all to ES.
     bulk = []
-    for id_, doc in docs.items():
+    for id_, doc in list(docs.items()):
         for index in set(indices):
             bulk.append({
                 "_source": doc,

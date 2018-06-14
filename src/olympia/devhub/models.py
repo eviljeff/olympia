@@ -1,3 +1,4 @@
+
 import uuid
 
 from datetime import datetime
@@ -25,7 +26,7 @@ class RssKey(models.Model):
     user = models.ForeignKey(UserProfile, null=True, unique=True)
     created = models.DateField(default=datetime.now)
 
-    class Meta:
+    class Meta(object):
         db_table = 'hubrsskeys'
 
 
@@ -34,5 +35,5 @@ class BlogPost(ModelBase):
     date_posted = models.DateField(default=datetime.now)
     permalink = models.CharField(max_length=255)
 
-    class Meta:
+    class Meta(object):
         db_table = 'blogposts'

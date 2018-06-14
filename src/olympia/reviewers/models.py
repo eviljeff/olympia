@@ -1,3 +1,8 @@
+from __future__ import division
+from six import text_type as str
+from six.moves import zip
+from past.utils import old_div
+
 import json
 
 from collections import OrderedDict
@@ -82,13 +87,13 @@ class CannedResponse(ModelBase):
     response = models.TextField()
     sort_group = models.CharField(max_length=255)
     type = models.PositiveIntegerField(
-        choices=amo.CANNED_RESPONSE_CHOICES.items(), db_index=True, default=0)
+        choices=list(amo.CANNED_RESPONSE_CHOICES.items()), db_index=True, default=0)
 
-    class Meta:
+    class Meta(object):
         db_table = 'cannedresponses'
 
     def __unicode__(self):
-        return unicode(self.name)
+        return str(self.name)
 
 
 def get_flags(addon, version):
@@ -296,7 +301,7 @@ class ViewUnlistedAllList(RawSQLModel):
     @property
     def authors(self):
         ids = self._explode_concat(self._author_ids)
-        usernames = self._explode_concat(self._author_usernames, cast=unicode)
+        usernames = self._explode_concat(self._author_usernames, cast=str)
         return list(set(zip(ids, usernames)))
 
 
@@ -335,7 +340,7 @@ class ReviewerSubscription(ModelBase):
     user = models.ForeignKey(UserProfile)
     addon = models.ForeignKey(Addon)
 
-    class Meta:
+    class Meta(object):
         db_table = 'editor_subscriptions'
 
     def send_notification(self, version):
@@ -388,12 +393,12 @@ class ReviewerScore(ModelBase):
                                 related_name='+')
     score = models.IntegerField()
     # For automated point rewards.
-    note_key = models.SmallIntegerField(choices=amo.REVIEWED_CHOICES.items(),
+    note_key = models.SmallIntegerField(choices=list(amo.REVIEWED_CHOICES.items()),
                                         default=0)
     # For manual point rewards with a note.
     note = models.CharField(max_length=255)
 
-    class Meta:
+    class Meta(object):
         db_table = 'reviewer_scores'
         ordering = ('-created',)
 
@@ -539,9 +544,8 @@ class ReviewerScore(ModelBase):
         if val is not None:
             return val
 
-        val = (ReviewerScore.objects.no_cache().filter(user=user)
-                                    .aggregate(total=Sum('score'))
-                                    .values())[0]
+        val = (list(ReviewerScore.objects.no_cache().filter(user=user)
+                                    .aggregate(total=Sum('score')).values()))[0]
         if val is None:
             val = 0
 
@@ -730,7 +734,7 @@ class ReviewerScore(ModelBase):
             if user_level < 0:
                 level = ''
             else:
-                level = unicode(amo.REVIEWED_LEVELS[user_level]['name'])
+                level = str(amo.REVIEWED_LEVELS[user_level]['name'])
 
             scores.append({
                 'user_id': user_id,
@@ -769,7 +773,7 @@ class AutoApprovalSummary(ModelBase):
     weight = models.IntegerField(default=0)
     confirmed = models.NullBooleanField(default=None)
 
-    class Meta:
+    class Meta(object):
         db_table = 'editors_autoapprovalsummary'
 
     def __unicode__(self):
@@ -810,7 +814,7 @@ class AutoApprovalSummary(ModelBase):
                 max(min(int(addon.reputation or 0) * -100, 0), -300)),
             # Average daily users: value divided by 10000 is added to the
             # weight, up to a maximum of 100.
-            'average_daily_users': min(addon.average_daily_users / 10000, 100),
+            'average_daily_users': min(old_div(addon.average_daily_users, 10000), 100),
             # Pas rejection history: each "recent" rejected version (disabled
             # with an original status of null, so not disabled by a developer)
             # adds 10 to the weight, up to a maximum of 100.
@@ -864,7 +868,7 @@ class AutoApprovalSummary(ModelBase):
                     else 0),
                 # Size of code changes: 5kB is one point, up to a max of 100.
                 'size_of_code_changes': min(
-                    self.calculate_size_of_code_changes() / 5000, 100)
+                    old_div(self.calculate_size_of_code_changes(), 5000), 100)
             }
         except AutoApprovalNoValidationResultError:
             # We should have a FileValidationResult... since we don't and
@@ -898,7 +902,7 @@ class AutoApprovalSummary(ModelBase):
                 data = json.loads(file_.validation.validation)
                 total_code_size += (
                     data.get('metadata', {}).get('totalScannedFileSize', 0))
-            return total_code_size / number_of_files
+            return old_div(total_code_size, number_of_files)
 
         try:
             old_version = self.find_previous_confirmed_version()
@@ -1126,7 +1130,7 @@ class RereviewQueueTheme(ModelBase):
     unfiltered = RereviewQueueThemeManager(include_deleted=True)
     objects = RereviewQueueThemeManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'rereview_queue_theme'
 
     def __str__(self):
@@ -1160,7 +1164,7 @@ class ThemeLock(ModelBase):
     reviewer = UserForeignKey()
     expiry = models.DateTimeField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'theme_locks'
 
 
@@ -1170,7 +1174,7 @@ class Whiteboard(ModelBase):
     private = models.TextField(blank=True)
     public = models.TextField(blank=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'review_whiteboard'
 
     def __unicode__(self):

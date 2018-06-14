@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 import django  # noqa
 
 from django.db import migrations, models

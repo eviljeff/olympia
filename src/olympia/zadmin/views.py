@@ -1,3 +1,4 @@
+from six import text_type as str
 import csv
 
 from django import http
@@ -57,7 +58,7 @@ def show_settings(request):
 @admin_required
 def env(request):
     env = {}
-    for k in request.META.keys():
+    for k in list(request.META.keys()):
         env[k] = debug.cleanse_setting(k, request.META[k])
     return render(request, 'zadmin/settings.html',
                   {'settings_dict': env, 'title': 'Env!'})
@@ -113,7 +114,7 @@ def compat(request):
     data = {'appver': '%s' % FIREFOX_COMPAT[0]['main'],
             'minimum': minimum, 'ratio': ratio, 'type': 'all'}
     version = data['appver']
-    data.update(request.GET.items())
+    data.update(list(request.GET.items()))
 
     form = CompatForm(data)
     if request.GET and form.is_valid():
@@ -181,7 +182,7 @@ def es_collections_json(request):
     data = []
     for c in qs[:7]:
         data.append({'id': c.id,
-                     'name': unicode(c.name),
+                     'name': str(c.name),
                      'all_personas': c.all_personas,
                      'url': c.get_url_path()})
     return data

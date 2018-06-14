@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
+from six.moves import range
+
 import datetime
 import json
 
@@ -696,7 +699,7 @@ class TestXssOnThemeName(amo.tests.TestXss):
         super(TestXssOnThemeName, self).setUp()
         self.theme = addon_factory(type=amo.ADDON_PERSONA,
                                    status=amo.STATUS_PENDING,
-                                   name=unicode(self.name, 'utf-8'))
+                                   name=str(self.name, 'utf-8'))
         persona = self.theme.persona
         persona.persona_id = 0
         persona.header = 'header'

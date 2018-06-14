@@ -1,3 +1,4 @@
+from six import text_type as str
 import logging
 import os
 import sys

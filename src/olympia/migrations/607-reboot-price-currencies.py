@@ -1,3 +1,4 @@
+
 from django.db import models
 
 from market.models import Price
@@ -110,7 +111,7 @@ class FrozenPriceCurrency(amo.models.ModelBase):
     region = models.IntegerField(default=1)
     tier = models.ForeignKey(Price)
 
-    class Meta:
+    class Meta(object):
         db_table = 'price_currency'
 
 
@@ -124,7 +125,7 @@ def run():
             print('Tier does not exist: {0}'.format(k))
             continue
 
-        for country, values in v.items():
+        for country, values in list(v.items()):
             FrozenPriceCurrency.objects.create(
                 tier=tier,
                 carrier=None,

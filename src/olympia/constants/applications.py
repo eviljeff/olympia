@@ -1,3 +1,4 @@
+
 import re
 
 from django.utils.translation import ugettext_lazy as _
@@ -182,7 +183,7 @@ D2C_MIN_VERSIONS = {
     ANDROID.id: '11.0',
 }
 
-for _app in APPS_ALL.values():
+for _app in list(APPS_ALL.values()):
     _versions = list(getattr(_app, 'exclude_versions', []))
     # 99 comes from the hacks we do to make search tools compatible with
     # versions (bug 692360).

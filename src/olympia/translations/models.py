@@ -1,3 +1,7 @@
+from past.builtins import cmp
+from six import text_type as str
+from six.moves import map
+
 from django.db import connections, models, router
 from django.db.models.deletion import Collector
 from django.utils.encoding import force_text
@@ -20,7 +24,7 @@ class TranslationManager(ManagerBase):
     def remove_for(self, obj, locale):
         """Remove a locale for the given object."""
         ids = [getattr(obj, f.attname) for f in obj._meta.translated_fields]
-        qs = Translation.objects.filter(id__in=filter(None, ids),
+        qs = Translation.objects.filter(id__in=[_f for _f in ids if _f],
                                         locale=locale)
         qs.update(localized_string=None, localized_string_clean=None)
 
@@ -41,14 +45,14 @@ class Translation(ModelBase):
 
     objects = TranslationManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'translations'
         unique_together = ('id', 'locale')
 
     def __unicode__(self):
-        return self.localized_string and unicode(self.localized_string) or ''
+        return self.localized_string and str(self.localized_string) or ''
 
-    def __nonzero__(self):
+    def __bool__(self):
         # __nonzero__ is called to evaluate an object in a boolean context.  We
         # want Translations to be falsy if their string is empty.
         return (bool(self.localized_string) and
@@ -182,19 +186,19 @@ class PurifiedTranslation(Translation):
         'acronym': ['title'],
     }
 
-    class Meta:
+    class Meta(object):
         proxy = True
 
     def __unicode__(self):
         if not self.localized_string_clean:
             self.clean()
-        return unicode(self.localized_string_clean)
+        return str(self.localized_string_clean)
 
     def __html__(self):
-        return unicode(self)
+        return str(self)
 
     def __truncate__(self, length, killwords, end):
-        return utils.truncate(unicode(self), length, killwords, end)
+        return utils.truncate(str(self), length, killwords, end)
 
     def clean(self):
         from olympia.amo.utils import clean_nl
@@ -214,7 +218,7 @@ class LinkifiedTranslation(PurifiedTranslation):
     """Run the string through bleach to get a linkified version."""
     allowed_tags = ['a']
 
-    class Meta:
+    class Meta(object):
         proxy = True
 
 
@@ -239,14 +243,14 @@ class NoLinksMixin(object):
 class NoLinksTranslation(NoLinksMixin, PurifiedTranslation):
     """Run the string through bleach, escape markup and strip all the links."""
 
-    class Meta:
+    class Meta(object):
         proxy = True
 
 
 class NoLinksNoMarkupTranslation(NoLinksMixin, LinkifiedTranslation):
     """Run the string through bleach, escape markup and strip all the links."""
 
-    class Meta:
+    class Meta(object):
         proxy = True
 
 
@@ -256,7 +260,7 @@ class TranslationSequence(models.Model):
     """
     id = models.IntegerField(primary_key=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'translations_seq'
 
 

@@ -32,7 +32,7 @@ class TestPages(TestCase):
 class TestRedirects(TestCase):
 
     def _check(self, pages):
-        for old, new in pages.iteritems():
+        for old, new in pages.items():
             if new.startswith('http'):
                 r = self.client.get(old)
                 assert r['Location'] == new

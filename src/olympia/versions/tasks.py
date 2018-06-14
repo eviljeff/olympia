@@ -1,6 +1,6 @@
 from __future__ import division
 import os
-from itertools import izip_longest
+from itertools import zip_longest
 
 from django.template import loader
 
@@ -20,7 +20,7 @@ def _build_static_theme_preview_context(theme_manifest, header_root):
     context = {'amo': amo}
     context.update(
         {process_color_value(prop, color)
-         for prop, color in theme_manifest.get('colors', {}).items()})
+         for prop, color in list(theme_manifest.get('colors', {}).items())})
     images_dict = theme_manifest.get('images', {})
     header_url = images_dict.get(
         'headerURL', images_dict.get('theme_frame', ''))
@@ -39,7 +39,7 @@ def _build_static_theme_preview_context(theme_manifest, header_root):
                          .get('additional_backgrounds_tiling', []))
     additional_backgrounds = [
         AdditionalBackground(path, alignment, tiling, header_root)
-        for (path, alignment, tiling) in izip_longest(
+        for (path, alignment, tiling) in zip_longest(
             additional_srcs, additional_alignments, additional_tiling)
         if path is not None]
     context.update(additional_backgrounds=additional_backgrounds)

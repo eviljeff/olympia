@@ -1,3 +1,7 @@
+from six import text_type as str
+from six.moves import map
+from six.moves import range
+
 import codecs
 import mimetypes
 import os
@@ -245,7 +249,7 @@ class FileViewer(object):
         for manifest in ('install.rdf', 'manifest.json', 'package.json'):
             if manifest in files:
                 return manifest
-        return files.keys()[0] if files else None  # Eg: it's a search engine.
+        return list(files.keys())[0] if files else None  # Eg: it's a search engine.
 
     def get_files(self):
         """
@@ -362,10 +366,10 @@ class FileViewer(object):
         """Normalize file names, strip /tmp/xxxx/ prefix."""
         prefix_len = settings.TMP_PATH.count('/')
 
-        normalized_files = filter(None, (
+        normalized_files = [_f for _f in (
             fname.strip('/').split('/')[prefix_len + 1:]
             for fname in expected_files
-            if fname.startswith(settings.TMP_PATH)))
+            if fname.startswith(settings.TMP_PATH)) if _f]
 
         normalized_files = [os.path.join(*fname) for fname in normalized_files]
 
@@ -419,7 +423,7 @@ class DiffHelper(object):
         left_files = self.left.get_files()
         right_files = self.right.get_files()
         different = []
-        for key, file in left_files.items():
+        for key, file in list(left_files.items()):
             file['url'] = self.get_url(file['short'])
             diff = file['sha256'] != right_files.get(key, {}).get('sha256')
             file['diff'] = diff
@@ -453,7 +457,7 @@ class DiffHelper(object):
 
         left_files = self.left.get_files()
         right_files = self.right.get_files()
-        for key, file in right_files.items():
+        for key, file in list(right_files.items()):
             if key not in left_files:
                 # Make sure we have all the parent directories of
                 # deleted files.

@@ -1,3 +1,5 @@
+from six.moves import map
+from six import string_types as basestring
 from django.conf import settings
 from django.template import loader
 from django.utils.encoding import force_text
@@ -56,7 +58,7 @@ def users_list(users, size=None, max_text_length=None):
     if max_text_length:
         user_list = [_user_link(user, max_text_length) for user in users]
     else:
-        user_list = map(_user_link, users)
+        user_list = list(map(_user_link, users))
 
     return jinja2.Markup(', '.join(user_list + tail))
 
@@ -65,7 +67,7 @@ def users_list(users, size=None, max_text_length=None):
 @library.render_with('users/helpers/addon_users_list.html')
 @jinja2.contextfunction
 def addon_users_list(context, addon):
-    ctx = dict(context.items())
+    ctx = dict(list(context.items()))
     ctx.update(addon=addon, amo=amo)
     return ctx
 
@@ -86,7 +88,7 @@ def _user_link(user, max_text_length=None):
 @library.filter
 @jinja2.contextfilter
 def user_vcard(context, user, table_class='person-info', is_profile=False):
-    c = dict(context.items())
+    c = dict(list(context.items()))
     c.update({
         'profile': user,
         'table_class': table_class,
@@ -100,7 +102,7 @@ def user_vcard(context, user, table_class='person-info', is_profile=False):
 @library.render_with('users/report_abuse.html')
 @jinja2.contextfunction
 def user_report_abuse(context, hide, profile):
-    new = dict(context.items())
+    new = dict(list(context.items()))
     new.update({'hide': hide, 'profile': profile,
                 'abuse_form': context['abuse_form']})
     return new

@@ -1,3 +1,4 @@
+
 from django.db import models
 
 from django_extensions.db.fields.json import JSONField
@@ -19,7 +20,7 @@ class CompatReport(ModelBase):
     app_multiprocess_enabled = models.BooleanField(default=False)
     multiprocess_compatible = models.NullBooleanField(default=None)
 
-    class Meta:
+    class Meta(object):
         db_table = 'compatibility_reports'
 
     @classmethod
@@ -54,7 +55,7 @@ class AppCompat(ModelBase):
         }
     """
 
-    class Meta:
+    class Meta(object):
         abstract = True
         db_table = 'compat'
 
@@ -65,5 +66,5 @@ class CompatTotals(ModelBase):
     """
     total = models.PositiveIntegerField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'compat_totals'

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 import hashlib
 import os.path
 
@@ -480,7 +481,7 @@ class TestVersion(TestCase):
             ViewPendingQueue: amo.STATUS_PUBLIC
         }
 
-        for queue, status in queue_to_status.iteritems():  # Listed queues.
+        for queue, status in queue_to_status.items():  # Listed queues.
             self.version.addon.update(status=status)
             assert self.version.current_queue == queue
 
@@ -952,7 +953,7 @@ class TestStaticThemeFromUpload(UploadTest):
         assert generate_static_theme_preview_mock.call_count == 1
         assert version.get_background_image_urls() == [
             '%s/%s/%s/%s' % (user_media_url('addons'), str(self.addon.id),
-                             unicode(version.id), 'weta.png')
+                             str(version.id), 'weta.png')
         ]
 
     @mock.patch('olympia.versions.models.generate_static_theme_preview')
@@ -967,7 +968,7 @@ class TestStaticThemeFromUpload(UploadTest):
         assert generate_static_theme_preview_mock.call_count == 1
         assert version.get_background_image_urls() == [
             '%s/%s/%s/%s' % (user_media_url('addons'), str(self.addon.id),
-                             unicode(version.id), 'weta.png')
+                             str(version.id), 'weta.png')
         ]
 
     @mock.patch('olympia.versions.models.generate_static_theme_preview')
@@ -1035,7 +1036,7 @@ class TestApplicationsVersions(TestCase):
         addon = addon_factory(version_kw=dict(min_app_version=u'ك',
                                               max_app_version=u'ك'))
         version = addon.current_version
-        assert unicode(version.apps.all()[0]) == u'Firefox ك - ك'
+        assert str(version.apps.all()[0]) == u'Firefox ك - ك'
 
 
 class TestVersionPreview(BasePreviewMixin, TestCase):

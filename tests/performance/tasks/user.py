@@ -1,5 +1,7 @@
+from future import standard_library
+standard_library.install_aliases()
 import logging
-import urlparse
+import urllib.parse
 import random
 
 from django.conf import settings
@@ -56,7 +58,7 @@ class BaseUserTaskSet(TaskSet):
             '/api/v3/accounts/login/start/',
             allow_redirects=True)
 
-        params = dict(urlparse.parse_qsl(response.url))
+        params = dict(urllib.parse.parse_qsl(response.url))
         fxa_state = params['state']
 
         log.debug('Get browser id session token')

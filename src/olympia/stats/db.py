@@ -1,12 +1,13 @@
+from six import text_type as str
 import json
 
 from django.db import models
+from future.utils import with_metaclass
 
 
-class StatsDictField(models.TextField):
+class StatsDictField(with_metaclass(models.SubfieldBase, models.TextField)):
 
     description = 'A dictionary of counts stored as serialized json.'
-    __metaclass__ = models.SubfieldBase
 
     def db_type(self, connection):
         return 'text'

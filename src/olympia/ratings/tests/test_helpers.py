@@ -96,5 +96,5 @@ class HelpersTest(TestCase):
         doc = pq(self.render('{{ edit_review_form() }}'))
         assert doc('#review-edit-form').length == 1
         assert doc('p.req').length == 1
-        for name in RatingForm().fields.keys():
+        for name in list(RatingForm().fields.keys()):
             assert doc('[name=%s]' % name).length == 1

@@ -1,4 +1,7 @@
-import StringIO
+from future import standard_library
+standard_library.install_aliases()
+from six.moves import range
+import io
 import threading
 import time
 
@@ -22,7 +25,7 @@ class TestIndexCommand(ESTestCase):
 
         # We store previously existing indices in order to delete the ones
         # created during this test run.
-        self.indices = self.es.indices.stats()['indices'].keys()
+        self.indices = list(self.es.indices.stats()['indices'].keys())
 
     # Since this test plays with transactions, but we don't have (and don't
     # really want to have) a ESTransactionTestCase class, use the fixture setup
@@ -34,7 +37,7 @@ class TestIndexCommand(ESTestCase):
         return TransactionTestCase._fixture_teardown(self)
 
     def tearDown(self):
-        current_indices = self.es.indices.stats()['indices'].keys()
+        current_indices = list(self.es.indices.stats()['indices'].keys())
         for index in current_indices:
             if index not in self.indices:
                 self.es.indices.delete(index, ignore=404)
@@ -73,8 +76,8 @@ class TestIndexCommand(ESTestCase):
     def get_indices_aliases(cls):
         """Return the test indices with an alias."""
         indices = cls.es.indices.get_alias()
-        items = [(index, aliases['aliases'].keys()[0])
-                 for index, aliases in indices.items()
+        items = [(index, list(aliases['aliases'].keys())[0])
+                 for index, aliases in list(indices.items())
                  if len(aliases['aliases']) > 0 and index.startswith('test_')]
         items.sort()
         return items
@@ -94,7 +97,7 @@ class TestIndexCommand(ESTestCase):
         # This is to start a reindexation in the background.
         class ReindexThread(threading.Thread):
             def __init__(self):
-                self.stdout = StringIO.StringIO()
+                self.stdout = io.StringIO()
                 super(ReindexThread, self).__init__()
 
             def run(self):

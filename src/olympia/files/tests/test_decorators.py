@@ -1,3 +1,4 @@
+
 from django import http
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.test import RequestFactory
@@ -43,7 +44,7 @@ class AllowedTest(TestCase):
         self.assertRaises(PermissionDenied, allowed, self.request, self.file)
 
     def test_addon_not_found(self):
-        class MockVersion:
+        class MockVersion(object):
             @property
             def addon(self):
                 raise ObjectDoesNotExist

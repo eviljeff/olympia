@@ -1,3 +1,6 @@
+from six import text_type as str
+from six.moves import range
+from six.moves import object
 import logging
 import random
 import collections

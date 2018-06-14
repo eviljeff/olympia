@@ -1,3 +1,10 @@
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+from six.moves import next
+from six.moves import range
+from six import string_types as basestring
+
 import collections
 import contextlib
 import hashlib
@@ -6,13 +13,13 @@ import os
 import re
 import shutil
 import stat
-import StringIO
+import io
 import struct
 import tempfile
 import zipfile
 import scandir
 
-from cStringIO import StringIO as cStringIO
+from io import StringIO as cStringIO
 from datetime import datetime, timedelta
 from xml.dom import minidom
 from zipfile import BadZipfile, ZipFile
@@ -107,7 +114,7 @@ def get_file(fileorpath):
 def make_xpi(files):
     f = cStringIO()
     z = ZipFile(f, 'w')
-    for path, data in files.items():
+    for path, data in list(files.items()):
         z.writestr(path, data)
     z.close()
     f.seek(0)
@@ -299,7 +306,7 @@ class RDFExtractor(object):
         match = list(self.rdf.objects(ctx, predicate=self.uri(name)))
         # These come back as rdflib.Literal, which subclasses unicode.
         if match:
-            return unicode(match[0])
+            return str(match[0])
 
     def apps(self):
         rv = []
@@ -666,7 +673,7 @@ class SafeZip(object):
             parts = path.split('!')
             for part in parts[:-1]:
                 jar = self.__class__(
-                    StringIO.StringIO(jar.zip_file.read(part)),
+                    io.StringIO(jar.zip_file.read(part)),
                     raise_on_failure=True)
                 jar.is_valid()
             path = parts[-1]
@@ -797,7 +804,7 @@ def extract_xpi(xpi, path, expand=False, verify=True):
     all_files = get_all_files(tempdir)
 
     if expand:
-        for x in xrange(0, 10):
+        for x in range(0, 10):
             flag = False
             for root, dirs, files in scandir.walk(tempdir):
                 for name in files:

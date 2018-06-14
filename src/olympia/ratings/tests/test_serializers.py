@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from django.test import override_settings
 
 from mock import Mock
@@ -39,7 +40,7 @@ class TestBaseRatingSerializer(TestCase):
             'id': addon.pk,
             'slug': addon.slug,
         }
-        assert result['body'] == unicode(self.rating.body)
+        assert result['body'] == str(self.rating.body)
         assert result['created'] == (
             self.rating.created.replace(microsecond=0).isoformat() + 'Z')
         assert result['previous_count'] == int(self.rating.previous_count)
@@ -48,7 +49,7 @@ class TestBaseRatingSerializer(TestCase):
         assert result['reply'] is None
         assert result['user'] == {
             'id': self.user.pk,
-            'name': unicode(self.user.name),
+            'name': str(self.user.name),
             'url': None,
             'username': self.user.username,
         }
@@ -157,12 +158,12 @@ class TestBaseRatingSerializer(TestCase):
         assert 'rating' not in result['reply']
         assert 'reply' not in result['reply']
         assert result['reply']['id'] == reply.pk
-        assert result['reply']['body'] == unicode(reply.body)
+        assert result['reply']['body'] == str(reply.body)
         assert result['reply']['created'] == (
             reply.created.replace(microsecond=0).isoformat() + 'Z')
         assert result['reply']['user'] == {
             'id': reply_user.pk,
-            'name': unicode(reply_user.name),
+            'name': str(reply_user.name),
             # should be the profile for a developer
             'url': absolutify(reply_user.get_url_path()),
             'username': reply_user.username,
@@ -216,12 +217,12 @@ class TestBaseRatingSerializer(TestCase):
         assert 'rating' not in result['reply']
         assert 'reply' not in result['reply']
         assert result['reply']['id'] == reply.pk
-        assert result['reply']['body'] == unicode(reply.body)
+        assert result['reply']['body'] == str(reply.body)
         assert result['reply']['created'] == (
             reply.created.replace(microsecond=0).isoformat() + 'Z')
         assert result['reply']['user'] == {
             'id': reply_user.pk,
-            'name': unicode(reply_user.name),
+            'name': str(reply_user.name),
             'url': absolutify(reply_user.get_url_path()),
             'username': reply_user.username,
         }

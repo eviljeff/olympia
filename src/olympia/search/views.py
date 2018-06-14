@@ -1,3 +1,7 @@
+from six.moves import zip
+from six.moves import map
+from six import text_type as str
+
 from django import http
 from django.db.models import Q
 from django.db.transaction import non_atomic_requests
@@ -29,7 +33,7 @@ log = olympia.core.logger.getLogger('z.search')
 def _personas(request):
     """Handle the request for persona searches."""
 
-    initial = dict(request.GET.items())
+    initial = dict(list(request.GET.items()))
 
     # Ignore these filters since return the same results for Firefox
     # as for Thunderbird, etc.
@@ -78,7 +82,7 @@ def _collections(request):
     # Sorting by relevance isn't an option. Instead the default is `weekly`.
     initial = {'sort': 'weekly'}
     # Update with GET variables.
-    initial.update(request.GET.items())
+    initial.update(list(request.GET.items()))
     # Ignore appver/platform and set default number of collections per page.
     initial.update(appver=None, platform=None, pp=DEFAULT_NUM_COLLECTIONS)
 
@@ -143,7 +147,7 @@ class BaseAjaxSearch(object):
         self.request = request
         self.excluded_ids = excluded_ids
         self.src = getattr(self, 'src', None)
-        self.types = getattr(self, 'types', amo.ADDON_TYPES.keys())
+        self.types = getattr(self, 'types', list(amo.ADDON_TYPES.keys()))
         self.limit = 10
         self.key = 'q'  # Name of search field.
         self.ratings = ratings
@@ -182,7 +186,7 @@ class BaseAjaxSearch(object):
 
     def _build_fields(self, item, fields):
         data = {}
-        for key, prop in fields.iteritems():
+        for key, prop in fields.items():
             if isinstance(prop, dict):
                 data[key] = self._build_fields(item, prop)
             else:
@@ -193,7 +197,7 @@ class BaseAjaxSearch(object):
                     val = getattr(item, prop, '')
                     if callable(val):
                         val = val()
-                data[key] = unicode(val)
+                data[key] = str(val)
         return data
 
     def build_list(self):
@@ -264,7 +268,7 @@ def _build_suggestions(request, cat, suggester):
         if cat != 'apps':
             # Applications.
             for a in amo.APP_USAGE:
-                name_ = unicode(a.pretty).lower()
+                name_ = str(a.pretty).lower()
                 word_matches = [w for w in q_.split() if name_ in w]
                 if q_ in name_ or word_matches:
                     results.append({
@@ -286,12 +290,12 @@ def _build_suggestions(request, cat, suggester):
         for c in cats:
             if not c.name:
                 continue
-            name_ = unicode(c.name).lower()
+            name_ = str(c.name).lower()
             word_matches = [w for w in q_.split() if name_ in w]
             if q_ in name_ or word_matches:
                 results.append({
                     'id': c.id,
-                    'name': unicode(c.name),
+                    'name': str(c.name),
                     'url': c.get_url_path(),
                     'cls': 'cat'
                 })
@@ -512,7 +516,7 @@ def version_sidebar(request, form_data, aggregations):
     if 'appver' in request.GET or form_data.get('appver'):
         appver = form_data.get('appver')
 
-    app = unicode(request.APP.pretty)
+    app = str(request.APP.pretty)
     exclude_versions = getattr(request.APP, 'exclude_versions', [])
     # L10n: {0} is an application, such as Firefox. This means "any version of
     # Firefox."
@@ -531,7 +535,7 @@ def version_sidebar(request, form_data, aggregations):
              for v in vs)
     versions = ['%s.%s' % v for v in sorted(vs, reverse=True)]
 
-    for version, floated in zip(versions, map(float, versions)):
+    for version, floated in zip(versions, list(map(float, versions))):
         if (floated not in exclude_versions and
                 floated > request.APP.min_display_version):
             rv.append(FacetLink('%s %s' % (app, version), {'appver': version},
@@ -541,7 +545,7 @@ def version_sidebar(request, form_data, aggregations):
 
 def platform_sidebar(request, form_data):
     qplatform = form_data.get('platform')
-    app_platforms = request.APP.platforms.values()
+    app_platforms = list(request.APP.platforms.values())
     ALL = app_platforms.pop(0)
 
     # The default is to show "All Systems."
@@ -572,7 +576,7 @@ def tag_sidebar(request, form_data, aggregations):
 
 
 def fix_search_query(query, extra_params=None):
-    rv = {force_bytes(k): v for k, v in query.items()}
+    rv = {force_bytes(k): v for k, v in list(query.items())}
     changed = False
     # Change old keys to new names.
     keys = {
@@ -580,7 +584,7 @@ def fix_search_query(query, extra_params=None):
         'pid': 'platform',
         'type': 'atype',
     }
-    for old, new in keys.items():
+    for old, new in list(keys.items()):
         if old in query:
             rv[new] = rv.pop(old)
             changed = True
@@ -596,13 +600,13 @@ def fix_search_query(query, extra_params=None):
         },
         'platform': {
             str(p.id): p.shortname
-            for p in amo.PLATFORMS.values()
+            for p in list(amo.PLATFORMS.values())
         },
-        'atype': {k: str(v) for k, v in amo.ADDON_SEARCH_SLUGS.items()},
+        'atype': {k: str(v) for k, v in list(amo.ADDON_SEARCH_SLUGS.items())},
     }
     if extra_params:
         params.update(extra_params)
-    for key, fixes in params.items():
+    for key, fixes in list(params.items()):
         if key in rv and rv[key] in fixes:
             rv[key] = fixes[rv[key]]
             changed = True

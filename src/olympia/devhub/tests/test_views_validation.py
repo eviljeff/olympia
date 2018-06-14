@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 import json
 import shutil
 
@@ -617,7 +618,7 @@ class TestCompatibilityResults(TestCase):
         assert response.status_code == 200
         doc = pq(response.content)
         trans = json.loads(doc('.results').attr('data-app-trans'))
-        for app in amo.APPS.values():
+        for app in list(amo.APPS.values()):
             assert trans[app.guid] == app.pretty
 
     def test_app_version_change_links(self):
@@ -695,7 +696,7 @@ class TestUploadCompatCheck(BaseUploadTest):
         assert 'this tool only works with legacy add-ons' in res.content
 
         options = doc('#id_application option')
-        expected = [(str(a.id), unicode(a.pretty)) for a in amo.APP_USAGE]
+        expected = [(str(a.id), str(a.pretty)) for a in amo.APP_USAGE]
         for idx, element in enumerate(options):
             e = pq(element)
             val, text = expected[idx]

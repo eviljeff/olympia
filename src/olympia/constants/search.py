@@ -56,7 +56,7 @@ SEARCH_ANALYZER_MAP = {
 
 # This dict is an inverse mapping of ANALYZER_MAP.
 SEARCH_LANGUAGE_TO_ANALYZER = {}
-for analyzer, languages in SEARCH_ANALYZER_MAP.items():
+for analyzer, languages in list(SEARCH_ANALYZER_MAP.items()):
     for language in languages:
         SEARCH_LANGUAGE_TO_ANALYZER[language] = analyzer
 

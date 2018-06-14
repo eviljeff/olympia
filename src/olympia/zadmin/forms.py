@@ -1,3 +1,7 @@
+from __future__ import division
+from six.moves import range
+from past.utils import old_div
+
 from django import forms
 from django.conf import settings
 from django.forms import ModelForm
@@ -49,7 +53,7 @@ class FeaturedCollectionForm(happyforms.ModelForm):
     collection = forms.CharField(widget=forms.HiddenInput)
     locale = forms.ChoiceField(choices=LOCALES, required=False)
 
-    class Meta:
+    class Meta(object):
         model = FeaturedCollection
         fields = ('application', 'locale')
 
@@ -95,7 +99,7 @@ class MonthlyPickForm(happyforms.ModelForm):
                             widget=forms.Textarea(attrs={'cols': 20,
                                                          'rows': 2}))
 
-    class Meta:
+    class Meta(object):
         model = MonthlyPick
         widgets = {
             'addon': forms.TextInput(),
@@ -108,13 +112,13 @@ MonthlyPickFormSet = modelformset_factory(MonthlyPick, form=MonthlyPickForm,
 
 
 class AddonStatusForm(ModelForm):
-    class Meta:
+    class Meta(object):
         model = Addon
         fields = ('status',)
 
 
 class FileStatusForm(ModelForm):
-    class Meta:
+    class Meta(object):
         model = File
         fields = ('status',)
 
@@ -131,7 +135,7 @@ FileFormSet = modelformset_factory(File, form=FileStatusForm,
 
 
 class SiteEventForm(ModelForm):
-    class Meta:
+    class Meta(object):
         model = SiteEvent
         fields = ('start', 'end', 'event_type', 'description',
                   'more_info_url')
@@ -147,9 +151,9 @@ class CompatForm(forms.Form):
                                       ('binary', _('Binary')),
                                       ('non-binary', _('Non-binary'))),
                              widget=RadioSelect, required=False)
-    _minimum_choices = [(x, x) for x in xrange(100, -10, -10)]
+    _minimum_choices = [(x, x) for x in range(100, -10, -10)]
     minimum = forms.TypedChoiceField(choices=_minimum_choices, coerce=int,
                                      required=False)
-    _ratio_choices = [('%.1f' % (x / 10.0), '%.0f%%' % (x * 10))
-                      for x in xrange(9, -1, -1)]
+    _ratio_choices = [('%.1f' % (old_div(x, 10.0)), '%.0f%%' % (x * 10))
+                      for x in range(9, -1, -1)]
     ratio = forms.ChoiceField(choices=_ratio_choices, required=False)

@@ -1,11 +1,15 @@
 """
 API views
 """
+from future import standard_library
+standard_library.install_aliases()
+from six.moves import map
+
 import hashlib
 import itertools
 import json
 import random
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from datetime import date, timedelta
 
@@ -315,13 +319,13 @@ def guid_search(request, api_version, guids):
                 addons_xml[key] = addon_xml
 
     if dirty_keys:
-        cache.set_many(dict((k, v) for k, v in addons_xml.iteritems()
+        cache.set_many(dict((k, v) for k, v in addons_xml.items()
                             if k in dirty_keys))
 
     compat = (CompatOverride.objects.filter(guid__in=guids)
               .transform(CompatOverride.transformer))
 
-    addons_xml = [v for v in addons_xml.values() if v]
+    addons_xml = [v for v in list(addons_xml.values()) if v]
     return render_xml(request, 'legacy_api/search.xml', {
         'addons_xml': addons_xml,
         'total': len(addons_xml),
@@ -377,7 +381,7 @@ class SearchView(APIView):
         if self.version < 1.5:
             # Fix doubly encoded query strings.
             try:
-                query = urllib.unquote(query.encode('ascii'))
+                query = urllib.parse.unquote(query.encode('ascii'))
             except UnicodeEncodeError:
                 # This fails if the string is already UTF-8.
                 pass
@@ -474,7 +478,7 @@ class ListView(APIView):
         def f():
             return self._process(addons, *args)
 
-        return cached_with(addons, f, map(force_bytes, args))
+        return cached_with(addons, f, list(map(force_bytes, args)))
 
     def _process(self, addons, *args):
         return self.render('legacy_api/list.xml',
@@ -503,7 +507,7 @@ def redirect_view(request, url):
     Redirect all requests that come here to an API call with a view parameter.
     """
     dest = '/api/%.1f/%s' % (legacy_api.CURRENT_VERSION,
-                             urllib.quote(url.encode('utf-8')))
+                             urllib.parse.quote(url.encode('utf-8')))
     dest = get_url_prefix().fix(dest)
 
     return HttpResponsePermanentRedirect(dest)

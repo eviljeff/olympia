@@ -1,7 +1,11 @@
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+from six.moves import range
 import json
 
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core import mail
@@ -134,13 +138,13 @@ class TestEdit(UserViewBase):
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['biography'])
-        assert unicode(self.get_profile().biography) == data['biography']
+        assert str(self.get_profile().biography) == data['biography']
 
         data['biography'] = 'yyy unst unst'
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['biography'])
-        assert unicode(self.get_profile().biography) == data['biography']
+        assert str(self.get_profile().biography) == data['biography']
 
     def test_bio_no_links(self):
         self.data.update(biography='<a href="https://google.com">google</a>')
@@ -204,7 +208,7 @@ class TestEdit(UserViewBase):
 
         assert UserNotification.objects.count() == len(notifications_not_dev)
         assert UserNotification.objects.filter(enabled=True).count() == (
-            len(filter(lambda x: x.mandatory, notifications_not_dev)))
+            len([x for x in notifications_not_dev if x.mandatory]))
         self.check_default_choices(choices_not_dev, checked=False)
 
     def test_edit_notifications_non_dev_error(self):
@@ -724,7 +728,7 @@ class TestProfileSections(TestCase):
         assert pq(r.content)('#my-addons .paginator').length == 0
 
     def test_my_reviews_pagination(self):
-        for i in xrange(20):
+        for i in range(20):
             AddonUser.objects.create(user=self.user, addon_id=3615)
         assert self.user.num_addons_listed > 10, (
             'This user should have way more than 10 add-ons.')
@@ -751,7 +755,7 @@ class TestProfileSections(TestCase):
 
         a = li.find('a')
         assert a.attr('href') == coll.get_url_path()
-        assert a.text() == unicode(coll.name)
+        assert a.text() == str(coll.name)
 
     def test_my_collections_created(self):
         coll = Collection.objects.listed().get(author=self.user)
@@ -771,7 +775,7 @@ class TestProfileSections(TestCase):
 
         a = li.find('a')
         assert a.attr('href') == coll.get_url_path()
-        assert a.text() == unicode(coll.name)
+        assert a.text() == str(coll.name)
 
     def test_no_my_collections(self):
         Collection.objects.filter(author=self.user).delete()
@@ -847,7 +851,7 @@ class TestThemesProfile(TestCase):
         results = doc('.personas-grid .persona.hovercard')
         assert results.length == 1
         assert force_text(
-            results.find('h3').html()) == unicode(self.theme.name)
+            results.find('h3').html()) == str(self.theme.name)
 
     def test_bad_user(self):
         res = self.client.get(reverse('users.themes', args=['yolo']))

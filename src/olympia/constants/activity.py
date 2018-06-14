@@ -2,6 +2,7 @@
 # module rather than `amo.celery`.
 from __future__ import absolute_import
 
+
 from collections import namedtuple
 from inspect import isclass
 
@@ -638,7 +639,7 @@ class CREATE_STATICTHEME_FROM_PERSONA(_LOG):
     keep = True
 
 
-LOGS = [x for x in vars().values()
+LOGS = [x for x in list(vars().values())
         if isclass(x) and issubclass(x, _LOG) and x != _LOG]
 # Make sure there's no duplicate IDs.
 assert len(LOGS) == len(set(log.id for log in LOGS))

@@ -1,6 +1,8 @@
+from future import standard_library
+standard_library.install_aliases()
 import datetime
 import os
-import urlparse
+import urllib.parse
 
 import jwt
 import pytest
@@ -62,7 +64,7 @@ def fxa_account(base_url):
 def jwt_issuer(base_url, variables):
     """JWT Issuer from variables file or env variable named 'JWT_ISSUER'"""
     try:
-        hostname = urlparse.urlsplit(base_url).hostname
+        hostname = urllib.parse.urlsplit(base_url).hostname
         return variables['api'][hostname]['jwt_issuer']
     except KeyError:
         return os.getenv('JWT_ISSUER')
@@ -72,7 +74,7 @@ def jwt_issuer(base_url, variables):
 def jwt_secret(base_url, variables):
     """JWT Secret from variables file or env vatiable named "JWT_SECRET"""
     try:
-        hostname = urlparse.urlsplit(base_url).hostname
+        hostname = urllib.parse.urlsplit(base_url).hostname
         return variables['api'][hostname]['jwt_secret']
     except KeyError:
         return os.getenv('JWT_SECRET')

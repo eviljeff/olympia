@@ -1,3 +1,4 @@
+
 from django.utils.encoding import force_text
 
 import mock
@@ -20,7 +21,7 @@ class TestReviewForm(TestCase):
         self.addon = Addon.objects.get(pk=3615)
         self.version = self.addon.versions.all()[0]
 
-        class FakeRequest:
+        class FakeRequest(object):
             user = UserProfile.objects.get(pk=10482)
 
         self.request = FakeRequest()
@@ -75,13 +76,13 @@ class TestReviewForm(TestCase):
         actions = self.set_statuses_and_get_actions(
             addon_status=amo.STATUS_NOMINATED,
             file_status=amo.STATUS_AWAITING_REVIEW)
-        assert 'public' in actions.keys()
+        assert 'public' in list(actions.keys())
         # Test with an non-admin reviewer.
         action_allowed_mock.return_value = False
         actions = self.set_statuses_and_get_actions(
             addon_status=amo.STATUS_NOMINATED,
             file_status=amo.STATUS_AWAITING_REVIEW)
-        assert 'public' not in actions.keys()
+        assert 'public' not in list(actions.keys())
 
     def test_canned_responses(self):
         self.cr_addon = CannedResponse.objects.create(

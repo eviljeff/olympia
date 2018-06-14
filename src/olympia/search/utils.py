@@ -1,3 +1,4 @@
+from six import text_type as str
 import re
 
 from olympia.versions.compare import version_re
@@ -5,7 +6,7 @@ from olympia.versions.compare import version_re
 
 def floor_version(version):
     if version:
-        version = unicode(
+        version = str(
             version).replace('.x', '.0').replace('.*', '.0').replace('*', '.0')
         match = re.match(version_re, version)
         if match:

@@ -1,3 +1,5 @@
+from six import text_type as str
+
 import json
 
 from decimal import Decimal
@@ -20,7 +22,7 @@ class Config(caching.base.CachingMixin, models.Model):
 
     objects = caching.base.CachingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = u'config'
 
     def __unicode__(self):
@@ -103,7 +105,7 @@ class ValidationJob(ModelBase):
                 if (total and completed) else 0),
         }
 
-    class Meta:
+    class Meta(object):
         db_table = 'validation_job'
 
 
@@ -124,7 +126,7 @@ class ValidationResult(ModelBase):
     task_error = models.TextField(null=True)
     completed = models.DateTimeField(null=True, db_index=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'validation_result'
 
     def apply_validation(self, validation):
@@ -184,7 +186,7 @@ class EmailPreview(ModelBase):
     subject = models.CharField(max_length=255)
     body = models.TextField()
 
-    class Meta:
+    class Meta(object):
         db_table = 'email_preview'
 
 
@@ -192,7 +194,7 @@ class SiteEvent(models.Model):
     """Information records about downtime, releases, and other pertinent
        events on the site."""
 
-    SITE_EVENT_CHOICES = amo.SITE_EVENT_CHOICES.items()
+    SITE_EVENT_CHOICES = list(amo.SITE_EVENT_CHOICES.items())
 
     start = models.DateField(db_index=True,
                              help_text='The time at which the event began.')
@@ -205,5 +207,5 @@ class SiteEvent(models.Model):
     # An outbound link to an explanatory blog post or bug.
     more_info_url = models.URLField(max_length=255, blank=True, null=True)
 
-    class Meta:
+    class Meta(object):
         db_table = 'zadmin_siteevent'

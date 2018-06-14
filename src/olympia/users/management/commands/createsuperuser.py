@@ -4,6 +4,7 @@ Management utility to create superusers.
 Inspired by django.contrib.auth.management.commands.createsuperuser.
 (http://bit.ly/2cTgsNV)
 """
+from six.moves import input
 import json
 import os
 
@@ -139,7 +140,7 @@ and email address and that's it.
         field = get_user_model()._meta.get_field(field_name)
         value = None
         while value is None:
-            raw_value = input('{}: '.format(capfirst(field_name)))
+            raw_value = eval(input('{}: '.format(capfirst(field_name))))
             try:
                 value = field.clean(raw_value, None)
             except exceptions.ValidationError as exc:

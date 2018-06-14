@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import math
 import os
 import tempfile
@@ -42,7 +44,7 @@ def test_write_svg_to_png(filename):
         value * ((idx % 256) ** 2)
         for idx, value in enumerate(image_diff.histogram()))
     rms = math.sqrt(
-        sum_of_squares / float(svg_png_img.size[0] * svg_png_img.size[1]))
+        old_div(sum_of_squares, float(svg_png_img.size[0] * svg_png_img.size[1])))
 
     assert rms < 3
 

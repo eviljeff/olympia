@@ -1,3 +1,6 @@
+from six import text_type as str
+from six.moves import range
+
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
@@ -101,12 +104,12 @@ class Rating(ModelBase):
     objects = RatingManager()
     without_replies = WithoutRepliesRatingManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'reviews'
         ordering = ('-created',)
 
     def __unicode__(self):
-        return truncate(unicode(self.body), 10)
+        return truncate(str(self.body), 10)
 
     def __init__(self, *args, **kwargs):
         user_responsible = kwargs.pop('user_responsible', None)
@@ -123,9 +126,9 @@ class Rating(ModelBase):
 
         activity.log_create(
             amo.LOG.APPROVE_RATING, self.addon, self, user=user, details=dict(
-                body=unicode(self.body),
+                body=str(self.body),
                 addon_id=self.addon.pk,
-                addon_title=unicode(self.addon.name),
+                addon_title=str(self.addon.name),
                 is_flagged=self.ratingflag_set.exists()))
         for flag in self.ratingflag_set.all():
             flag.delete()
@@ -150,16 +153,16 @@ class Rating(ModelBase):
             activity.log_create(
                 amo.LOG.DELETE_RATING, self.addon, self, user=user_responsible,
                 details=dict(
-                    body=unicode(self.body),
+                    body=str(self.body),
                     addon_id=self.addon.pk,
-                    addon_title=unicode(self.addon.name),
+                    addon_title=str(self.addon.name),
                     is_flagged=self.ratingflag_set.exists()))
             for flag in self.ratingflag_set.all():
                 flag.delete()
 
         log.info(u'Rating deleted: %s deleted id:%s by %s ("%s")',
                  user_responsible.name, self.pk, self.user.name,
-                 unicode(self.body))
+                 str(self.body))
         self.update(deleted=True)
         # Force refreshing of denormalized data (it wouldn't happen otherwise
         # because we're not dealing with a creation).
@@ -288,7 +291,7 @@ class RatingFlag(ModelBase):
     note = models.CharField(max_length=100, db_column='flag_notes', blank=True,
                             default='')
 
-    class Meta:
+    class Meta(object):
         db_table = 'reviews_moderation_flags'
         unique_together = (('rating', 'user'),)
 

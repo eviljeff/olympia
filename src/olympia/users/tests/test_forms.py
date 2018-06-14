@@ -1,3 +1,4 @@
+from six import text_type as str
 from django.utils.http import urlsafe_base64_encode
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory

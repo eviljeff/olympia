@@ -1,3 +1,4 @@
+from six import text_type as str
 import collections
 
 from django.conf import settings
@@ -21,7 +22,7 @@ def es_dict(items):
     if not items:
         return {}
     if hasattr(items, 'items'):
-        items = items.items()
+        items = list(items.items())
     return [{'k': key, 'v': value} for key, value in items]
 
 
@@ -55,22 +56,22 @@ def extract_update_count(update, all_apps=None):
     # Only count platforms we know about.
     if update.oses:
         os = collections.defaultdict(int)
-        for key, count in update.oses.items():
+        for key, count in list(update.oses.items()):
             platform = None
 
-            if unicode(key).lower() in amo.PLATFORM_DICT:
-                platform = amo.PLATFORM_DICT[unicode(key).lower()]
+            if str(key).lower() in amo.PLATFORM_DICT:
+                platform = amo.PLATFORM_DICT[str(key).lower()]
             elif key in amo.PLATFORMS:
                 platform = amo.PLATFORMS[key]
 
             if platform is not None:
                 os[platform.name] += count
-                doc['os'] = es_dict((unicode(k), v) for k, v in os.items())
+                doc['os'] = es_dict((str(k), v) for k, v in list(os.items()))
 
     # Case-normalize locales.
     if update.locales:
         locales = collections.defaultdict(int)
-        for locale, count in update.locales.items():
+        for locale, count in list(update.locales.items()):
             try:
                 locales[locale.lower()] += int(count)
             except ValueError:
@@ -80,19 +81,19 @@ def extract_update_count(update, all_apps=None):
     # Only count app/version combos we know about.
     if update.applications:
         apps = collections.defaultdict(dict)
-        for guid, version_counts in update.applications.items():
+        for guid, version_counts in list(update.applications.items()):
             if guid not in amo.APP_GUIDS:
                 continue
             app = amo.APP_GUIDS[guid]
-            for version, count in version_counts.items():
+            for version, count in list(version_counts.items()):
                 try:
                     apps[app.guid][version] = int(count)
                 except ValueError:
                     pass
-        doc['apps'] = dict((app, es_dict(vals)) for app, vals in apps.items())
+        doc['apps'] = dict((app, es_dict(vals)) for app, vals in list(apps.items()))
 
     if update.statuses:
-        doc['status'] = es_dict((k, v) for k, v in update.statuses.items()
+        doc['status'] = es_dict((k, v) for k, v in list(update.statuses.items())
                                 if k != 'null')
     return doc
 

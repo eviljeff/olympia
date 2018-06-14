@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six.moves import range
 import json
 import time
 
@@ -479,8 +480,8 @@ class TestReviewerScore(TestCase):
             amo.STATUS_REJECTED: None,
             amo.STATUS_REVIEW_PENDING: None,
         }
-        for tk, tv in types.items():
-            for sk, sv in statuses.items():
+        for tk, tv in list(types.items()):
+            for sk, sv in list(statuses.items()):
                 try:
                     event = getattr(amo, 'REVIEWED_%s_%s' % (tv, sv))
                 except AttributeError:

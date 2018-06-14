@@ -51,7 +51,7 @@ class TestFeeds(TestCase):
         assert relations.pop('first').endswith('format:rss')
 
         assert len(relations) == len(page_relations)
-        for rel, href in relations.iteritems():
+        for rel, href in relations.items():
             page = page_relations[rel]
             assert href.endswith('format:rss' if page == 1 else
                                  'format:rss?page=%s' % page)

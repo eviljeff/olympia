@@ -1,3 +1,4 @@
+
 from django.conf import settings
 from django.db import models
 from django.forms import ValidationError
@@ -32,7 +33,7 @@ class TranslationFormMixin(object):
 
     def set_default_locale(self):
         locale = to_language(default_locale(self.instance))
-        for field in self.fields.values():
+        for field in list(self.fields.values()):
             field.default_locale = locale
             field.widget.default_locale = locale
 

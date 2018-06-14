@@ -1,3 +1,4 @@
+
 from django.forms import ModelForm
 
 from pyquery import PyQuery as pq
@@ -10,7 +11,7 @@ from olympia.translations.tests.testapp.models import TranslatedModel
 class DummyForm(forms.TranslationFormMixin, ModelForm):
     name = fields.TransField()
 
-    class Meta:
+    class Meta(object):
         model = TranslatedModel
         fields = '__all__'
 

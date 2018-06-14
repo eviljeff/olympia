@@ -272,5 +272,5 @@ class TestFixAddonsLinterOutput(TestCase):
             'lib/vendor/jquery.js': {'path': 'jquery.2.1.4.jquery.js'}
         }
         # Make sure original metadata was preserved.
-        for key, value in original_output['metadata'].items():
+        for key, value in list(original_output['metadata'].items()):
             assert fixed['metadata'][key] == value

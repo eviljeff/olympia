@@ -1,4 +1,7 @@
-import urllib
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+import urllib.request, urllib.parse, urllib.error
 
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext
@@ -58,7 +61,7 @@ class RatingsRss(NonAtomicFeed):
         """Guid for a particuar rating  (<item><guid>)"""
         guid_url = jinja_helpers.absolutify(
             jinja_helpers.url('addons.ratings.list', self.addon.slug))
-        return guid_url + urllib.quote(str(rating.id))
+        return guid_url + urllib.parse.quote(str(rating.id))
 
     def item_author_name(self, rating):
         """Author for a particular rating  (<item><dc:creator>)"""

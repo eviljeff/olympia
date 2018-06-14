@@ -1,3 +1,4 @@
+from six.moves import map
 from django.conf import settings
 from django.db import connections, models, router
 from django.utils import translation
@@ -73,7 +74,7 @@ def get_trans(items):
     connection = connections[dbname]
     sql, params = build_query(model, connection)
     item_dict = dict((item.pk, item) for item in items)
-    ids = ','.join(map(str, item_dict.keys()))
+    ids = ','.join(map(str, list(item_dict.keys())))
 
     with connection.cursor() as cursor:
         cursor.execute(sql.format(ids='(%s)' % ids), tuple(params))

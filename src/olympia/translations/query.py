@@ -84,7 +84,7 @@ class SQLCompiler(compiler.SQLCompiler):
         # Temporarily remove translation tables from query.tables so Django
         # doesn't create joins against them.
         old_tables = list(self.query.tables)
-        for table in itertools.chain(*self.query.translation_aliases.values()):
+        for table in itertools.chain(*list(self.query.translation_aliases.values())):
             if table in self.query.tables:
                 self.query.tables.remove(table)
 
@@ -101,7 +101,7 @@ class SQLCompiler(compiler.SQLCompiler):
 
         # Add our locale-aware joins.  We're not respecting the table ordering
         # Django had in query.tables, but that seems to be ok.
-        for field, aliases in self.query.translation_aliases.items():
+        for field, aliases in list(self.query.translation_aliases.items()):
             t1, t2 = aliases
             joins.append(self.join_with_locale(t1))
             joins.append(self.join_with_locale(t2, fallback))

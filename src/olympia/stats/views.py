@@ -1,4 +1,11 @@
-import cStringIO
+from future import standard_library
+standard_library.install_aliases()
+from six.moves import map
+from six import text_type as str
+from six.moves import next
+from six.moves import zip
+from six.moves import range
+import io
 import csv
 import itertools
 import json
@@ -137,7 +144,7 @@ def extract(dicts):
         if 'k' in data and 'v' in data:
             return ((data['k'], data['v']),)
         # Otherwise re-extract the value.
-        return ((k, extract(v)) for k, v in data.items())
+        return ((k, extract(v)) for k, v in list(data.items()))
 
     if hasattr(dicts, 'items'):
         # If it's already a dict, we just need to call extract_value which will
@@ -189,7 +196,7 @@ def zip_overview(downloads, updates):
                 yield 0
             next_date = next_date - timedelta(days=1)
 
-    series = itertools.izip_longest(iterator(downloads), iterator(updates))
+    series = itertools.zip_longest(iterator(downloads), iterator(updates))
     for idx, (dl_count, up_count) in enumerate(series):
         yield {'date': start_date - timedelta(days=idx),
                'data': {'downloads': dl_count, 'updates': up_count}}
@@ -280,13 +287,13 @@ def flatten_applications(series):
     for row in series:
         if 'data' in row:
             new = {}
-            for app, versions in row['data'].items():
+            for app, versions in list(row['data'].items()):
                 app = amo.APP_GUIDS.get(app)
                 if not app:
                     continue
                 # unicode() to decode the gettext proxy.
-                appname = unicode(app.pretty)
-                for ver, count in versions.items():
+                appname = str(app.pretty)
+                for ver, count in list(versions.items()):
                     key = ' '.join([appname, ver])
                     new[key] = count
             row['data'] = new
@@ -296,11 +303,11 @@ def flatten_applications(series):
 def process_locales(series):
     """Convert locale codes to pretty names, skip any unknown locales."""
     languages = dict((k.lower(), v['native'])
-                     for k, v in product_details.languages.items())
+                     for k, v in list(product_details.languages.items()))
     for row in series:
         if 'data' in row:
             new = {}
-            for key, count in row['data'].items():
+            for key, count in list(row['data'].items()):
                 if key in languages:
                     k = u'%s (%s)' % (languages[key], key)
                     new[k] = count
@@ -398,11 +405,11 @@ def site_events(request, start, end):
 
     events = list(site_event_format(request, qs))
 
-    type_pretty = unicode(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
+    type_pretty = str(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
 
     releases = product_details.firefox_history_major_releases
 
-    for version, date_ in releases.items():
+    for version, date_ in list(releases.items()):
         events.append({
             'start': date_,
             'type_pretty': type_pretty,
@@ -417,7 +424,7 @@ def site_event_format(request, events):
         yield {
             'start': e.start.isoformat(),
             'end': e.end.isoformat() if e.end else None,
-            'type_pretty': unicode(amo.SITE_EVENT_CHOICES[e.event_type]),
+            'type_pretty': str(amo.SITE_EVENT_CHOICES[e.event_type]),
             'type': e.event_type,
             'description': e.description,
             'url': e.more_info_url,
@@ -458,8 +465,8 @@ def _site_query(period, start, end, field=None, request=None):
                "AND name IN (%s) "
                "GROUP BY %s(date), name "
                "ORDER BY %s(date) DESC;"
-               % (', '.join(['%s' for key in _KEYS.keys()]), period, period))
-        cursor.execute(sql, [start, end] + _KEYS.keys())
+               % (', '.join(['%s' for key in list(_KEYS.keys())]), period, period))
+        cursor.execute(sql, [start, end] + list(_KEYS.keys()))
 
         # Process the results into a format that is friendly for render_*.
         default = {k: 0 for k in _CACHED_KEYS}
@@ -472,7 +479,7 @@ def _site_query(period, start, end, field=None, request=None):
                 result[date_]['data'] = {}
             result[date_]['data'][_KEYS[name]] = int(count)
 
-    return result.values(), _CACHED_KEYS
+    return list(result.values()), _CACHED_KEYS
 
 
 @non_atomic_requests
@@ -601,20 +608,20 @@ class UnicodeCSVDictWriter(csv.DictWriter):
     def __init__(self, stream, fields, **kw):
         # We have the csv module write into our buffer as bytes and then we
         # dump the buffer to the real stream as unicode.
-        self.buffer = cStringIO.StringIO()
+        self.buffer = io.StringIO()
         csv.DictWriter.__init__(self, self.buffer, fields, **kw)
         self.stream = stream
 
     def writeheader(self):
-        self.writerow(dict(zip(self.fieldnames, self.fieldnames)))
+        self.writerow(dict(list(zip(self.fieldnames, self.fieldnames))))
 
     def try_encode(self, obj):
-        return obj.encode('utf-8') if isinstance(obj, unicode) else obj
+        return obj.encode('utf-8') if isinstance(obj, str) else obj
 
     def writerow(self, rowdict):
         row = self._dict_to_list(rowdict)
         # Write to the buffer as ascii.
-        self.writer.writerow(map(self.try_encode, row))
+        self.writer.writerow(list(map(self.try_encode, row)))
         # Dump the buffer to the real stream as utf-8.
         self.stream.write(self.buffer.getvalue().decode('utf-8'))
         # Clear the buffer.

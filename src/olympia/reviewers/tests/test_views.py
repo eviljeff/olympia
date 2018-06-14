@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+from future import standard_library
+standard_library.install_aliases()
+from six import text_type as str
+from six.moves import range
 import json
 import os
 import time
-import urlparse
+import urllib.parse
 
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -114,7 +118,7 @@ class TestRatingsModerationLog(ReviewerTest):
         reviews.
         """
         review = self.make_review()
-        for i in xrange(2):
+        for i in range(2):
             ActivityLog.create(amo.LOG.APPROVE_RATING, review, review.addon)
             ActivityLog.create(amo.LOG.DELETE_RATING, review.id, review.addon)
         response = self.client.get(self.url, {'filter': 'deleted'})
@@ -975,7 +979,7 @@ class QueueTest(ReviewerTest):
         results = OrderedDict()
         channel = (amo.RELEASE_CHANNEL_LISTED if self.listed else
                    amo.RELEASE_CHANNEL_UNLISTED)
-        for name, attrs in files.iteritems():
+        for name, attrs in files.items():
             if not subset or name in subset:
                 version_kw = attrs.get('version_kw', {})
                 version_kw.update(
@@ -1049,7 +1053,7 @@ class QueueTest(ReviewerTest):
         for idx, addon in enumerate(self.expected_addons):
             latest_version = self.get_addon_latest_version(addon)
             assert latest_version
-            name = '%s %s' % (unicode(addon.name),
+            name = '%s %s' % (str(addon.name),
                               latest_version.version)
             if self.channel_name == 'listed':
                 # We typically don't include the channel name if it's the
@@ -1143,13 +1147,13 @@ class TestQueueBasics(QueueTest):
             2: '-addon_type_id',    # Type.
             3: 'waiting_time_min',  # Waiting Time.
         }
-        for idx, sort in sorts.iteritems():
+        for idx, sort in sorts.items():
             # Get column link.
             a = tr('th').eq(idx).find('a')
             # Update expected GET parameters with sort type.
             params.update(sort=[sort])
             # Parse querystring of link to make sure `sort` type is correct.
-            assert urlparse.parse_qs(a.attr('href').split('?')[1]) == params
+            assert urllib.parse.parse_qs(a.attr('href').split('?')[1]) == params
 
     def test_no_results(self):
         response = self.client.get(self.url)
@@ -2319,7 +2323,7 @@ class BaseTestQueueSearch(SearchTest):
         results = {}
         channel = (amo.RELEASE_CHANNEL_LISTED if self.listed else
                    amo.RELEASE_CHANNEL_UNLISTED)
-        for name, attrs in files.iteritems():
+        for name, attrs in files.items():
             if not subset or name in subset:
                 version_kw = attrs.get('version_kw', {})
                 version_kw.update(
@@ -2788,7 +2792,7 @@ class TestReview(ReviewBase):
         comments = rows.siblings('td')
         assert comments.length == 2
 
-        for idx in xrange(comments.length):
+        for idx in range(comments.length):
             td = comments.eq(idx)
             assert td.find('.history-comment').text() == 'something'
             assert td.find('th').text() == {
@@ -2862,7 +2866,7 @@ class TestReview(ReviewBase):
         assert '0.1' in ths.eq(0).text()
         assert '0.2' in ths.eq(1).text()
         assert '0.3' in ths.eq(2).text()
-        for idx in xrange(2):
+        for idx in range(2):
             assert 'Deleted' in ths.eq(idx).text()
 
         bodies = table.children('.listing-body')
@@ -4312,7 +4316,7 @@ class TestReview(ReviewBase):
         background_files = ['a.png', 'b.png', 'c.png']
         walkfiles_folder = os.path.join(
             user_media_path('addons'), str(self.addon.id),
-            unicode(self.addon.current_version.id))
+            str(self.addon.current_version.id))
         walkfiles_mock.return_value = [
             os.path.join(walkfiles_folder, filename)
             for filename in background_files]
@@ -4328,7 +4332,7 @@ class TestReview(ReviewBase):
         assert images.length == len(walkfiles_mock.return_value)
         background_file_folder = '/'.join([
             user_media_url('addons'), str(self.addon.id),
-            unicode(self.addon.current_version.id)])
+            str(self.addon.current_version.id)])
         background_file_urls = [
             background_file_folder + '/' + filename
             for filename in background_files]
@@ -4661,7 +4665,7 @@ class TestLeaderboard(ReviewerTest):
         assert get_cells() == (
             [users[2].name,
              users[1].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name']),
+             str(amo.REVIEWED_LEVELS[0]['name']),
              users[0].name])
 
         self._award_points(users[0], 1)
@@ -4670,7 +4674,7 @@ class TestLeaderboard(ReviewerTest):
             [users[2].name,
              users[1].name,
              users[0].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name'])])
+             str(amo.REVIEWED_LEVELS[0]['name'])])
 
         self._award_points(users[0], -1)
         self._award_points(users[2], (amo.REVIEWED_LEVELS[1]['points'] -
@@ -4678,9 +4682,9 @@ class TestLeaderboard(ReviewerTest):
 
         assert get_cells() == (
             [users[2].name,
-             unicode(amo.REVIEWED_LEVELS[1]['name']),
+             str(amo.REVIEWED_LEVELS[1]['name']),
              users[1].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name']),
+             str(amo.REVIEWED_LEVELS[0]['name']),
              users[0].name])
 
 

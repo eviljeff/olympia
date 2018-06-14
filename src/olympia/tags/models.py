@@ -1,3 +1,4 @@
+
 from django.core.urlresolvers import NoReverseMatch
 from django.db import models
 
@@ -23,7 +24,7 @@ class Tag(ModelBase):
 
     objects = TagManager()
 
-    class Meta:
+    class Meta(object):
         db_table = 'tags'
         ordering = ('tag_text',)
 
@@ -67,7 +68,7 @@ class AddonTag(ModelBase):
     addon = models.ForeignKey('addons.Addon', related_name='addon_tags')
     tag = models.ForeignKey(Tag, related_name='addon_tags')
 
-    class Meta:
+    class Meta(object):
         db_table = 'users_tags_addons'
 
 

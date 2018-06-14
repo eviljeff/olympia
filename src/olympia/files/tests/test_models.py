@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six.moves import map
 import hashlib
 import json
 import os
@@ -421,7 +422,7 @@ class TestParseXpi(TestCase):
             'is_webextension': False,
         }
         parsed = self.parse()
-        for key, value in expected.items():
+        for key, value in list(expected.items()):
             assert parsed[key] == value
 
     def test_parse_minimal(self):
@@ -727,7 +728,7 @@ class TestParseAlternateXpi(TestCase, amo.tests.AMOPaths):
             'version': '2.1.106'
         }
         parsed = self.parse()
-        for key, value in exp.items():
+        for key, value in list(exp.items()):
             assert parsed[key] == value
 
     def test_parse_apps(self):

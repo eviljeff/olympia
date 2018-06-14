@@ -1,3 +1,4 @@
+
 import json
 import os
 import shutil
@@ -422,7 +423,7 @@ class TestManifestJSONExtractor(TestCase):
 
 class TestManifestJSONExtractorStaticTheme(TestManifestJSONExtractor):
     def parse(self, base_data):
-        if 'theme' not in base_data.keys():
+        if 'theme' not in list(base_data.keys()):
             base_data.update(theme={})
         return super(
             TestManifestJSONExtractorStaticTheme, self).parse(base_data)

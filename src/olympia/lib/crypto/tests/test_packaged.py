@@ -426,7 +426,7 @@ class TestTasks(TestCase):
             assert self.version.version == '1.3'
             assert self.version.version_int == version_int('1.3')
 
-            apps_without_signing = [app for app in amo.APPS_ALL.keys()
+            apps_without_signing = [app for app in list(amo.APPS_ALL.keys())
                                     if app not in packaged.SIGN_FOR_APPS]
 
             for app in apps_without_signing:

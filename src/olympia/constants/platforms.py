@@ -1,3 +1,4 @@
+
 from collections import OrderedDict
 
 from django.utils.translation import ugettext_lazy as _
@@ -6,7 +7,7 @@ from . import applications
 
 
 # Platforms
-class PLATFORM_ANY:
+class PLATFORM_ANY(object):
     id = 0
     name = _(u'Any')
     shortname = 'any'
@@ -14,49 +15,49 @@ class PLATFORM_ANY:
     api_name = u'ALL'
 
 
-class PLATFORM_ALL:
+class PLATFORM_ALL(object):
     id = 1
     name = _(u'All Platforms')
     shortname = 'all'
     api_name = u'ALL'
 
 
-class PLATFORM_LINUX:
+class PLATFORM_LINUX(object):
     id = 2
     name = _(u'Linux')
     shortname = 'linux'
     api_name = u'Linux'
 
 
-class PLATFORM_MAC:
+class PLATFORM_MAC(object):
     id = 3
     name = _(u'Mac OS X')
     shortname = 'mac'
     api_name = u'Darwin'
 
 
-class PLATFORM_BSD:
+class PLATFORM_BSD(object):
     id = 4
     name = _(u'BSD')
     shortname = 'bsd'
     api_name = u'BSD_OS'
 
 
-class PLATFORM_WIN:
+class PLATFORM_WIN(object):
     id = 5
     name = _(u'Windows')
     shortname = 'windows'
     api_name = u'WINNT'
 
 
-class PLATFORM_SUN:
+class PLATFORM_SUN(object):
     id = 6
     name = _(u'Solaris')
     shortname = 'solaris'
     api_name = 'SunOS'
 
 
-class PLATFORM_ANDROID:
+class PLATFORM_ANDROID(object):
     id = 7
     name = _(u'Android')
     shortname = u'android'
@@ -81,10 +82,10 @@ DESKTOP_PLATFORMS = OrderedDict([(PLATFORM_ALL.id, PLATFORM_ALL),
 SUPPORTED_PLATFORMS = DESKTOP_PLATFORMS.copy()
 SUPPORTED_PLATFORMS.update(MOBILE_PLATFORMS)
 DESKTOP_PLATFORMS_CHOICES = tuple(
-    (p.id, p.name) for p in DESKTOP_PLATFORMS.values()
+    (p.id, p.name) for p in list(DESKTOP_PLATFORMS.values())
 )
 SUPPORTED_PLATFORMS_CHOICES = tuple(
-    (p.id, p.name) for p in SUPPORTED_PLATFORMS.values()
+    (p.id, p.name) for p in list(SUPPORTED_PLATFORMS.values())
 )
 
 PLATFORM_DICT = {
@@ -106,9 +107,9 @@ PLATFORM_DICT = {
 }
 
 PLATFORM_CHOICES_API = {
-    p.id: p.shortname for p in SUPPORTED_PLATFORMS.values()
+    p.id: p.shortname for p in list(SUPPORTED_PLATFORMS.values())
 }
 
 _platforms = {'desktop': DESKTOP_PLATFORMS, 'mobile': MOBILE_PLATFORMS}
-for app in applications.APPS_ALL.values():
+for app in list(applications.APPS_ALL.values()):
     app.platforms = _platforms[app.platforms]

@@ -1,3 +1,4 @@
+from six import string_types as basestring
 import datetime
 import itertools
 

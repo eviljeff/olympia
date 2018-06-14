@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import urllib
+from six import text_type as str
+import urllib.request, urllib.parse, urllib.error
 
 from django.utils import translation
 
@@ -59,7 +60,7 @@ def test_summarize_validation():
 
 def test_log_action_class():
     v = Mock()
-    for k, v in amo.LOG_BY_ID.iteritems():
+    for k, v in amo.LOG_BY_ID.items():
         if v.action_class is not None:
             cls = 'action-' + v.action_class
         else:
@@ -74,13 +75,13 @@ class TestDisplayUrl(amo.tests.BaseTestCase):
         self.raw_url = u'http://host/%s' % 'フォクすけといっしょ'.decode('utf8')
 
     def test_utf8(self):
-        url = urllib.quote(self.raw_url.encode('utf8'))
+        url = urllib.parse.quote(self.raw_url.encode('utf8'))
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)
 
     def test_unicode(self):
-        url = urllib.quote(self.raw_url.encode('utf8'))
-        url = unicode(url, 'utf8')
+        url = urllib.parse.quote(self.raw_url.encode('utf8'))
+        url = str(url, 'utf8')
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)
 
@@ -98,7 +99,7 @@ class TestDevFilesStatus(TestCase):
     def expect(self, expected):
         cnt, msg = jinja_helpers.dev_files_status([self.file])[0]
         assert cnt == 1
-        assert msg == unicode(expected)
+        assert msg == str(expected)
 
     def test_unreviewed_public(self):
         self.addon.status = amo.STATUS_PUBLIC

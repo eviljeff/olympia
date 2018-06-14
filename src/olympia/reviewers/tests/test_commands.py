@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import text_type as str
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -190,7 +191,7 @@ class TestAutoApproveCommand(TestCase):
         assert msg.to == [self.author.email]
         assert msg.from_email == settings.ADDONS_EMAIL
         assert msg.subject == 'Mozilla Add-ons: %s %s Approved' % (
-            unicode(self.addon.name), self.version.version)
+            str(self.addon.name), self.version.version)
 
     @mock.patch.object(auto_approve, 'set_reviewing_cache')
     @mock.patch.object(auto_approve, 'clear_reviewing_cache')

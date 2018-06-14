@@ -1,6 +1,9 @@
+from future import standard_library
+standard_library.install_aliases()
+
 import re
 
-from urllib2 import unquote
+from urllib.parse import unquote
 
 from django.utils.translation import ugettext
 
@@ -22,7 +25,7 @@ class BaseRatingSerializer(serializers.ModelSerializer):
     previous_count = serializers.IntegerField(read_only=True)
     user = BaseUserSerializer(read_only=True)
 
-    class Meta:
+    class Meta(object):
         model = Rating
         fields = ('id', 'addon', 'body', 'created', 'is_latest',
                   'previous_count', 'user')
@@ -127,7 +130,7 @@ class RatingSerializerReply(BaseRatingSerializer):
 
 class RatingVersionSerializer(SimpleVersionSerializer):
 
-    class Meta:
+    class Meta(object):
         model = Version
         fields = ('id', 'version')
 
@@ -144,7 +147,7 @@ class RatingSerializer(BaseRatingSerializer):
     version = RatingVersionSerializer()
     score = serializers.IntegerField(min_value=1, max_value=5, source='rating')
 
-    class Meta:
+    class Meta(object):
         model = Rating
         fields = BaseRatingSerializer.Meta.fields + (
             'score', 'reply', 'version')

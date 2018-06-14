@@ -1,3 +1,5 @@
+from six.moves import map
+from six import text_type as str
 from django.conf import settings
 from django.core.cache import cache
 from django.utils.html import strip_tags
@@ -33,16 +35,16 @@ def addon_to_dict(addon, disco=False, src='api'):
 
     d = {
         'id': addon.id,
-        'name': unicode(addon.name) if addon.name else None,
+        'name': str(addon.name) if addon.name else None,
         'guid': addon.guid,
         'status': amo.STATUS_CHOICES_API[addon.status],
         'type': amo.ADDON_SLUGS_UPDATE[addon.type],
-        'authors': [{'id': a.id, 'name': unicode(a.name),
+        'authors': [{'id': a.id, 'name': str(a.name),
                      'link': absolutify(a.get_url_path(src=src))}
                     for a in addon.listed_authors],
         'summary': (
-            strip_tags(unicode(addon.summary)) if addon.summary else None),
-        'description': strip_tags(unicode(addon.description)),
+            strip_tags(str(addon.summary)) if addon.summary else None),
+        'description': strip_tags(str(addon.description)),
         'icon': addon.icon_url,
         'learnmore': learnmore,
         'reviews': url(addon.ratings_url),
@@ -51,26 +53,26 @@ def addon_to_dict(addon, disco=False, src='api'):
         'adu': addon.average_daily_users,
         'created': epoch(addon.created),
         'last_updated': epoch(addon.last_updated),
-        'homepage': unicode(addon.homepage) if addon.homepage else None,
-        'support': unicode(addon.support_url) if addon.support_url else None,
+        'homepage': str(addon.homepage) if addon.homepage else None,
+        'support': str(addon.support_url) if addon.support_url else None,
     }
     if addon.is_persona():
         d['theme'] = addon.persona.theme_data
 
     if v:
         d['version'] = v.version
-        d['platforms'] = [unicode(a.name) for a in v.supported_platforms]
+        d['platforms'] = [str(a.name) for a in v.supported_platforms]
         d['compatible_apps'] = [{
-            unicode(amo.APP_IDS[appver.application].pretty): {
-                'min': unicode(appver.min) if appver else (
+            str(amo.APP_IDS[appver.application].pretty): {
+                'min': str(appver.min) if appver else (
                     amo.D2C_MIN_VERSIONS.get(app.id, '1.0')),
-                'max': unicode(appver.max) if appver else amo.FAKE_MAX_VERSION,
-            }} for app, appver in v.compatible_apps.items() if appver]
+                'max': str(appver.max) if appver else amo.FAKE_MAX_VERSION,
+            }} for app, appver in list(v.compatible_apps.items()) if appver]
     if addon.eula:
-        d['eula'] = unicode(addon.eula)
+        d['eula'] = str(addon.eula)
 
     if addon.developer_comments:
-        d['dev_comments'] = unicode(addon.developer_comments)
+        d['dev_comments'] = str(addon.developer_comments)
 
     if addon.contributions:
         d['contribution'] = {
@@ -83,7 +85,7 @@ def addon_to_dict(addon, disco=False, src='api'):
         def preview_as_dict(preview, src):
             d = {'full': urlparams(preview.image_url, src=src),
                  'thumbnail': urlparams(preview.thumbnail_url, src=src),
-                 'caption': unicode(preview.caption)}
+                 'caption': str(preview.caption)}
             return d
 
         d['previews'] = [preview_as_dict(p, src) for p in addon.all_previews]

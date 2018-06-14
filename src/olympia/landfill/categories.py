@@ -1,3 +1,4 @@
+from six import text_type as str
 from olympia.addons.models import Category
 from olympia.constants.categories import CATEGORIES
 
@@ -9,10 +10,10 @@ def generate_categories(app=None, type=None):
     """
     categories = []
     categories_choices = CATEGORIES[app.id][type]
-    for category_choice in categories_choices.values():
+    for category_choice in list(categories_choices.values()):
         defaults = {
             'slug': category_choice.slug,
-            'db_name': unicode(category_choice.name),
+            'db_name': str(category_choice.name),
             'application': app.id,
             'misc': category_choice.misc,
             'type': type,

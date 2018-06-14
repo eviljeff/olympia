@@ -146,7 +146,7 @@ class Command(BaseCommand):
             tuc.count += count
 
         # Create in bulk: this is much faster.
-        ThemeUpdateCount.objects.bulk_create(theme_update_counts.values(), 100)
+        ThemeUpdateCount.objects.bulk_create(list(theme_update_counts.values()), 100)
 
         log.info('Processed a total of %s lines' % (index + 1))
         log.debug('Total processing time: %s' % (datetime.now() - start))

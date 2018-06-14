@@ -1,3 +1,4 @@
+from six import text_type as str
 from django.conf import settings
 from django.utils.dateformat import DateFormat
 
@@ -91,7 +92,7 @@ class TestUserAdmin(TestCase):
         addon = addon_factory()
 
         model_admin = UserAdmin(UserProfile, None)
-        assert (unicode(model_admin.last_known_activity_time(self.user)) ==
+        assert (str(model_admin.last_known_activity_time(self.user)) ==
                 u'(None)')  # Nothing yet.
 
         # Add various activities. They will be attached to whatever user is
@@ -115,7 +116,7 @@ class TestUserAdmin(TestCase):
         expected_result = DateFormat(expected_date).format(
             settings.DATETIME_FORMAT)
 
-        assert (unicode(model_admin.last_known_activity_time(self.user)) ==
+        assert (str(model_admin.last_known_activity_time(self.user)) ==
                 expected_result)
 
     def _call_related_content_method(self, method):
