@@ -16,6 +16,7 @@ from olympia.access import acl
 from olympia.addons.models import Addon
 from olympia.amo.decorators import use_primary_db
 from olympia.api.authentication import JWTKeyAuthentication
+from olympia.api.utils import is_gate_active
 from olympia.devhub.views import handle_upload
 from olympia.files.models import FileUpload
 from olympia.files.utils import parse_addon
@@ -179,32 +180,54 @@ class VersionView(APIView):
                     status.HTTP_400_BAD_REQUEST)
             pkg['guid'] = guid
 
-        # channel will be ignored for new addons.
-        if addon is None:
-            channel = amo.RELEASE_CHANNEL_UNLISTED  # New is always unlisted.
-            addon = Addon.initialize_addon_from_upload(
-                data=pkg, upload=filedata, channel=channel, user=request.user)
-            created = True
-        else:
-            created = False
-            channel_param = request.POST.get('channel')
-            channel = amo.CHANNEL_CHOICES_LOOKUP.get(channel_param)
-            if not channel:
+        channel_param = request.POST.get('channel')
+        channel = amo.CHANNEL_CHOICES_LOOKUP.get(channel_param)
+        if not channel:
+            if is_gate_active('signing_optional_channel'):
                 last_version = (
-                    addon.find_latest_version(None, exclude=()))
+                    addon and addon.find_latest_version(None, exclude=()))
                 if last_version:
                     channel = last_version.channel
                 else:
                     channel = amo.RELEASE_CHANNEL_UNLISTED  # Treat as new.
+            else:
+                forms.ValidationError(
+                    ugettext('Channel parameter is required.'),
+                    status.HTTP_400_BAD_REQUEST)
 
-            will_have_listed = channel == amo.RELEASE_CHANNEL_LISTED
-            if not addon.has_complete_metadata(
-                    has_listed_versions=will_have_listed):
+        if is_gate_active('signing_require_listed_metadata'):
+            if addon is None:
+                # New is always unlisted.
+                channel = amo.RELEASE_CHANNEL_UNLISTED
+                will_require_metadata = False
+            else:
+                will_have_listed = channel == amo.RELEASE_CHANNEL_LISTED
+                will_require_metadata = addon.has_complete_metadata(
+                    has_listed_versions=will_have_listed)
+            if will_require_metadata:
                 raise forms.ValidationError(
                     ugettext('You cannot add a listed version to this addon '
                              'via the API due to missing metadata. '
                              'Please submit via the website'),
                     status.HTTP_400_BAD_REQUEST)
+        else:
+            if addon is None:
+                will_require_metadata = channel == amo.RELEASE_CHANNEL_LISTED
+            else:
+                will_have_listed = channel == amo.RELEASE_CHANNEL_LISTED
+                will_require_metadata = addon.has_complete_metadata(
+                    has_listed_versions=will_have_listed)
+            if will_require_metadata:
+                # Send some response that indicates it will be incomplete and
+                # include a url to devhub flow.
+                pass
+
+        if addon is None:
+            addon = Addon.initialize_addon_from_upload(
+                data=pkg, upload=filedata, channel=channel, user=request.user)
+            created = True
+        else:
+            created = False
 
         file_upload = handle_upload(
             filedata=filedata, request=request, addon=addon, submit=True,

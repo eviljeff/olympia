@@ -1779,8 +1779,12 @@ DRF_API_GATES = {
         'ratings-rating-shim',
         'ratings-title-shim',
         'l10n_flat_input_output',
+        'signing_optional_channel',
+        'signing_require_listed_metadata',
     ),
     'v4': (
+        'signing_optional_channel',
+        'signing_require_listed_metadata',
     ),
 }
 
