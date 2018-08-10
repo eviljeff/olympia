@@ -42,16 +42,12 @@ class CollectionSerializer(serializers.ModelSerializer):
         return obj.get_abs_url()
 
     def validate_name(self, value):
-        # if we have a localised dict of values validate them all.
-        if isinstance(value, dict):
-            return {locale: self.validate_name(sub_value)
-                    for locale, sub_value in value.iteritems()}
-        if value.strip() == u'':
-            raise serializers.ValidationError(
-                ugettext(u'Name cannot be empty.'))
-        if DeniedName.blocked(value):
-            raise serializers.ValidationError(
-                ugettext(u'This name cannot be used.'))
+        # if we get a flat value wrap it to have a single codepath
+        trans_values = [value.values()] if isinstance(value, dict) else [value]
+        for trans in trans_values:
+            if DeniedName.blocked(trans):
+                raise serializers.ValidationError(
+                    ugettext(u'This name cannot be used.'))
         return value
 
     def validate_description(self, value):

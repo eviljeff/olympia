@@ -157,6 +157,17 @@ class TestTranslationSerializerField(TestCase):
         field.validate(result)
         assert result == data
 
+    def test_none_type_locale_is_allowed_for_required_fields(self):
+        # None values are valid because they are used to nullify existing
+        # translations in something like a PATCH.
+        data = {
+            'en-US': None,
+        }
+        field = self.field_class(required=True)
+        result = field.to_internal_value(data)
+        field.validate(result)
+        assert result == data
+
     def test_get_attribute(self):
         field = self.field_class()
         self._test_expected_dict(field)

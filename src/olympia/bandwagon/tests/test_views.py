@@ -1523,6 +1523,29 @@ class TestCollectionViewSetPatch(CollectionViewSetDataMixin, TestCase):
             response = self.send(url=url)
             assert response.status_code == 403
 
+    def test_delete_l10n(self):
+        # Call to add some useful values first.
+        self.test_basic_patch()
+        self.url = self.get_url(self.user)
+        # Delete the en-US localizations.
+        data = {
+            # 'name': {'en-US': None},  # name is required
+            'description': {'en-US': None},  # description is optional
+        }
+        response = self.send(data=data)
+        assert response.status_code == 200
+        self.collection = self.collection.reload()
+        data_minus_en_us = {
+            # 'name': {'fr': u'lé $túff'},
+            'name': {'fr': u'lé $túff', 'en-US': u'$tuff'},
+            'description': {'fr': u'Un dis une dát'},
+            'slug': u'stuff',
+            'public': True,
+            'default_locale': 'fr',
+        }
+        self.check_data(self.collection, data_minus_en_us,
+                        json.loads(response.content))
+
 
 class TestCollectionViewSetDelete(TestCase):
     client_class = APITestClient
