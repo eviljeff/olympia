@@ -3,6 +3,7 @@ sudo: false
 
 python:
   - 2.7
+  - 3.6
 
 env:
   global:
@@ -53,7 +54,7 @@ install:
   - nvm deactivate
   - nvm install 8
   - nvm use 8
-  - pip install --upgrade pip wheel setuptools tox==2.9.1
+  - pip install --upgrade pip wheel setuptools tox==2.9.1 tox-travis==0.10
 
 before_script:
   - mysql --version
