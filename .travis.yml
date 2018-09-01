@@ -20,6 +20,8 @@ env:
   - TOXENV=amo-locales-and-signing
   - TOXENV=users-and-accounts
   - TOXENV=main
+    allow_failures:
+    - python: 3.6
 
 cache:
   pip: true
