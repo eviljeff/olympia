@@ -366,9 +366,9 @@ packaging==17.1 \
     --hash=sha256:e9215d2d2535d3ae866c3d6efc77d5b24a0192cce0ff20e42896cc0664f889c0 \
     --hash=sha256:f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b
 # pbr is required by mock
-pbr==3.0.1 \
-    --hash=sha256:dfc304262e881066bc675a59a348733af17bee1d57084d9e2a0c96b952a82db7 \
-    --hash=sha256:d7e8917458094002b9a2e0030ba60ba4c834c456071f2d0c1ccb5265992ada91
+pbr==4.2.0 \
+    --hash=sha256:b486975c0cafb6beeb50ca0e17ba047647f229087bd74e37f4a7e2cac17d2caa \
+    --hash=sha256:1b8be50d938c9bb75d0eaf7eda111eec1bf6dc88a62a6412e33bf077457e0f45
 phpserialize==1.3 \
     --hash=sha256:bf672d312d203d09a84c26366fab8f438a3ffb355c407e69974b7ef2d39a0fa7
 # polib is required by dennis
