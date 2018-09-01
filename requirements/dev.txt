@@ -6,9 +6,9 @@ apipkg==1.5 \
     --hash=sha256:58587dd4dc3daefad0487f6d9ae32b4542b185e1c36db6993290e7c41ca2b47c \
     --hash=sha256:37228cda29411948b422fae072f57e31d3396d2ee1c9783775980ee9c9990af6
 # execnet is required by pytest-cache, pytest-xdist
-execnet==1.4.1 \
-    --hash=sha256:d2b909c7945832e1c19cfacd96e78da68bdadc656440cfc7dfe59b766744eb8c \
-    --hash=sha256:f66dd4a7519725a1b7e14ad9ae7d3df8e09b2da88062386e08e941cafc0ef3e6
+execnet==1.5.0 \
+    --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83 \
+    --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a
 psutil==5.2.2 \
     --hash=sha256:db473f0d45a56d422502043f3755385fcfd83f5bb0947bc807fcad689230f37f \
     --hash=sha256:dcd9d3131f83480648da40d2c39403657c63a81e56e4e8d8e905bf65c133d59c \
