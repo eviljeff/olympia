@@ -358,9 +358,9 @@ ndg-httpsclient==0.5.1 \
     --hash=sha256:d72faed0376ab039736c2ba12e30695e2788c4aa569c9c3e3d72131de2592210
 newrelic==4.2.0.100 \
     --hash=sha256:da56df90005b233466d81424a0478dcea2b00bf5a6853d9a1a1451f03e07f41e
-nobot==0.4.1 \
-    --hash=sha256:e835abfe9b813fe5697475e8fc0dfbaf9c7572f4574e3d2d7e5114bc84f4cf0b \
-    --hash=sha256:bae7bc785e81d4edcc7e7e66457697995c47475e0a2aba405b3a5cb82697e880
+nobot==0.5 \
+    --hash=sha256:fa0582d81f562cd5b61e241005feb3f51548fe3fc165aed292952ff78676e28a \
+    --hash=sha256:0a1c43a74f1c55f06cf2eb98cb472762dbdd7df5eb693d438c9fb42cfcfe79e5
 # packaging is required by setuptools
 packaging==16.8 \
     --hash=sha256:99276dc6e3a7851f32027a68f1095cd3f77c148091b092ea867a351811cfe388 \
