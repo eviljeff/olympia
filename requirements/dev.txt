@@ -37,9 +37,9 @@ pytest-django==2.9.1 \
 pytest-xdist==1.23.0 \
     --hash=sha256:0875deac20f6d96597036bdf63970887a6f36d28289c2f6682faf652dfea687b \
     --hash=sha256:28e25e79698b2662b648319d3971c0f9ae0e6500f88258ccb9b153c31110ba9b
-freezegun==0.3.9 \
-    --hash=sha256:8842688de9497c82ecb40c30274ecc676e97ac78765b0ade105a97063d5b7a11 \
-    --hash=sha256:783ccccd7f60968bfe49ad9e114c18ea2b63831faaaf61c1f1f71ddfde1c0eee
+freezegun==0.3.10 \
+    --hash=sha256:94c59d69bb99c9ec3ca5a3adb41930d3ea09d2a9756c23a02d89fa75646e78dd \
+    --hash=sha256:703caac155dcaad61f78de4cb0666dca778d854dfb90b3699930adee0559a622
 cookies==2.2.1 \
     --hash=sha256:15bee753002dff684987b8df8c235288eb8d45f8191ae056254812dfd42c81d3
 responses==0.5.1 \
