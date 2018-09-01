@@ -294,8 +294,9 @@ ipaddress==1.0.21 \
     --hash=sha256:c65c59041d771a8f8996e3579015b14bf015bcfdcb7949c315e6e25b89a6e2a2 \
     --hash=sha256:82c964e8a387f3869774c9fd3ed7bf19f0e001de58f0f52fc17257b6bc5f515d
 # isodate is required by rdflib
-isodate==0.5.4 \
-    --hash=sha256:42105c41d037246dc1987e36d96f3752ffd5c0c24834dd12e4fdbe1e79544e31
+isodate==0.6.0 \
+    --hash=sha256:aa4d33c06640f5352aca96e4b81afd8ab3b47337cc12089822d6f322ac772c81 \
+    --hash=sha256:2e364a3d5759479cdb2d37cce6b9376ea504db2ff90252a2e5b7cc89cc9ff2d8
 jingo==0.9.0 \
     --hash=sha256:12a983286519303c6afd3da6f0a7e1859e69effb5fe46109424cdfca382bea56 \
     --hash=sha256:37de5435622d05763bc55d1a3d0a7edcf998ece9e6048bb470db431d1aa83c3a
