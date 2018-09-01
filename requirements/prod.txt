@@ -214,8 +214,9 @@ django-extensions==1.6.7 \
 django-mozilla-product-details==0.13 \
     --hash=sha256:ce97fc2533aa06560d9b438ebba2522dc0b2ada86d6e0537cfb5ac06db1a6aa2 \
     --hash=sha256:4ffa5a104f53645460a50c9342a41e3ea02d432851becf56e820d42faa94839f
-django-multidb-router==0.6 \
-    --hash=sha256:4c488dcb84cffd88bcd2b1651962b767f9bb245206407c8ea678043cd39d3ca8
+django-multidb-router==0.7 \
+    --hash=sha256:8e802c09ed69a1f4ce5716524a1dc1668a8a2e25d9112369dc92c2b963e70332 \
+    --hash=sha256:682d2be38ca1e2a12bc33528b3d4ccddf9775c926a5667b53f840df620094a86
 django-post-request-task==0.1.1 \
     --hash=sha256:015b407b8bc81f13104a5607c2765cc2cafc628661ffcfa1f4563fdc9eba2ffb \
     --hash=sha256:f5b0d532a625321d7613bf6c7b6ba7e6c4c5e77e257d780db414799f62786d63
