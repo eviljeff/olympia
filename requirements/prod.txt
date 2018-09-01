@@ -362,9 +362,9 @@ nobot==0.5 \
     --hash=sha256:fa0582d81f562cd5b61e241005feb3f51548fe3fc165aed292952ff78676e28a \
     --hash=sha256:0a1c43a74f1c55f06cf2eb98cb472762dbdd7df5eb693d438c9fb42cfcfe79e5
 # packaging is required by setuptools
-packaging==16.8 \
-    --hash=sha256:99276dc6e3a7851f32027a68f1095cd3f77c148091b092ea867a351811cfe388 \
-    --hash=sha256:5d50835fdf0a7edf0b55e311b7c887786504efea1177abd7e69329a8e5ea619e
+packaging==17.1 \
+    --hash=sha256:e9215d2d2535d3ae866c3d6efc77d5b24a0192cce0ff20e42896cc0664f889c0 \
+    --hash=sha256:f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b
 # pbr is required by mock
 pbr==3.0.1 \
     --hash=sha256:dfc304262e881066bc675a59a348733af17bee1d57084d9e2a0c96b952a82db7 \
