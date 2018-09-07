@@ -9,6 +9,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection, models
 
+from six import text_type
+
 from olympia import activity, amo
 from olympia.access import acl
 from olympia.addons.models import Addon
@@ -134,7 +136,7 @@ class Collection(ModelBase):
 
     def save(self, **kw):
         if not self.uuid:
-            self.uuid = unicode(uuid.uuid4())
+            self.uuid = text_type(uuid.uuid4())
         if not self.slug:
             self.slug = self.uuid[:30]
         self.clean_slug()

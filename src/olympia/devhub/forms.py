@@ -11,6 +11,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 import jinja2
 import waffle
+from six import text_type
 
 from olympia import amo
 from olympia.access import acl
@@ -122,10 +123,10 @@ class LicenseRadioSelect(forms.RadioSelect):
         if hasattr(license, 'url') and license.url:
             details = link % (license.url, ugettext('Details'))
             context['label'] = mark_safe(
-                unicode(context['label']) + ' ' + details)
+                text_type(context['label']) + ' ' + details)
         if hasattr(license, 'icons'):
             context['attrs']['data-cc'] = license.icons
-        context['attrs']['data-name'] = unicode(license)
+        context['attrs']['data-name'] = text_type(license)
         return context
 
 

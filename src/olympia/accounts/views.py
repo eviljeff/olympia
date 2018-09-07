@@ -28,6 +28,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
+from six import text_type
 from waffle.decorators import waffle_switch
 
 import olympia.core.logger
@@ -473,7 +474,7 @@ class ProfileView(APIView):
         account_viewset = AccountViewSet(
             request=request,
             permission_classes=self.permission_classes,
-            kwargs={'pk': unicode(self.request.user.pk)})
+            kwargs={'pk': text_type(self.request.user.pk)})
         account_viewset.format_kwarg = self.format_kwarg
         return account_viewset.retrieve(request)
 

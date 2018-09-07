@@ -13,6 +13,7 @@ import pytest
 
 from mock import patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.addons.models import Addon
@@ -457,7 +458,7 @@ class TestFileViewer(FilesBase, TestCase):
         assert res.status_code == 200
 
     def test_unicode_fails_with_wrong_configured_basepath(self):
-        with override_settings(TMP_PATH=unicode(settings.TMP_PATH)):
+        with override_settings(TMP_PATH=text_type(settings.TMP_PATH)):
             file_viewer = FileViewer(self.file)
             file_viewer.src = unicode_filenames
 

@@ -18,6 +18,7 @@ from django.utils.cache import add_never_cache_headers, patch_cache_control
 
 from dateutil.parser import parse
 from product_details import product_details
+from six import text_type
 
 import olympia.core.logger
 
@@ -277,8 +278,8 @@ def flatten_applications(series):
                 app = amo.APP_GUIDS.get(app)
                 if not app:
                     continue
-                # unicode() to decode the gettext proxy.
-                appname = unicode(app.pretty)
+                # text_type() to decode the gettext proxy.
+                appname = text_type(app.pretty)
                 for ver, count in versions.items():
                     key = ' '.join([appname, ver])
                     new[key] = count
@@ -391,7 +392,7 @@ def site_events(request, start, end):
 
     events = list(site_event_format(request, qs))
 
-    type_pretty = unicode(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
+    type_pretty = text_type(amo.SITE_EVENT_CHOICES[amo.SITE_EVENT_RELEASE])
 
     releases = product_details.firefox_history_major_releases
 
@@ -410,7 +411,7 @@ def site_event_format(request, events):
         yield {
             'start': e.start.isoformat(),
             'end': e.end.isoformat() if e.end else None,
-            'type_pretty': unicode(amo.SITE_EVENT_CHOICES[e.event_type]),
+            'type_pretty': text_type(amo.SITE_EVENT_CHOICES[e.event_type]),
             'type': e.event_type,
             'description': e.description,
             'url': e.more_info_url,
@@ -534,7 +535,7 @@ class UnicodeCSVDictWriter(csv.DictWriter):
         self.writerow(dict(zip(self.fieldnames, self.fieldnames)))
 
     def try_encode(self, obj):
-        return obj.encode('utf-8') if isinstance(obj, unicode) else obj
+        return obj.encode('utf-8') if isinstance(obj, text_type) else obj
 
     def writerow(self, rowdict):
         row = self._dict_to_list(rowdict)

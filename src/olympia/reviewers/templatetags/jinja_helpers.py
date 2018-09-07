@@ -7,6 +7,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 import jinja2
 
 from django_jinja import library
+from six import text_type
 
 from olympia import amo
 from olympia.access import acl
@@ -48,7 +49,7 @@ def file_review_status(addon, file):
 def version_status(addon, version):
     if version.deleted:
         return ugettext(u'Deleted')
-    return ','.join(unicode(s) for s in version.status)
+    return ','.join(text_type(s) for s in version.status)
 
 
 @library.global_function

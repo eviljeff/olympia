@@ -10,8 +10,9 @@ from django.db.models import Q, Sum
 from django.template import loader
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-import olympia.core.logger
+from six import text_type
 
+import olympia.core.logger
 from olympia import amo
 from olympia.abuse.models import AbuseReport
 from olympia.access import acl
@@ -79,7 +80,7 @@ class CannedResponse(ModelBase):
         db_table = 'cannedresponses'
 
     def __unicode__(self):
-        return unicode(self.name)
+        return text_type(self.name)
 
 
 def get_flags(addon, version):
@@ -285,7 +286,8 @@ class ViewUnlistedAllList(RawSQLModel):
     @property
     def authors(self):
         ids = self._explode_concat(self._author_ids)
-        usernames = self._explode_concat(self._author_usernames, cast=unicode)
+        usernames = self._explode_concat(
+            self._author_usernames, cast=text_type)
         return list(set(zip(ids, usernames)))
 
 
@@ -717,7 +719,7 @@ class ReviewerScore(ModelBase):
             if user_level < 0:
                 level = ''
             else:
-                level = unicode(amo.REVIEWED_LEVELS[user_level]['name'])
+                level = text_type(amo.REVIEWED_LEVELS[user_level]['name'])
 
             scores.append({
                 'user_id': user_id,

@@ -2,6 +2,8 @@ import collections
 
 from django.conf import settings
 
+from six import text_type
+
 from olympia import amo
 from olympia.applications.models import AppVersion
 from olympia.lib.es.utils import create_index
@@ -58,14 +60,14 @@ def extract_update_count(update, all_apps=None):
         for key, count in update.oses.items():
             platform = None
 
-            if unicode(key).lower() in amo.PLATFORM_DICT:
-                platform = amo.PLATFORM_DICT[unicode(key).lower()]
+            if text_type(key).lower() in amo.PLATFORM_DICT:
+                platform = amo.PLATFORM_DICT[text_type(key).lower()]
             elif key in amo.PLATFORMS:
                 platform = amo.PLATFORMS[key]
 
             if platform is not None:
                 os[platform.name] += count
-                doc['os'] = es_dict((unicode(k), v) for k, v in os.items())
+                doc['os'] = es_dict((text_type(k), v) for k, v in os.items())
 
     # Case-normalize locales.
     if update.locales:

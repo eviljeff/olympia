@@ -15,6 +15,7 @@ import responses
 
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
+from six import text_type
 
 from olympia import amo
 from olympia.activity.models import ActivityLog
@@ -1156,7 +1157,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -1173,7 +1174,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -1193,7 +1194,7 @@ class TestAddonSubmitFinish(TestSubmitBase):
         self.client.get(self.url)
         context = {
             'addon_name': 'Delicious Bookmarks',
-            'app': unicode(amo.FIREFOX.pretty),
+            'app': text_type(amo.FIREFOX.pretty),
             'detail_url': 'http://b.ro/en-US/firefox/addon/a3615/',
             'version_url': 'http://b.ro/en-US/developers/addon/a3615/versions',
             'edit_url': 'http://b.ro/en-US/developers/addon/a3615/edit',
@@ -1630,7 +1631,7 @@ class VersionSubmitUploadMixin(object):
         assert doc('#theme-wizard').attr('data-version') == '3.0'
         assert doc('input#theme-name').attr('type') == 'hidden'
         assert doc('input#theme-name').attr('value') == (
-            unicode(self.addon.name))
+            text_type(self.addon.name))
 
         # And then check the upload works.
         path = os.path.join(
@@ -1977,9 +1978,9 @@ class TestVersionSubmitDetails(TestSubmitBase):
         # metadata is missing, name, slug, summary and category are required to
         # be present.
         data = {
-            'name': unicode(self.addon.name),
+            'name': text_type(self.addon.name),
             'slug': self.addon.slug,
-            'summary': unicode(self.addon.summary),
+            'summary': text_type(self.addon.summary),
 
             'form-0-categories': [22, 1],
             'form-0-application': 1,

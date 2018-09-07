@@ -13,6 +13,7 @@ from dateutil.parser import parse
 from lxml.html import HTMLParser, fromstring
 from mock import Mock, patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia import core
@@ -135,13 +136,13 @@ class TestEdit(UserViewBase):
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['biography'])
-        assert unicode(self.get_profile().biography) == data['biography']
+        assert text_type(self.get_profile().biography) == data['biography']
 
         data['biography'] = 'yyy unst unst'
         r = self.client.post(self.url, data, follow=True)
         self.assert3xx(r, self.url)
         self.assertContains(r, data['biography'])
-        assert unicode(self.get_profile().biography) == data['biography']
+        assert text_type(self.get_profile().biography) == data['biography']
 
     def test_bio_no_links(self):
         self.data.update(biography='<a href="https://google.com">google</a>')
@@ -772,7 +773,7 @@ class TestProfileSections(TestCase):
 
         a = li.find('a')
         assert a.attr('href') == coll.get_url_path()
-        assert a.text() == unicode(coll.name)
+        assert a.text() == text_type(coll.name)
 
     def test_no_my_collections(self):
         Collection.objects.filter(author=self.user).delete()
@@ -848,7 +849,7 @@ class TestThemesProfile(TestCase):
         results = doc('.personas-grid .persona.hovercard')
         assert results.length == 1
         assert force_text(
-            results.find('h3').html()) == unicode(self.theme.name)
+            results.find('h3').html()) == text_type(self.theme.name)
 
     def test_bad_user(self):
         res = self.client.get(reverse('users.themes', args=['yolo']))

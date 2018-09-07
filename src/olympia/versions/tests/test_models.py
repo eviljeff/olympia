@@ -11,6 +11,7 @@ from django.core.files.storage import default_storage as storage
 
 import mock
 import pytest
+from six import text_type
 
 from olympia import amo, core
 from olympia.activity.models import ActivityLog
@@ -1010,7 +1011,7 @@ class TestStaticThemeFromUpload(UploadTest):
         assert generate_static_theme_preview_mock.call_count == 1
         assert version.get_background_image_urls() == [
             '%s/%s/%s/%s' % (user_media_url('addons'), str(self.addon.id),
-                             unicode(version.id), 'weta.png')
+                             text_type(version.id), 'weta.png')
         ]
 
     @mock.patch('olympia.versions.models.generate_static_theme_preview')
@@ -1025,7 +1026,7 @@ class TestStaticThemeFromUpload(UploadTest):
         assert generate_static_theme_preview_mock.call_count == 1
         assert version.get_background_image_urls() == [
             '%s/%s/%s/%s' % (user_media_url('addons'), str(self.addon.id),
-                             unicode(version.id), 'weta.png')
+                             text_type(version.id), 'weta.png')
         ]
 
     @mock.patch('olympia.versions.models.generate_static_theme_preview')
@@ -1093,7 +1094,7 @@ class TestApplicationsVersions(TestCase):
         addon = addon_factory(version_kw=dict(min_app_version=u'ك',
                                               max_app_version=u'ك'))
         version = addon.current_version
-        assert unicode(version.apps.all()[0]) == u'Firefox ك - ك'
+        assert text_type(version.apps.all()[0]) == u'Firefox ك - ك'
 
 
 class TestVersionPreview(BasePreviewMixin, TestCase):

@@ -6,6 +6,7 @@ import mock
 import pytest
 
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.addons.models import Addon
@@ -21,7 +22,7 @@ pytestmark = pytest.mark.django_db
 
 def test_emaillink():
     email = 'me@example.com'
-    obfuscated = unicode(emaillink(email))
+    obfuscated = text_type(emaillink(email))
 
     # remove junk
     m = re.match(r'<a href="#"><span class="emaillink">(.*?)'
@@ -33,7 +34,7 @@ def test_emaillink():
     assert email == obfuscated
 
     title = 'E-mail your question'
-    obfuscated = unicode(emaillink(email, title))
+    obfuscated = text_type(emaillink(email, title))
     m = re.match(r'<a href="#">(.*)</a>'
                  r'<span class="emaillink js-hidden">(.*?)'
                  r'<span class="i">null</span>(.*)</span>', obfuscated)
@@ -95,7 +96,7 @@ def test_users_list_truncate_display_name():
                                                        u.name))
 
 
-def test_user_link_unicode():
+def test_user_link_text_type():
     """make sure helper won't choke on unicode input"""
     u = UserProfile(username=u'jmüller', display_name=u'Jürgen Müller', pk=1)
     assert user_link(u) == (

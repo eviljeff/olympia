@@ -4,8 +4,9 @@ from django import http
 from django.db.transaction import non_atomic_requests
 from django.shortcuts import get_object_or_404, redirect
 
-import olympia.core.logger
+from six import text_type
 
+import olympia.core.logger
 from olympia import amo
 from olympia.access import acl
 from olympia.addons.decorators import (
@@ -183,7 +184,7 @@ def download_source(request, version_id):
             raise http.Http404  # Not listed, not owner or unlisted reviewer.
     res = HttpResponseSendFile(request, version.source.path)
     path = version.source.path
-    if not isinstance(path, unicode):
+    if not isinstance(path, text_type):
         path = path.decode('utf8')
     name = os.path.basename(path.replace(u'"', u''))
     disposition = u'attachment; filename="{0}"'.format(name).encode('utf8')

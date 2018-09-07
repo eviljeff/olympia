@@ -10,6 +10,7 @@ from django.utils import translation
 
 from elasticsearch_dsl import Search
 from PIL import Image
+from six import text_type
 
 import olympia.core.logger
 from olympia import amo, activity
@@ -454,8 +455,9 @@ def extract_strict_compatibility_value_for_addon(addon):
         # A number of things can go wrong: missing file, path somehow not
         # existing, etc. In any case, that means the add-on is in a weird
         # state and should be ignored (this is a one off task).
-        log.exception(u'bump_appver_for_legacy_addons: ignoring addon %d, '
-                      u'received %s when extracting.', addon.pk, unicode(exp))
+        log.exception(
+            u'bump_appver_for_legacy_addons: ignoring addon %d, received %s '
+            u'when extracting.', addon.pk, text_type(exp))
     return strict_compatibility
 
 

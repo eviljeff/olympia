@@ -2,6 +2,7 @@ from django.db import connections, models, router
 from django.db.models.deletion import Collector
 
 import bleach
+from six import text_type
 
 import olympia.core.logger
 
@@ -45,7 +46,7 @@ class Translation(ModelBase):
         unique_together = ('id', 'locale')
 
     def __unicode__(self):
-        return self.localized_string and unicode(self.localized_string) or ''
+        return self.localized_string and text_type(self.localized_string) or ''
 
     def __nonzero__(self):
         # __nonzero__ is called to evaluate an object in a boolean context.  We
@@ -177,13 +178,13 @@ class PurifiedTranslation(Translation):
     def __unicode__(self):
         if not self.localized_string_clean:
             self.clean()
-        return unicode(self.localized_string_clean)
+        return text_type(self.localized_string_clean)
 
     def __html__(self):
-        return unicode(self)
+        return text_type(self)
 
     def __truncate__(self, length, killwords, end):
-        return utils.truncate(unicode(self), length, killwords, end)
+        return utils.truncate(text_type(self), length, killwords, end)
 
     def clean(self):
         from olympia.amo.utils import clean_nl

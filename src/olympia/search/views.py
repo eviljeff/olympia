@@ -5,8 +5,9 @@ from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext
 from django.views.decorators.vary import vary_on_headers
 
-import olympia.core.logger
+from six import text_type
 
+import olympia.core.logger
 from olympia import amo
 from olympia.addons.models import Addon, Category
 from olympia.amo.decorators import json_view
@@ -143,7 +144,7 @@ class BaseAjaxSearch(object):
                     val = getattr(item, prop, '')
                     if callable(val):
                         val = val()
-                data[key] = unicode(val)
+                data[key] = text_type(val)
         return data
 
     def build_list(self):
@@ -214,7 +215,7 @@ def _build_suggestions(request, cat, suggester):
         if cat != 'apps':
             # Applications.
             for a in amo.APP_USAGE:
-                name_ = unicode(a.pretty).lower()
+                name_ = text_type(a.pretty).lower()
                 word_matches = [w for w in q_.split() if name_ in w]
                 if q_ in name_ or word_matches:
                     results.append({
@@ -236,12 +237,12 @@ def _build_suggestions(request, cat, suggester):
         for c in cats:
             if not c.name:
                 continue
-            name_ = unicode(c.name).lower()
+            name_ = text_type(c.name).lower()
             word_matches = [w for w in q_.split() if name_ in w]
             if q_ in name_ or word_matches:
                 results.append({
                     'id': c.id,
-                    'name': unicode(c.name),
+                    'name': text_type(c.name),
                     'url': c.get_url_path(),
                     'cls': 'cat'
                 })
@@ -460,7 +461,7 @@ def version_sidebar(request, form_data, aggregations):
     if 'appver' in request.GET or form_data.get('appver'):
         appver = form_data.get('appver')
 
-    app = unicode(request.APP.pretty)
+    app = text_type(request.APP.pretty)
     exclude_versions = getattr(request.APP, 'exclude_versions', [])
     # L10n: {0} is an application, such as Firefox. This means "any version of
     # Firefox."

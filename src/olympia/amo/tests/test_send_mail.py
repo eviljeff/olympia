@@ -10,6 +10,7 @@ from django.utils import translation
 import mock
 
 from celery.exceptions import Retry
+from six import text_type
 
 from olympia.amo.models import FakeEmail
 from olympia.amo.tests import BaseTestCase
@@ -212,7 +213,7 @@ class TestSendMail(BaseTestCase):
         assert '<a href' not in message1, 'text-only email contained HTML!'
         assert '<a href' in message2, 'HTML email did not contain HTML!'
 
-        unsubscribe_msg = unicode(notifications.individual_contact.label)
+        unsubscribe_msg = text_type(notifications.individual_contact.label)
         assert unsubscribe_msg in message1
         assert unsubscribe_msg in message2
 

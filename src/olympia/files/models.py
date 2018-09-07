@@ -22,6 +22,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 from django_statsd.clients import statsd
 from jinja2 import escape as jinja2_escape
+from six import string_types, text_type
 
 import olympia.core.logger
 
@@ -101,7 +102,7 @@ class File(OnChangeMixin, ModelBase):
         db_table = 'files'
 
     def __unicode__(self):
-        return unicode(self.id)
+        return text_type(self.id)
 
     def get_platform_display(self):
         return force_text(amo.PLATFORMS[self.platform].name)
@@ -372,7 +373,7 @@ class File(OnChangeMixin, ModelBase):
 
         try:
             manifest = zip.read('chrome.manifest')
-        except KeyError as e:
+        except KeyError:
             log.info('No file named: chrome.manifest in file: %s' % self.pk)
             return ''
 
@@ -454,7 +455,7 @@ class File(OnChangeMixin, ModelBase):
             # Remove any duplicate permissions.
             permissions = set()
             permissions = [p for p in self._webext_permissions.permissions
-                           if isinstance(p, basestring) and not
+                           if isinstance(p, string_types) and not
                            (p in permissions or permissions.add(p))]
             return permissions
 
@@ -617,7 +618,7 @@ class FileUpload(ModelBase):
         db_table = 'file_uploads'
 
     def __unicode__(self):
-        return unicode(self.uuid.hex)
+        return text_type(self.uuid.hex)
 
     def save(self, *args, **kw):
         if self.validation:
@@ -728,7 +729,7 @@ class FileValidation(ModelBase):
 
     @classmethod
     def from_json(cls, file, validation):
-        if isinstance(validation, basestring):
+        if isinstance(validation, string_types):
             validation = json.loads(validation)
         new = cls(file=file, validation=json.dumps(validation),
                   errors=validation['errors'],
@@ -792,6 +793,6 @@ class WebextPermissionDescription(ModelBase):
 
 def nfd_str(u):
     """Uses NFD to normalize unicode strings."""
-    if isinstance(u, unicode):
+    if isinstance(u, text_type):
         return unicodedata.normalize('NFD', u).encode('utf-8')
     return u

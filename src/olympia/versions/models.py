@@ -14,6 +14,7 @@ import jinja2
 
 from django_extensions.db.fields.json import JSONField
 from django_statsd.clients import statsd
+from six import text_type
 
 import olympia.core.logger
 
@@ -235,7 +236,7 @@ class Version(OnChangeMixin, ModelBase):
                 channel == amo.RELEASE_CHANNEL_LISTED):
             dst_root = os.path.join(user_media_path('addons'), str(addon.id))
             theme_data = parsed_data.get('theme', {})
-            version_root = os.path.join(dst_root, unicode(version.id))
+            version_root = os.path.join(dst_root, text_type(version.id))
 
             utils.extract_header_img(
                 version.all_files[0].file_path, theme_data, version_root)
@@ -671,9 +672,9 @@ class Version(OnChangeMixin, ModelBase):
         if self.addon.type != amo.ADDON_STATICTHEME:
             return []
         background_images_folder = os.path.join(
-            user_media_path('addons'), str(self.addon.id), unicode(self.id))
+            user_media_path('addons'), str(self.addon.id), text_type(self.id))
         background_images_url = '/'.join(
-            (user_media_url('addons'), str(self.addon.id), unicode(self.id)))
+            (user_media_url('addons'), str(self.addon.id), text_type(self.id)))
         out = [
             background.replace(background_images_folder, background_images_url)
             for background in walkfiles(background_images_folder)]
@@ -841,7 +842,7 @@ class License(ModelBase):
 
     def __unicode__(self):
         license = self._constant or self
-        return unicode(license.name)
+        return text_type(license.name)
 
     @property
     def _constant(self):
@@ -868,7 +869,7 @@ class ApplicationsVersions(models.Model):
         unique_together = (("application", "version"),)
 
     def get_application_display(self):
-        return unicode(amo.APPS_ALL[self.application].pretty)
+        return text_type(amo.APPS_ALL[self.application].pretty)
 
     def __unicode__(self):
         if (self.version.is_compatible_by_default and

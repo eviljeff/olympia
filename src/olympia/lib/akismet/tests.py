@@ -11,6 +11,7 @@ import mock
 import pytest
 import responses
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia.amo.tests import addon_factory, TestCase, user_factory
 from olympia.amo.urlresolvers import reverse
@@ -257,7 +258,7 @@ class TestAkismetAdmin(TestCase):
             [ham_report_not_already_submitted.pk], True)
         assert len(django_messages.get_messages(request)) == 1
         for message in django_messages.get_messages(request):
-            assert unicode(message) == (
+            assert text_type(message) == (
                 '1 Ham reports submitted as Spam; 5 reports ignored')
 
     @mock.patch('olympia.lib.akismet.admin.submit_to_akismet.delay')
@@ -277,7 +278,7 @@ class TestAkismetAdmin(TestCase):
             [r.id for r in spam_reports_not_already_submitted], False)
         assert len(django_messages.get_messages(request)) == 1
         for message in django_messages.get_messages(request):
-            assert unicode(message) == (
+            assert text_type(message) == (
                 '2 Spam reports submitted as Ham; 4 reports ignored')
 
     def test_submit_spam_button_on_ham_page(self):

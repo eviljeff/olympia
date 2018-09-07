@@ -3,6 +3,7 @@ from django.test import override_settings
 
 from mock import Mock
 from rest_framework.test import APIRequestFactory
+from six import text_type
 
 from olympia.amo.templatetags.jinja_helpers import absolutify
 from olympia.amo.tests import TestCase, addon_factory, user_factory
@@ -42,7 +43,7 @@ class TestBaseRatingSerializer(TestCase):
             'name': {'en-US': addon.name},
             'icon_url': absolutify(addon.get_icon_url(64)),
         }
-        assert result['body'] == unicode(self.rating.body)
+        assert result['body'] == text_type(self.rating.body)
         assert result['created'] == (
             self.rating.created.replace(microsecond=0).isoformat() + 'Z')
         assert result['previous_count'] == int(self.rating.previous_count)
@@ -52,7 +53,7 @@ class TestBaseRatingSerializer(TestCase):
         assert result['reply'] is None
         assert result['user'] == {
             'id': self.user.pk,
-            'name': unicode(self.user.name),
+            'name': text_type(self.user.name),
             'url': None,
             'username': self.user.username,
         }
@@ -149,13 +150,13 @@ class TestBaseRatingSerializer(TestCase):
     def test_with_reply(self):
         def _test_reply(data):
             assert data['id'] == reply.pk
-            assert data['body'] == unicode(reply.body)
+            assert data['body'] == text_type(reply.body)
             assert data['created'] == (
                 reply.created.replace(microsecond=0).isoformat() + 'Z')
             assert data['is_developer_reply'] is True
             assert data['user'] == {
                 'id': reply_user.pk,
-                'name': unicode(reply_user.name),
+                'name': text_type(reply_user.name),
                 # should be the profile for a developer
                 'url': absolutify(reply_user.get_url_path()),
                 'username': reply_user.username,
@@ -233,12 +234,12 @@ class TestBaseRatingSerializer(TestCase):
         assert 'rating' not in result['reply']
         assert 'reply' not in result['reply']
         assert result['reply']['id'] == reply.pk
-        assert result['reply']['body'] == unicode(reply.body)
+        assert result['reply']['body'] == text_type(reply.body)
         assert result['reply']['created'] == (
             reply.created.replace(microsecond=0).isoformat() + 'Z')
         assert result['reply']['user'] == {
             'id': reply_user.pk,
-            'name': unicode(reply_user.name),
+            'name': text_type(reply_user.name),
             'url': absolutify(reply_user.get_url_path()),
             'username': reply_user.username,
         }

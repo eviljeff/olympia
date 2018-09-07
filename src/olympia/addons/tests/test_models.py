@@ -15,6 +15,7 @@ from django.utils import translation
 
 import pytest
 from mock import Mock, patch
+from six import text_type
 
 from olympia import amo, core
 from olympia.addons import models as addons_models
@@ -187,7 +188,7 @@ class TestCleanSlug(TestCase):
         assert b.slug == 'ends-with-dash-1'
         assert b.slug == amo.utils.slugify(b.slug)
 
-    def test_clean_slug_unicode(self):
+    def test_clean_slug_text_type(self):
         addon = Addon.objects.create(name=u'Addön 1')
         assert addon.slug == u'addön-1'
 
@@ -2081,12 +2082,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == text_type(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == text_type(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))
@@ -2118,12 +2119,12 @@ class TestPersonaModel(TestCase):
             id_ = str(self.persona.addon.id)
 
             assert data['id'] == id_
-            assert data['name'] == unicode(self.persona.addon.name)
+            assert data['name'] == text_type(self.persona.addon.name)
             assert data['accentcolor'] == '#8d8d97'
             assert data['textcolor'] == '#ffffff'
             assert data['category'] == 'Yolo Art'
             assert data['author'] == 'persona_author'
-            assert data['description'] == unicode(self.addon.description)
+            assert data['description'] == text_type(self.addon.description)
 
             assert data['headerURL'].startswith(
                 '%s%s/header.png?' % (user_media_url('addons'), id_))

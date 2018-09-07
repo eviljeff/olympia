@@ -8,6 +8,7 @@ import mock
 import waffle
 
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.addons.models import Addon, AddonUser
@@ -695,7 +696,7 @@ class TestUploadCompatCheck(BaseUploadTest):
         assert 'this tool only works with legacy add-ons' in res.content
 
         options = doc('#id_application option')
-        expected = [(str(a.id), unicode(a.pretty)) for a in amo.APP_USAGE]
+        expected = [(str(a.id), text_type(a.pretty)) for a in amo.APP_USAGE]
         for idx, element in enumerate(options):
             e = pq(element)
             val, text = expected[idx]

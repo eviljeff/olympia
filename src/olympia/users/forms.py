@@ -8,8 +8,9 @@ from django.conf import settings
 from django.core.files.storage import default_storage as storage
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-import olympia.core.logger
+from six import text_type
 
+import olympia.core.logger
 from olympia import amo
 from olympia.accounts.views import fxa_error_message
 from olympia.activity.models import ActivityLog
@@ -225,7 +226,7 @@ class UserEditForm(forms.ModelForm):
 
     def clean_biography(self):
         biography = self.cleaned_data['biography']
-        normalized = clean_nl(unicode(biography))
+        normalized = clean_nl(text_type(biography))
         if has_links(normalized):
             # There's some links, we don't want them.
             raise forms.ValidationError(ugettext('No links are allowed.'))

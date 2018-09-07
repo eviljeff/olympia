@@ -23,6 +23,7 @@ from babel.support import Format
 from django_jinja import library
 from rest_framework.reverse import reverse as drf_reverse
 from rest_framework.settings import api_settings
+from six import text_type
 
 from olympia import amo
 from olympia.amo import urlresolvers, utils
@@ -41,7 +42,7 @@ library.global_function(utils.randslice)
 
 # Mark a lazy marked instance as safe but keep
 # it lazy
-mark_safe_lazy = lazy(mark_safe, unicode)
+mark_safe_lazy = lazy(mark_safe, text_type)
 
 
 @library.global_function
@@ -242,14 +243,14 @@ def strip_controls(s):
     """
     # Translation table of control characters.
     control_trans = dict((n, None) for n in xrange(32) if n not in [10, 13])
-    rv = unicode(s).translate(control_trans)
+    rv = text_type(s).translate(control_trans)
     return jinja2.Markup(rv) if isinstance(s, jinja2.Markup) else rv
 
 
 @library.filter
 def external_url(url):
     """Bounce a URL off outgoing.prod.mozaws.net."""
-    return urlresolvers.get_outgoing_url(unicode(url))
+    return urlresolvers.get_outgoing_url(text_type(url))
 
 
 @library.filter
@@ -512,7 +513,7 @@ def id_to_path(pk):
     12 => 2/12/12
     123456 => 6/56/123456
     """
-    pk = unicode(pk)
+    pk = text_type(pk)
     path = [pk[-1]]
     if len(pk) >= 2:
         path.append(pk[-2:])

@@ -10,6 +10,7 @@ import pytest
 
 from elasticsearch import Elasticsearch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.addons.models import (
@@ -83,7 +84,7 @@ class SearchBase(ESTestCaseWithAddons):
         if sort_by:
             results = response.context['pager'].object_list
             if sort_by == 'name':
-                expected = sorted(results, key=lambda x: unicode(x.name))
+                expected = sorted(results, key=lambda x: text_type(x.name))
             else:
                 expected = sorted(results, key=lambda x: getattr(x, sort_by),
                                   reverse=reverse)
@@ -227,7 +228,7 @@ class TestESSearch(SearchBase):
         plats = r.context['platforms']
         for idx, plat in enumerate(plats):
             name, selected = expected[idx]
-            label = unicode(plat.text)
+            label = text_type(plat.text)
             assert label == name
             assert plat.selected == selected
 
@@ -307,7 +308,7 @@ class TestESSearch(SearchBase):
                                    {'appver': floor_version(appver)}, facets)
 
         all_ = versions.pop(0)
-        assert all_.text == 'Any %s' % unicode(request.APP.pretty)
+        assert all_.text == 'Any %s' % text_type(request.APP.pretty)
         assert not all_.selected == expected
 
         return [v.__dict__ for v in versions]
@@ -421,8 +422,8 @@ class TestESSearch(SearchBase):
         expected = [
             ('All Add-ons', self.url),
             ('Extensions', urlparams(self.url, atype=amo.ADDON_EXTENSION)),
-            (unicode(cat.name), urlparams(self.url, atype=amo.ADDON_EXTENSION,
-                                          cat=cat.id)),
+            (text_type(cat.name), urlparams(
+                self.url, atype=amo.ADDON_EXTENSION, cat=cat.id)),
         ]
         amo.tests.check_links(expected, links, selected, verify=False)
 
@@ -444,7 +445,7 @@ class TestESSearch(SearchBase):
         cat = self.addons[0].all_categories[0]
         self.check_cat_filters(
             {'atype': amo.ADDON_EXTENSION, 'cat': cat.id},
-            selected=unicode(cat.name))
+            selected=text_type(cat.name))
 
     def test_cat_facet_stale(self):
         AddonCategory.objects.all().delete()
@@ -820,7 +821,7 @@ class TestPersonaSearch(SearchBase):
             assert r.status_code == 200
             results = list(r.context['pager'].object_list)
             first = results[0]
-            assert unicode(first.name) == expected_name, (
+            assert text_type(first.name) == expected_name, (
                 'Was not first result for %r. Results: %s' % (sort, results))
             assert first.persona.popularity == expected_popularity, (
                 'Incorrect popularity for %r. Got %r. Expected %r.' % (
@@ -905,7 +906,7 @@ class TestAjaxSearch(ESTestCaseWithAddons):
                 sorted(addons, key=lambda x: x.id)):
             expected.reload()
             assert int(got['id']) == expected.id
-            assert got['name'] == unicode(expected.name)
+            assert got['name'] == text_type(expected.name)
             expected_url = expected.get_url_path()
             if src:
                 expected_url += '?src=ss'
@@ -972,7 +973,7 @@ class TestGenericAjaxSearch(TestAjaxSearch):
         )
         self._addons.append(addon)
         self.refresh()
-        self.search_addons('q=' + unicode(addon.name), [addon])
+        self.search_addons('q=' + text_type(addon.name), [addon])
 
     def test_ajax_search_by_bad_name(self):
         self.search_addons('q=some+filthy+bad+word', [])
@@ -1030,7 +1031,7 @@ class TestSearchSuggestions(TestAjaxSearch):
         assert len(data) == len(apps)
         for got, expected in zip(data, apps):
             assert int(got['id']) == expected.id
-            assert got['name'] == '%s Add-ons' % unicode(expected.pretty)
+            assert got['name'] == '%s Add-ons' % text_type(expected.pretty)
             assert got['url'] == locale_url(expected.short)
             assert got['cls'] == 'app ' + expected.short
 
@@ -1045,7 +1046,7 @@ class TestSearchSuggestions(TestAjaxSearch):
         self.search_addons('q=add', list(addons))
         self.search_addons('q=add&cat=all', list(addons))
 
-    def test_unicode(self):
+    def test_text_type(self):
         self.search_addons('q=%C2%B2%C2%B2', [])
 
     def test_personas(self):

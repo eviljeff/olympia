@@ -14,6 +14,7 @@ from mock import Mock, patch
 from pyquery import PyQuery as pq
 from rest_framework.fields import empty
 from rest_framework.settings import api_settings
+from six import string_types, text_type
 
 from olympia import amo, core
 from olympia.activity.models import ActivityLog
@@ -350,7 +351,7 @@ class TestCRUD(TestCase):
         assert r.request['PATH_INFO'].decode('utf-8') == (
             '/en-US/firefox/collections/admin/%s/' % self.slug)
         c = Collection.objects.get(slug=self.slug)
-        assert unicode(c.name) == self.data['name']
+        assert text_type(c.name) == self.data['name']
         assert c.description == ''
         assert c.addons.all()[0].id == 3615
 
@@ -376,7 +377,7 @@ class TestCRUD(TestCase):
                                    'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'HALP'
+        assert text_type(c.name) == 'HALP'
 
     def test_edit_description(self):
         self.create_collection()
@@ -386,8 +387,8 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
-            'abc')
+        assert 'abc' == (
+            text_type(Collection.objects.get(slug=self.slug).description))
 
     def test_edit_no_description(self):
         self.create_collection(description='abc')
@@ -398,8 +399,8 @@ class TestCRUD(TestCase):
         edit_url = Collection.objects.get(slug=self.slug).edit_url()
         r = self.client.post(url, self.data)
         self.assert3xx(r, edit_url, 302)
-        assert unicode(Collection.objects.get(slug=self.slug).description) == (
-            '')
+        assert '' == (
+            text_type(Collection.objects.get(slug=self.slug).description))
 
     def test_edit_spaces(self):
         """Let's put lots of spaces and see if they show up."""
@@ -411,7 +412,7 @@ class TestCRUD(TestCase):
                               'listed': True}, follow=True)
         assert r.status_code == 200
         c = Collection.objects.get(slug='halp')
-        assert unicode(c.name) == 'H A L  P'
+        assert text_type(c.name) == 'H A L  P'
 
     def test_forbidden_edit(self):
         self.create_collection()
@@ -539,7 +540,7 @@ class TestCRUD(TestCase):
         assert r.status_code == 302
 
         c = Collection.objects.get(id=fav.id)
-        assert unicode(c.name) == 'xxx'
+        assert text_type(c.name) == 'xxx'
 
     def test_edit_addons_get(self):
         self.create_collection()
@@ -625,7 +626,7 @@ class TestCRUD(TestCase):
         assert response.status_code == 200
 
         collection.reload()
-        assert unicode(collection.name) == 'new name'
+        assert text_type(collection.name) == 'new name'
 
 
 class TestChangeAddon(TestCase):
@@ -1160,7 +1161,7 @@ class TestCollectionViewSetDetail(TestCase):
         addon_data = response.data['addons'][0]['addon']
         assert addon_data['id'] == addon.id
         assert isinstance(addon_data['name'], dict)
-        assert addon_data['name'] == {'en-US': unicode(addon.name)}
+        assert addon_data['name'] == {'en-US': text_type(addon.name)}
 
         # Now test the limit of addons returned
         self.collection.add_addon(addon_factory())
@@ -1185,14 +1186,14 @@ class TestCollectionViewSetDetail(TestCase):
         assert response.data['id'] == self.collection.id
         addon_data = response.data['addons'][0]['addon']
         assert addon_data['id'] == addon.id
-        assert isinstance(addon_data['name']['en-US'], basestring)
-        assert addon_data['name'] == {'en-US': unicode(addon.name)}
-        assert isinstance(addon_data['homepage']['en-US'], basestring)
+        assert isinstance(addon_data['name']['en-US'], string_types)
+        assert addon_data['name'] == {'en-US': text_type(addon.name)}
+        assert isinstance(addon_data['homepage']['en-US'], string_types)
         assert addon_data['homepage'] == {
-            'en-US': get_outgoing_url(unicode(addon.homepage))}
-        assert isinstance(addon_data['support_url']['en-US'], basestring)
+            'en-US': get_outgoing_url(text_type(addon.homepage))}
+        assert isinstance(addon_data['support_url']['en-US'], string_types)
         assert addon_data['support_url'] == {
-            'en-US': get_outgoing_url(unicode(addon.support_url))}
+            'en-US': get_outgoing_url(text_type(addon.support_url))}
 
         overridden_api_gates = {
             api_settings.DEFAULT_VERSION: ('l10n_flat_input_output',)}
@@ -1203,14 +1204,14 @@ class TestCollectionViewSetDetail(TestCase):
             assert response.data['id'] == self.collection.id
             addon_data = response.data['addons'][0]['addon']
             assert addon_data['id'] == addon.id
-            assert isinstance(addon_data['name'], basestring)
-            assert addon_data['name'] == unicode(addon.name)
-            assert isinstance(addon_data['homepage'], basestring)
+            assert isinstance(addon_data['name'], string_types)
+            assert addon_data['name'] == text_type(addon.name)
+            assert isinstance(addon_data['homepage'], string_types)
             assert addon_data['homepage'] == get_outgoing_url(
-                unicode(addon.homepage))
-            assert isinstance(addon_data['support_url'], basestring)
+                text_type(addon.homepage))
+            assert isinstance(addon_data['support_url'], string_types)
             assert addon_data['support_url'] == get_outgoing_url(
-                unicode(addon.support_url))
+                text_type(addon.support_url))
 
 
 class CollectionViewSetDataMixin(object):

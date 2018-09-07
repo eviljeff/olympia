@@ -10,6 +10,7 @@ import pytest
 
 from mock import Mock, patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.activity.models import ActivityLog, ActivityLogToken
@@ -58,7 +59,7 @@ class TestViewPendingQueueTable(TestCase):
     def test_addon_type_id(self):
         row = Mock()
         row.addon_type_id = amo.ADDON_THEME
-        assert unicode(self.table.render_addon_type_id(row)) == (
+        assert text_type(self.table.render_addon_type_id(row)) == (
             u'Complete Theme')
 
     def test_waiting_time_in_days(self):
@@ -265,7 +266,7 @@ class TestReviewHelper(TestCase):
             helper = self.get_helper()
             actions = helper.actions
             for k, v in actions.items():
-                assert unicode(v['details']), "Missing details for: %s" % k
+                assert text_type(v['details']), "Missing details for: %s" % k
 
     def get_review_actions(
             self, addon_status, file_status, content_review_only=False):

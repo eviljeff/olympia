@@ -30,11 +30,10 @@ from django.utils.translation import ugettext
 import flufl.lock
 import rdflib
 import waffle
-
 from signing_clients.apps import get_signer_organizational_unit_name
+from six import string_types, text_type
 
 import olympia.core.logger
-
 from olympia import amo, core
 from olympia.access import acl
 from olympia.addons.utils import verify_mozilla_trademark
@@ -84,7 +83,7 @@ def get_filepath(fileorpath):
     This supports various input formats, a path, a django `File` object,
     `olympia.files.File`, a `FileUpload` or just a regular file-like object.
     """
-    if isinstance(fileorpath, basestring):
+    if isinstance(fileorpath, string_types):
         return fileorpath
     elif isinstance(fileorpath, DjangoFile):
         return fileorpath
@@ -301,7 +300,7 @@ class RDFExtractor(object):
         match = list(self.rdf.objects(ctx, predicate=self.uri(name)))
         # These come back as rdflib.Literal, which subclasses unicode.
         if match:
-            return unicode(match[0])
+            return text_type(match[0])
 
     def apps(self):
         rv = []
@@ -1185,7 +1184,7 @@ def resolve_i18n_message(message, messages, locale, default_locale=None):
     :param messages: A dictionary of messages, e.g the return value
                      of `extract_translations`.
     """
-    if not message or not isinstance(message, basestring):
+    if not message or not isinstance(message, string_types):
         # Don't even attempt to extract invalid data.
         # See https://github.com/mozilla/addons-server/issues/3067
         # for more details

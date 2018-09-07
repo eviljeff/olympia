@@ -12,6 +12,7 @@ import pytest
 
 from mock import patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo, legacy_api
 from olympia.addons.models import (
@@ -297,7 +298,7 @@ class APITest(TestCase):
         response = self.client.get(
             '/en-US/firefox/api/%.1f/addon/3615?format=json' % 1.2)
         data = json.loads(response.content)
-        assert data['name'] == unicode(addon.name)
+        assert data['name'] == text_type(addon.name)
         assert data['type'] == 'extension'
         assert data['guid'] == addon.guid
         assert data['version'] == '2.1.072'
@@ -308,7 +309,7 @@ class APITest(TestCase):
                 'name': u'55021 \u0627\u0644\u062a\u0637\u0628',
                 'link': jinja_helpers.absolutify(
                     u'/en-US/firefox/user/55021/?src=api')}])
-        assert data['summary'] == unicode(addon.summary)
+        assert data['summary'] == text_type(addon.summary)
         assert data['description'] == (
             'This extension integrates your browser with Delicious '
             '(http://delicious.com), the leading social bookmarking '
@@ -318,7 +319,7 @@ class APITest(TestCase):
             jinja_helpers.user_media_url('addon_icons'))
         assert data['compatible_apps'] == (
             [{'Firefox': {'max': '4.0', 'min': '2.0'}}])
-        assert data['eula'] == unicode(addon.eula)
+        assert data['eula'] == text_type(addon.eula)
         assert data['learnmore'] == (
             jinja_helpers.absolutify('/en-US/firefox/addon/a3615/?src=api'))
         assert 'theme' not in data
@@ -348,7 +349,7 @@ class APITest(TestCase):
         assert doc('license').length == 1
         assert doc('license name').length == 1
         assert doc('license url').length == 1
-        assert doc('license name').text() == unicode(license.name)
+        assert doc('license name').text() == text_type(license.name)
         assert (
             doc('license url').text() == jinja_helpers.absolutify(license.url))
 
@@ -616,7 +617,7 @@ class ListTest(TestCase):
         r = make_call('list/by_adu?format=json', version=1.5)
         assert json.loads(r.content)
 
-    def test_unicode(self):
+    def test_text_type(self):
         make_call(u'list/featured/all/10/Linux/3.7a2prexec\xb6\u0153\xec\xb2')
 
 
@@ -1270,7 +1271,7 @@ class LanguagePacksTest(UploadTest):
 
     @patch('olympia.addons.models.Addon.get_localepicker')
     def test_localepicker(self, get_localepicker):
-        get_localepicker.return_value = unicode('title=اختر لغة', 'utf8')
+        get_localepicker.return_value = text_type('title=اختر لغة', 'utf8')
         self.addon.update(type=amo.ADDON_LPAPP, status=amo.STATUS_PUBLIC)
         res = self.client.get(self.url)
         self.assertContains(res, dedent("""

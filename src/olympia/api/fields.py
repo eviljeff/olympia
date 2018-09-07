@@ -4,6 +4,7 @@ from django.utils.encoding import smart_text
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from rest_framework import fields, serializers
+from six import string_types, text_type
 
 from olympia.amo.utils import to_language
 from olympia.api.utils import is_gate_active
@@ -94,11 +95,11 @@ class TranslationSerializerField(fields.Field):
     def fetch_all_translations(self, obj, source, field):
         translations = field.__class__.objects.filter(
             id=field.id, localized_string__isnull=False)
-        return {to_language(trans.locale): unicode(trans)
+        return {to_language(trans.locale): text_type(trans)
                 for trans in translations} if translations else None
 
     def fetch_single_translation(self, obj, source, field, requested_language):
-        return {to_language(field.locale): unicode(field)} if field else None
+        return {to_language(field.locale): text_type(field)} if field else None
 
     def get_attribute(self, obj):
         source = self.source or self.field_name
@@ -124,7 +125,7 @@ class TranslationSerializerField(fields.Field):
         return val
 
     def to_internal_value(self, data):
-        if isinstance(data, basestring):
+        if isinstance(data, string_types):
             self.validate(data)
             return data.strip()
         elif isinstance(data, dict):
@@ -132,7 +133,7 @@ class TranslationSerializerField(fields.Field):
             for key, value in data.items():
                 data[key] = value and value.strip()
             return data
-        return unicode(data)
+        return text_type(data)
 
     def validate(self, value):
         if not self.flat and not isinstance(value, dict):
@@ -141,7 +142,7 @@ class TranslationSerializerField(fields.Field):
             )
         value_too_short = True
 
-        if isinstance(value, basestring):
+        if isinstance(value, string_types):
             if len(value.strip()) >= self.min_length:
                 value_too_short = False
         else:

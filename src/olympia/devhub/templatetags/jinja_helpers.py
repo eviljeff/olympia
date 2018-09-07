@@ -8,6 +8,7 @@ from django.utils.translation import ugettext, ungettext
 import jinja2
 
 from django_jinja import library
+from six import text_type
 
 from olympia import amo
 from olympia.access import acl
@@ -72,7 +73,7 @@ def dev_files_status(files):
     for file in files:
         status_count[file.status] += 1
 
-    return [(count, unicode(choices[status])) for
+    return [(count, text_type(choices[status])) for
             (status, count) in status_count.items()]
 
 

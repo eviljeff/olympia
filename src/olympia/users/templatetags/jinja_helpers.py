@@ -6,6 +6,7 @@ from django.utils.translation import pgettext
 import jinja2
 
 from django_jinja import library
+from six import string_types
 
 from olympia import amo
 from olympia.amo.utils import urlparams
@@ -71,7 +72,7 @@ def addon_users_list(context, addon):
 
 
 def _user_link(user, max_text_length=None):
-    if isinstance(user, basestring):
+    if isinstance(user, string_types):
         return user
 
     username = user.name

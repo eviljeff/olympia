@@ -47,6 +47,7 @@ from easy_thumbnails import processors
 from html5lib.serializer.htmlserializer import HTMLSerializer
 from PIL import Image
 from rest_framework.utils.encoders import JSONEncoder
+from six import string_types, text_type
 from validator import unicodehelper
 
 from olympia.amo import ADDON_ICON_SIZES, search
@@ -186,7 +187,7 @@ def send_mail(subject, message, from_email=None, recipient_list=None,
     if not recipient_list:
         return True
 
-    if isinstance(recipient_list, basestring):
+    if isinstance(recipient_list, string_types):
         raise ValueError('recipient_list should be a list, not a string.')
 
     # Check against user notification settings
@@ -217,8 +218,8 @@ def send_mail(subject, message, from_email=None, recipient_list=None,
         from_email = settings.DEFAULT_FROM_EMAIL
 
     if cc:
-        # If not basestring, assume it is already a list.
-        if isinstance(cc, basestring):
+        # If not string_types, assume it is already a list.
+        if isinstance(cc, string_types):
             cc = [cc]
 
     if not headers:
@@ -706,7 +707,7 @@ class HttpResponseSendFile(HttpResponse):
         super(HttpResponseSendFile, self).__init__('', status=status,
                                                    content_type=content_type)
         header_path = self.path
-        if isinstance(header_path, unicode):
+        if isinstance(header_path, text_type):
             header_path = header_path.encode('utf8')
         if settings.XSENDFILE:
             self[settings.XSENDFILE_HEADER] = header_path
@@ -777,7 +778,7 @@ def escape_all(v, linkify_only_full=False):
     Only linkify full urls, including a scheme, if "linkify_only_full" is True.
 
     """
-    if isinstance(v, basestring):
+    if isinstance(v, string_types):
         v = jinja2.escape(force_text(v))
         v = linkify_with_outgoing(v, only_full=linkify_only_full)
         return v
@@ -872,7 +873,7 @@ def attach_trans_dict(model, objs):
         converted_translation = new_class()
         converted_translation.__dict__ = translation.__dict__
         return (converted_translation.locale.lower(),
-                unicode(converted_translation))
+                text_type(converted_translation))
 
     # Build and attach translations for each field on each object.
     for obj in objs:

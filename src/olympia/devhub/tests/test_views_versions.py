@@ -8,6 +8,7 @@ from django.core.files.base import File as DjangoFile
 import mock
 
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo
 from olympia.accounts.views import API_TOKEN_COOKIE
@@ -301,7 +302,7 @@ class TestVersion(TestCase):
         entry = ActivityLog.objects.get()
         assert entry.action == amo.LOG.USER_ENABLE.id
         msg = entry.to_string()
-        assert unicode(self.addon.name) in msg, ("Unexpected: %r" % msg)
+        assert text_type(self.addon.name) in msg, ("Unexpected: %r" % msg)
 
     def test_unprivileged_user_cant_disable_addon(self):
         self.addon.update(disabled_by_user=False)
@@ -635,8 +636,8 @@ class TestVersionEditDetails(TestVersionEditBase):
         response = self.client.post(self.url, data)
         assert response.status_code == 302
         version = self.get_version()
-        assert unicode(version.releasenotes) == 'xx'
-        assert unicode(version.approvalnotes) == 'yy'
+        assert text_type(version.releasenotes) == 'xx'
+        assert text_type(version.approvalnotes) == 'yy'
 
     def test_version_number_redirect(self):
         url = self.url.replace(str(self.version.id), self.version.version)
@@ -816,8 +817,8 @@ class TestVersionEditSearchEngine(TestVersionEditMixin, TestCase):
         response = self.client.post(self.url, dd)
         assert response.status_code == 302
         version = Addon.objects.get(id=4594).current_version
-        assert unicode(version.releasenotes) == 'xx'
-        assert unicode(version.approvalnotes) == 'yy'
+        assert text_type(version.releasenotes) == 'xx'
+        assert text_type(version.approvalnotes) == 'yy'
 
     def test_no_compat(self):
         response = self.client.get(self.url)

@@ -3,6 +3,7 @@ from django.utils.translation import (
     pgettext_lazy, ugettext, ugettext_lazy as _)
 
 import jinja2
+from six import text_type
 
 from olympia import amo
 from olympia.amo.templatetags.jinja_helpers import urlparams
@@ -176,8 +177,9 @@ class PersonaInstallButton(InstallButton):
     install_class = ['persona']
 
     def links(self):
-        return [Link(ugettext(u'Add to {0}').format(unicode(self.app.pretty)),
-                     reverse('addons.detail', args=[amo.PERSONAS_ADDON_ID]))]
+        return [
+            Link(ugettext(u'Add to {0}').format(text_type(self.app.pretty)),
+                 reverse('addons.detail', args=[amo.PERSONAS_ADDON_ID]))]
 
     def attrs(self):
         rv = super(PersonaInstallButton, self).attrs()

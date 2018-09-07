@@ -5,6 +5,7 @@ from django.utils.translation import ugettext
 import waffle
 
 from rest_framework import serializers
+from six import text_type
 
 import olympia.core.logger
 
@@ -84,7 +85,7 @@ class UserProfileSerializer(PublicUserProfileSerializer):
         read_only_fields = tuple(set(fields) - set(writeable_fields))
 
     def validate_biography(self, value):
-        if has_links(clean_nl(unicode(value))):
+        if has_links(clean_nl(text_type(value))):
             # There's some links, we don't want them.
             raise serializers.ValidationError(
                 ugettext(u'No links are allowed.'))

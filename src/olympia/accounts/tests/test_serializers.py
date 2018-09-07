@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from rest_framework.test import APIRequestFactory
+from six import text_type
 
 from olympia import amo
 from olympia.access.models import Group, GroupUser
@@ -85,7 +86,7 @@ class TestPublicUserProfileSerializer(TestCase):
     def test_basic(self):
         data = self.serialize()
         for prop, val in self.user_kwargs.items():
-            assert data[prop] == unicode(val), prop
+            assert data[prop] == text_type(val), prop
         return data
 
     def test_addons(self):

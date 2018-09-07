@@ -9,6 +9,7 @@ from django.db import connection, models
 from django.db.models import Q
 
 import pytest
+from six import text_type
 
 from olympia.amo.tests import BaseTestCase
 from olympia.reviewers.sql_model import RawSQLModel
@@ -276,7 +277,7 @@ class TestSQLModel(BaseTestCase):
 
     def test_types(self):
         row = Summary.objects.all().order_by('category')[0]
-        self.check_type(row.category, unicode)
+        self.check_type(row.category, text_type)
         self.check_type(row.total, (int, long))
         self.check_type(row.latest_product_date, datetime)
 

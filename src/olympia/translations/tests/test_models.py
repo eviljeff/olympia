@@ -15,6 +15,7 @@ import pytest
 
 from mock import patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia.amo.models import use_primary_db
 from olympia.amo.tests import BaseTestCase
@@ -264,7 +265,7 @@ class TranslationTestCase(BaseTestCase):
     def test_order_by_translations_query_uses_left_outer_join(self):
         translation.activate('de')
         qs = TranslatedModel.objects.all()
-        query = unicode(order_by_translation(qs, 'name').query)
+        query = text_type(order_by_translation(qs, 'name').query)
         # There should be 2 LEFT OUTER JOIN to find translations matching
         # current language and fallback.
         joins = re.findall('LEFT OUTER JOIN `translations`', query)
@@ -395,7 +396,7 @@ class TranslationTestCase(BaseTestCase):
 
     def test_require_locale(self):
         obj = TranslatedModel.objects.get(pk=1)
-        assert unicode(obj.no_locale) == 'blammo'
+        assert text_type(obj.no_locale) == 'blammo'
         assert obj.no_locale.locale == 'en-US'
 
         # Switch the translation to a locale we wouldn't pick up by default.
@@ -403,7 +404,7 @@ class TranslationTestCase(BaseTestCase):
         obj.no_locale.save()
 
         obj = TranslatedModel.objects.get(pk=1)
-        assert unicode(obj.no_locale) == 'blammo'
+        assert text_type(obj.no_locale) == 'blammo'
         assert obj.no_locale.locale == 'fr'
 
     def test_delete_set_null(self):
@@ -532,7 +533,7 @@ class TranslationMultiDbTests(TransactionTestCase):
 class PurifiedTranslationTest(BaseTestCase):
 
     def test_output(self):
-        assert isinstance(PurifiedTranslation().__html__(), unicode)
+        assert isinstance(PurifiedTranslation().__html__(), text_type)
 
     def test_raw_text(self):
         s = u'   This is some text   '
@@ -672,17 +673,17 @@ def test_translation_bool():
     assert bool(t(None)) is False
 
 
-def test_translation_unicode():
+def test_translation_text_type():
     def t(s):
         return Translation(localized_string=s)
 
-    assert unicode(t('hello')) == 'hello'
-    assert unicode(t(None)) == ''
+    assert text_type(t('hello')) == 'hello'
+    assert text_type(t(None)) == ''
 
 
 def test_comparison_with_lazy():
     x = Translation(localized_string='xxx')
-    lazy_u = lazy(lambda x: x, unicode)
+    lazy_u = lazy(lambda x: x, text_type)
     x == lazy_u('xxx')
     lazy_u('xxx') == x
 

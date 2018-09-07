@@ -21,6 +21,7 @@ from freezegun import freeze_time
 from lxml.html import HTMLParser, fromstring
 from mock import Mock, patch
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia import amo, core, ratings
 from olympia.abuse.models import AbuseReport
@@ -1127,7 +1128,7 @@ class QueueTest(ReviewerTest):
         for idx, addon in enumerate(self.expected_addons):
             latest_version = self.get_addon_latest_version(addon)
             assert latest_version
-            name = '%s %s' % (unicode(addon.name),
+            name = '%s %s' % (text_type(addon.name),
                               latest_version.version)
             if self.channel_name == 'listed':
                 # We typically don't include the channel name if it's the
@@ -4431,7 +4432,7 @@ class TestReview(ReviewBase):
         background_files = ['a.png', 'b.png', 'c.png']
         walkfiles_folder = os.path.join(
             user_media_path('addons'), str(self.addon.id),
-            unicode(self.addon.current_version.id))
+            text_type(self.addon.current_version.id))
         walkfiles_mock.return_value = [
             os.path.join(walkfiles_folder, filename)
             for filename in background_files]
@@ -4447,7 +4448,7 @@ class TestReview(ReviewBase):
         assert images.length == len(walkfiles_mock.return_value)
         background_file_folder = '/'.join([
             user_media_url('addons'), str(self.addon.id),
-            unicode(self.addon.current_version.id)])
+            text_type(self.addon.current_version.id)])
         background_file_urls = [
             background_file_folder + '/' + filename
             for filename in background_files]
@@ -4788,7 +4789,7 @@ class TestLeaderboard(ReviewerTest):
         assert get_cells() == (
             [users[2].name,
              users[1].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name']),
+             text_type(amo.REVIEWED_LEVELS[0]['name']),
              users[0].name])
 
         self._award_points(users[0], 1)
@@ -4797,7 +4798,7 @@ class TestLeaderboard(ReviewerTest):
             [users[2].name,
              users[1].name,
              users[0].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name'])])
+             text_type(amo.REVIEWED_LEVELS[0]['name'])])
 
         self._award_points(users[0], -1)
         self._award_points(users[2], (amo.REVIEWED_LEVELS[1]['points'] -
@@ -4805,9 +4806,9 @@ class TestLeaderboard(ReviewerTest):
 
         assert get_cells() == (
             [users[2].name,
-             unicode(amo.REVIEWED_LEVELS[1]['name']),
+             text_type(amo.REVIEWED_LEVELS[1]['name']),
              users[1].name,
-             unicode(amo.REVIEWED_LEVELS[0]['name']),
+             text_type(amo.REVIEWED_LEVELS[0]['name']),
              users[0].name])
 
 
@@ -4847,7 +4848,7 @@ class TestPolicyView(ReviewerTest):
             '{addon} :: EULA'.format(addon=self.addon.name))
         self.assertContains(response, u'End-User License Agreement')
         self.assertContains(response, u'Eulá!')
-        self.assertContains(response, unicode(self.review_url))
+        self.assertContains(response, text_type(self.review_url))
 
     def test_eula_with_channel(self):
         unlisted_review_url = reverse(
@@ -4863,7 +4864,7 @@ class TestPolicyView(ReviewerTest):
         response = self.client.get(self.eula_url + '?channel=unlisted')
         assert response.status_code == 200
         self.assertContains(response, u'Eulá!')
-        self.assertContains(response, unicode(unlisted_review_url))
+        self.assertContains(response, text_type(unlisted_review_url))
 
     def test_privacy(self):
         assert not bool(self.addon.privacy_policy)
@@ -4880,7 +4881,7 @@ class TestPolicyView(ReviewerTest):
             '{addon} :: Privacy Policy'.format(addon=self.addon.name))
         self.assertContains(response, 'Privacy Policy')
         self.assertContains(response, u'Prívacy Pólicy?')
-        self.assertContains(response, unicode(self.review_url))
+        self.assertContains(response, text_type(self.review_url))
 
     def test_privacy_with_channel(self):
         unlisted_review_url = reverse(
@@ -4896,7 +4897,7 @@ class TestPolicyView(ReviewerTest):
         response = self.client.get(self.privacy_url + '?channel=unlisted')
         assert response.status_code == 200
         self.assertContains(response, u'Prívacy Pólicy?')
-        self.assertContains(response, unicode(unlisted_review_url))
+        self.assertContains(response, text_type(unlisted_review_url))
 
 
 class TestAddonReviewerViewSet(TestCase):

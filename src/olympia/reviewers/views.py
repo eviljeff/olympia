@@ -18,6 +18,7 @@ from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from six import text_type
 
 import olympia.core.logger
 
@@ -1033,7 +1034,7 @@ def queue_viewing(request):
 def queue_version_notes(request, addon_id):
     addon = get_object_or_404(Addon.objects, pk=addon_id)
     version = addon.latest_version
-    return {'releasenotes': unicode(version.releasenotes),
+    return {'releasenotes': text_type(version.releasenotes),
             'approvalnotes': version.approvalnotes}
 
 

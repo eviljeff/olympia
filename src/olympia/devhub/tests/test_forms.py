@@ -11,6 +11,7 @@ import mock
 import pytest
 
 from PIL import Image
+from six import text_type
 
 from olympia import amo
 from olympia.addons.forms import EditThemeForm, EditThemeOwnerForm, ThemeForm
@@ -462,7 +463,7 @@ class TestThemeForm(TestCase):
         persona = addon.persona
 
         # Test for correct Addon and Persona values.
-        assert unicode(addon.name) == data['name']
+        assert text_type(addon.name) == data['name']
         assert addon.slug == data['slug']
         self.assertSetEqual(set(addon.categories.values_list('id', flat=True)),
                             {self.cat.id})
@@ -559,8 +560,8 @@ class TestEditThemeForm(TestCase):
             'tags': 'ag, sw',
             'textcolor': '#EFFFFF',
 
-            'name_en-us': unicode(self.instance.name),
-            'description_en-us': unicode(self.instance.description),
+            'name_en-us': text_type(self.instance.name),
+            'description_en-us': text_type(self.instance.description),
         }
         data.update(**kw)
         return data
@@ -604,17 +605,17 @@ class TestEditThemeForm(TestCase):
     def test_success(self):
         self.save_success()
         self.instance = self.instance.reload()
-        assert unicode(self.instance.persona.accentcolor) == (
+        assert text_type(self.instance.persona.accentcolor) == (
             self.data['accentcolor'].lstrip('#'))
         assert self.instance.categories.all()[0].id == self.data['category']
         assert self.instance.persona.license == self.data['license']
-        assert unicode(self.instance.name) == self.data['name_en-us']
-        assert unicode(self.instance.description) == (
+        assert text_type(self.instance.name) == self.data['name_en-us']
+        assert text_type(self.instance.description) == (
             self.data['description_en-us'])
         self.assertSetEqual(
             set(self.instance.tags.values_list('tag_text', flat=True)),
             {self.data['tags']})
-        assert unicode(self.instance.persona.textcolor) == (
+        assert text_type(self.instance.persona.textcolor) == (
             self.data['textcolor'].lstrip('#'))
 
     def test_success_twice(self):
@@ -771,7 +772,7 @@ class TestDistributionChoiceForm(TestCase):
             label = form.fields['channel'].choices[0][1]
 
             expected = 'On this site.'
-            label = unicode(label)
+            label = text_type(label)
             assert label.startswith(expected)
 
         with translation.override('de'):
@@ -779,5 +780,5 @@ class TestDistributionChoiceForm(TestCase):
             label = form.fields['channel'].choices[0][1]
 
             expected = 'Auf dieser Website.'
-            label = unicode(label)
+            label = text_type(label)
             assert label.startswith(expected)

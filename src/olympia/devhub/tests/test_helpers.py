@@ -6,6 +6,7 @@ from django.utils import translation
 import pytest
 
 from mock import Mock
+from six import text_type
 
 from olympia import amo
 from olympia.activity.models import ActivityLog
@@ -78,9 +79,9 @@ class TestDisplayUrl(amo.tests.BaseTestCase):
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)
 
-    def test_unicode(self):
+    def test_text_type(self):
         url = urllib.quote(self.raw_url.encode('utf8'))
-        url = unicode(url, 'utf8')
+        url = text_type(url, 'utf8')
         assert render('{{ url|display_url }}', {'url': url}) == (
             self.raw_url)
 
@@ -98,7 +99,7 @@ class TestDevFilesStatus(TestCase):
     def expect(self, expected):
         cnt, msg = jinja_helpers.dev_files_status([self.file])[0]
         assert cnt == 1
-        assert msg == unicode(expected)
+        assert msg == text_type(expected)
 
     def test_unreviewed_public(self):
         self.addon.status = amo.STATUS_PUBLIC

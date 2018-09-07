@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 
-import olympia.core.logger
+from six import text_type
 
+import olympia.core.logger
 from olympia.access.models import Group, GroupUser
 from olympia.users.models import UserProfile
 
@@ -13,7 +14,7 @@ class Command(BaseCommand):
     log = olympia.core.logger.getLogger('z.users')
 
     def add_arguments(self, parser):
-        parser.add_argument('user', type=unicode, help='User id or email')
+        parser.add_argument('user', type=text_type, help='User id or email')
         parser.add_argument('group_id', type=int, help='Group id')
 
     def handle(self, *args, **options):

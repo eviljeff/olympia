@@ -2,6 +2,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from six import text_type
 
 from olympia.accounts.serializers import BaseUserSerializer
 from olympia.addons.models import Addon
@@ -55,7 +56,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         return value
 
     def validate_description(self, value):
-        if has_links(clean_nl(unicode(value))):
+        if has_links(clean_nl(text_type(value))):
             # There's some links, we don't want them.
             raise serializers.ValidationError(
                 ugettext(u'No links are allowed.'))

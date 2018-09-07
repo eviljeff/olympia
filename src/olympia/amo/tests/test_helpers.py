@@ -217,7 +217,7 @@ def test_urlparams():
     assert s == url
 
 
-def test_urlparams_unicode():
+def test_urlparams_text_type():
     url = u'/xx?evil=reco\ufffd\ufffd\ufffd\u02f5'
     utils.urlparams(url)
 
@@ -511,7 +511,7 @@ def test_timesince():
     assert jinja_helpers.timesince(None) == u''
 
 
-def test_format_unicode():
+def test_format_text_type():
     # This makes sure there's no UnicodeEncodeError when doing the string
     # interpolation.
     assert render(u'{{ "foo {0}"|format_html("baré") }}') == u'foo baré'

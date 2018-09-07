@@ -14,6 +14,7 @@ import pytest
 
 from dateutil.parser import parse as parse_dt
 from pyquery import PyQuery as pq
+from six import text_type
 from waffle.testutils import override_switch
 
 from olympia import amo
@@ -389,7 +390,7 @@ class TestFeeds(TestCase):
             slug, title = options
             url = '%s?sort=%s' % (self.url, slug)
             assert item.attr('href') == url
-            assert item.text() == unicode(title)
+            assert item.text() == text_type(title)
             self._check_feed(url, self.rss_url, slug)
 
     def test_extensions_feed(self):
@@ -767,7 +768,7 @@ class TestSearchToolsPages(BaseSearchToolsTest):
         for prefix, app in (
                 ('/en-US/firefox', amo.FIREFOX.pretty),
                 ('/en-US/seamonkey', amo.SEAMONKEY.pretty)):
-            app = unicode(app)  # get the proxied unicode obj
+            app = text_type(app)  # get the proxied unicode obj
             response = self.client.get('%s/search-tools/' % prefix)
             assert response.status_code == 200
             doc = pq(response.content)

@@ -3,6 +3,7 @@ import re
 from django.conf import settings
 
 from rest_framework import exceptions, serializers
+from six import string_types, text_type
 
 from olympia import amo
 from olympia.accounts.serializers import BaseUserSerializer
@@ -127,11 +128,11 @@ class LicenseSerializer(serializers.ModelSerializer):
             request = self.context.get('request', None)
             if request and request.method == 'GET' and 'lang' in request.GET:
                 # A single lang requested so return a flat string
-                return unicode(license_constant.name)
+                return text_type(license_constant.name)
             else:
                 # Otherwise mock the dict with the default lang.
                 lang = getattr(request, 'LANG', None) or settings.LANGUAGE_CODE
-                return {lang: unicode(license_constant.name)}
+                return {lang: text_type(license_constant.name)}
 
 
 class CompactLicenseSerializer(LicenseSerializer):
@@ -365,7 +366,7 @@ class AddonSerializer(serializers.ModelSerializer):
 
     def outgoingify(self, data):
         if data:
-            if isinstance(data, basestring):
+            if isinstance(data, string_types):
                 return get_outgoing_url(data)
             elif isinstance(data, dict):
                 return {key: get_outgoing_url(value) if value else None
@@ -756,7 +757,7 @@ class ReplacementAddonSerializer(serializers.ModelSerializer):
     def _get_collection_guids(self, user_id, collection_slug):
         try:
             get_args = {'slug': collection_slug, 'listed': True}
-            if isinstance(user_id, basestring) and not user_id.isdigit():
+            if isinstance(user_id, string_types) and not user_id.isdigit():
                 get_args.update(**{'author__username': user_id})
             else:
                 get_args.update(**{'author': user_id})

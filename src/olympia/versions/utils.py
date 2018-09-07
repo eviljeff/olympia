@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage as storage
 
 from PIL import Image
+from six import text_type
 
 import olympia.core.logger
 
@@ -120,4 +121,4 @@ def process_color_value(prop, value):
     prop = CHROME_COLOR_TO_CSS.get(prop, prop)
     if isinstance(value, list) and len(value) == 3:
         return prop, u'rgb(%s, %s, %s)' % tuple(value)
-    return prop, unicode(value)
+    return prop, text_type(value)

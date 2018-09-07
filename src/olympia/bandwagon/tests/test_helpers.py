@@ -1,4 +1,5 @@
 from pyquery import PyQuery as pq
+from six import text_type
 
 from olympia.amo.tests import BaseTestCase
 from olympia.bandwagon.models import Collection
@@ -11,7 +12,7 @@ class TestHelpers(BaseTestCase):
         c2 = Collection(uuid='61780943-e159-4206-8acd-0ae9f63f294c',
                         nickname='my_collection')
         heading = 'My Heading'
-        response = unicode(user_collection_list([c1, c2], heading))
+        response = text_type(user_collection_list([c1, c2], heading))
 
         # heading
         assert pq(response)('h3').text() == heading
@@ -23,5 +24,5 @@ class TestHelpers(BaseTestCase):
             'Collection nickname link missing.')
 
         # empty collection, empty response
-        response = unicode(user_collection_list([], heading))
+        response = text_type(user_collection_list([], heading))
         assert not response, 'empty collection should not create a list'

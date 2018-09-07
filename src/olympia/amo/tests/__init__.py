@@ -32,6 +32,7 @@ from rest_framework.reverse import reverse as drf_reverse
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.test import APIClient
+from six import string_types, text_type
 from waffle.models import Flag, Sample, Switch
 
 from olympia import amo
@@ -189,7 +190,7 @@ def check_links(expected, elements, selected=None, verify=True):
         if isinstance(item, tuple):
             text, link = item
         # Or list item could be `link`.
-        elif isinstance(item, basestring):
+        elif isinstance(item, string_types):
             text, link = None, item
 
         e = elements.eq(idx)
@@ -209,8 +210,8 @@ def check_links(expected, elements, selected=None, verify=True):
 
 def assert_url_equal(url, expected, compare_host=False):
     """Compare url paths and query strings."""
-    parsed = urlparse(unicode(url))
-    parsed_expected = urlparse(unicode(expected))
+    parsed = urlparse(text_type(url))
+    parsed_expected = urlparse(text_type(expected))
     compare_url_part(parsed.path, parsed_expected.path)
     compare_url_part(parse_qs(parsed.query), parse_qs(parsed_expected.query))
     if compare_host:
@@ -465,7 +466,7 @@ class TestCase(PatchMixin, InitializeSessionMixin, BaseTestCase):
         """
 
         # Try parsing the string if it's not a datetime.
-        if isinstance(dt, basestring):
+        if isinstance(dt, string_types):
             try:
                 dt = dateutil_parser(dt)
             except ValueError as e:
@@ -619,7 +620,8 @@ def addon_factory(
     default_locale = kw.get('default_locale', settings.LANGUAGE_CODE)
 
     # Keep as much unique data as possible in the uuid: '-' aren't important.
-    name = kw.pop('name', u'Addôn %s' % unicode(uuid.uuid4()).replace('-', ''))
+    name = kw.pop(
+        'name', u'Addôn %s' % text_type(uuid.uuid4()).replace('-', ''))
     slug = kw.pop('slug', None)
     if slug is None:
         slug = name.replace(' ', '-').lower()[:30]
@@ -643,7 +645,7 @@ def addon_factory(
         kwargs['summary'] = u'Summary for %s' % name
     if type_ not in [amo.ADDON_PERSONA, amo.ADDON_SEARCH]:
         # Personas and search engines don't need guids
-        kwargs['guid'] = kw.pop('guid', '{%s}' % unicode(uuid.uuid4()))
+        kwargs['guid'] = kw.pop('guid', '{%s}' % text_type(uuid.uuid4()))
     kwargs.update(kw)
 
     # Save 1.

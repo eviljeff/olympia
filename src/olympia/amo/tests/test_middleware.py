@@ -9,6 +9,7 @@ import pytest
 
 from mock import patch
 from pyquery import PyQuery as pq
+from six import string_types
 
 from olympia.amo.middleware import (
     AuthenticationMiddlewareWithoutAPI, ScrubRequestOnException,
@@ -135,7 +136,7 @@ def test_request_id_middleware(client):
     """Test that we add a request id to every response"""
     response = client.get(reverse('home'))
     assert response.status_code == 200
-    assert isinstance(response['X-AMO-Request-ID'], basestring)
+    assert isinstance(response['X-AMO-Request-ID'], string_types)
 
     # Test that we set `request.request_id` too
 

@@ -21,6 +21,7 @@ from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 from rest_framework.settings import api_settings
 from rest_framework.test import APIRequestFactory
+from six import text_type
 
 from olympia import amo
 from olympia.abuse.models import AbuseReport
@@ -80,7 +81,7 @@ def _test_hovercards(self, doc, addons, src=''):
         hc = btn.parents('.addon.hovercard')
         assert hc.find('a').attr('href') == (
             urlparams(addon.get_url_path(), src=src))
-        assert hc.find('h3').text() == unicode(addon.name)
+        assert hc.find('h3').text() == text_type(addon.name)
 
 
 class TestHomepage(TestCase):
@@ -945,7 +946,7 @@ class TestDetailPage(TestCase):
         cache.clear()
         d = self.get_pq()('.dependencies .hovercard')
         assert d.length == 1
-        assert d.find('h3').text() == unicode(req.name)
+        assert d.find('h3').text() == text_type(req.name)
         assert d.find('a').attr('href').endswith('?src=dp-dl-dependencies')
         assert d.find('.install-button a').attr('href').endswith(
             '?src=dp-hc-dependencies')
@@ -1021,7 +1022,7 @@ class TestDetailPage(TestCase):
 
     def test_categories(self):
         links = self.get_more_pq()('#related ul:first').find('a')
-        expected = [(unicode(c.name), c.get_url_path())
+        expected = [(text_type(c.name), c.get_url_path())
                     for c in self.addon.categories.filter(
                         application=amo.FIREFOX.id)]
         amo.tests.check_links(expected, links)
@@ -2979,7 +2980,7 @@ class TestAddonSearchView(ESTestCase):
         # Exclude addon1 and addon2 by pk.
         data = self.perform_search(
             self.url, {'exclude_addons': u','.join(
-                map(unicode, (addon2.pk, addon1.pk)))})
+                map(text_type, (addon2.pk, addon1.pk)))})
 
         assert len(data['results']) == 1
         assert data['count'] == 1
@@ -2988,7 +2989,7 @@ class TestAddonSearchView(ESTestCase):
         # Exclude addon1 by pk and addon3 by slug.
         data = self.perform_search(
             self.url, {'exclude_addons': u','.join(
-                (unicode(addon1.pk), addon3.slug))})
+                (text_type(addon1.pk), addon3.slug))})
 
         assert len(data['results']) == 1
         assert data['count'] == 1

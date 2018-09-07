@@ -24,6 +24,7 @@ from django.utils.translation import trans_real, ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 from django_statsd.clients import statsd
 from jinja2.filters import do_dictsort
+from six import string_types, text_type
 
 import olympia.core.logger
 
@@ -151,7 +152,7 @@ def clean_slug(instance, slug_field='slug'):
 class AddonQuerySet(BaseQuerySet):
     def id_or_slug(self, val):
         """Get add-ons by id or slug."""
-        if isinstance(val, basestring) and not val.isdigit():
+        if isinstance(val, string_types) and not val.isdigit():
             return self.filter(slug=val)
         return self.filter(id=val)
 
@@ -528,7 +529,7 @@ class Addon(OnChangeMixin, ModelBase):
             self._ratings.all().delete()
             # The last parameter is needed to automagically create an AddonLog.
             activity.log_create(amo.LOG.DELETE_ADDON, self.pk,
-                                unicode(self.guid), self)
+                                text_type(self.guid), self)
             self.update(status=amo.STATUS_DELETED, slug=None,
                         _current_version=None, modified=datetime.now())
             models.signals.post_delete.send(sender=Addon, instance=self)
@@ -1375,7 +1376,7 @@ class Addon(OnChangeMixin, ModelBase):
             files = (self.current_version.files
                          .filter(platform=amo.PLATFORM_ANDROID.id))
             try:
-                return unicode(files[0].get_localepicker(), 'utf-8')
+                return text_type(files[0].get_localepicker(), 'utf-8')
             except IndexError:
                 pass
         return ''
@@ -1590,7 +1591,7 @@ class Persona(models.Model):
         db_table = 'personas'
 
     def __unicode__(self):
-        return unicode(self.addon.name)
+        return text_type(self.addon.name)
 
     def is_new(self):
         return self.persona_id == 0
@@ -1699,15 +1700,15 @@ class Persona(models.Model):
 
         addon = self.addon
         return {
-            'id': unicode(self.addon.id),  # Personas dislikes ints
-            'name': unicode(addon.name),
+            'id': text_type(self.addon.id),  # Personas dislikes ints
+            'name': text_type(addon.name),
             'accentcolor': hexcolor(self.accentcolor),
             'textcolor': hexcolor(self.textcolor),
-            'category': (unicode(addon.all_categories[0].name) if
+            'category': (text_type(addon.all_categories[0].name) if
                          addon.all_categories else ''),
             # TODO: Change this to be `addons_users.user.display_name`.
             'author': self.display_username,
-            'description': (unicode(addon.description)
+            'description': (text_type(addon.description)
                             if addon.description is not None
                             else addon.description),
             'header': self.header_url,
@@ -1815,7 +1816,7 @@ class AddonFeatureCompatibility(ModelBase):
         choices=amo.E10S_COMPATIBILITY_CHOICES, default=amo.E10S_UNKNOWN)
 
     def __unicode__(self):
-        return unicode(self.addon) if self.pk else u""
+        return text_type(self.addon) if self.pk else u""
 
     def get_e10s_classname(self):
         return amo.E10S_COMPATIBILITY_CHOICES_API[self.e10s]
@@ -1839,7 +1840,8 @@ class AddonApprovalsCounter(ModelBase):
     last_content_review = models.DateTimeField(null=True)
 
     def __unicode__(self):
-        return u'%s: %d' % (unicode(self.pk), self.counter) if self.pk else u''
+        return (u'%s: %d' % (text_type(self.pk), self.counter) if self.pk
+                else u'')
 
     @classmethod
     def increment_for_addon(cls, addon):
@@ -1923,10 +1925,10 @@ class Category(OnChangeMixin, ModelBase):
             # If we can't find the category in the constants dict, fall back
             # to the db field.
             value = self.db_name
-        return unicode(value)
+        return text_type(value)
 
     def __unicode__(self):
-        return unicode(self.name)
+        return text_type(self.name)
 
     def get_url_path(self):
         try:
@@ -2052,7 +2054,7 @@ class CompatOverride(ModelBase):
 
     def __unicode__(self):
         if self.addon:
-            return unicode(self.addon)
+            return text_type(self.addon)
         elif self.name:
             return '%s (%s)' % (self.name, self.guid)
         else:
