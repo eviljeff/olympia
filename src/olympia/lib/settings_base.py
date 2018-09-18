@@ -86,8 +86,8 @@ FLIGTAR = 'amo-admins+fligtar-rip@mozilla.org'
 THEMES_EMAIL = 'theme-reviews@mozilla.org'
 ABUSE_EMAIL = 'amo-admins+ivebeenabused@mozilla.org'
 
-DRF_API_VERSIONS = ['v3', 'v4']
-DRF_API_REGEX = r'^/?api/(?:v3|v4)/'
+DRF_API_VERSIONS = ['v3', '3.5', 'v4']
+DRF_API_REGEX = r'^/?api/(?:v3|v3.5|v4)/'
 
 # Add Access-Control-Allow-Origin: * header for the new API with
 # django-cors-headers.
@@ -1787,6 +1787,9 @@ DRF_API_GATES = {
         'ratings-title-shim',
         'l10n_flat_input_output',
         'collections-downloads-shim'
+    ),
+    'v3.5': (
+        'l10n_flat_input_output',
     ),
     'v4': (
     ),
