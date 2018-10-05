@@ -1,10 +1,10 @@
+from django.conf import settings
 from django.core.files.storage import default_storage as storage
 
 import olympia.core.logger
 
 from olympia.amo.celery import task
 from olympia.amo.decorators import set_modified_on
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.utils import resize_image
 
 from .models import UserProfile
@@ -17,7 +17,7 @@ task_log = olympia.core.logger.getLogger('z.task')
 def delete_photo(dst, **kw):
     task_log.debug('[1@None] Deleting photo: %s.' % dst)
 
-    if not dst.startswith(user_media_path('userpics')):
+    if not dst.startswith(settings.USERPICS_PATH):
         task_log.error("Someone tried deleting something they shouldn't: %s"
                        % dst)
         return

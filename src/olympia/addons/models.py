@@ -904,7 +904,7 @@ class Addon(OnChangeMixin, ModelBase):
         return False
 
     def get_icon_dir(self):
-        return os.path.join(jinja_helpers.user_media_path('addon_icons'),
+        return os.path.join(settings.ADDON_ICONS_PATH,
                             '%s' % (self.id / 1000))
 
     def get_icon_url(self, size, use_default=True):
@@ -1619,8 +1619,7 @@ class Persona(models.Model):
         return '%s?modified=%s' % (image_url, modified)
 
     def _image_path(self, filename):
-        return os.path.join(jinja_helpers.user_media_path('addons'),
-                            str(self.addon.id), filename)
+        return os.path.join(settings.ADDONS_PATH, str(self.addon.id), filename)
 
     @cached_property
     def thumb_url(self):

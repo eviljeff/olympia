@@ -10,6 +10,7 @@ import zipfile
 
 from collections import namedtuple
 
+from django.conf import settings
 from django.core.files.storage import default_storage as storage
 from django.db import models
 from django.dispatch import receiver
@@ -32,7 +33,7 @@ from olympia.amo.fields import PositiveAutoField
 from olympia.amo.models import ModelBase, OnChangeMixin, ManagerBase
 from olympia.amo.storage_utils import copy_stored_file, move_stored_file
 from olympia.amo.templatetags.jinja_helpers import (
-    absolutify, urlparams, user_media_path, user_media_url)
+    absolutify, urlparams, user_media_url)
 from olympia.amo.urlresolvers import reverse
 from olympia.applications.models import AppVersion
 from olympia.files.utils import SafeZip, write_crx_as_xpi
@@ -292,7 +293,7 @@ class File(OnChangeMixin, ModelBase):
 
     @property
     def file_path(self):
-        return os.path.join(user_media_path('addons'),
+        return os.path.join(settings.ADDONS_PATH,
                             str(self.version.addon_id),
                             self.filename)
 
@@ -302,7 +303,7 @@ class File(OnChangeMixin, ModelBase):
 
     @property
     def guarded_file_path(self):
-        return os.path.join(user_media_path('guarded_addons'),
+        return os.path.join(settings.GUARDED_ADDONS_PATH,
                             str(self.version.addon_id), self.filename)
 
     @property
@@ -627,7 +628,7 @@ class FileUpload(ModelBase):
             self.uuid = self._meta.get_field('uuid')._create_uuid()
 
         filename = force_bytes(u'{0}_{1}'.format(self.uuid.hex, filename))
-        loc = os.path.join(user_media_path('addons'), 'temp', uuid.uuid4().hex)
+        loc = os.path.join(settings.ADDONS_PATH, 'temp', uuid.uuid4().hex)
         base, ext = os.path.splitext(force_bytes(filename))
         is_crx = False
 

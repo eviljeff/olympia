@@ -413,6 +413,7 @@ class BasePreview(object):
     image_path_template = ('%s', 'full', '%s', '%d.png')
     original_path_template = ('%s', 'original', '%s', '%d.png')
     media_folder = 'previews'
+    media_folder_path = settings.PREVIEWS_PATH
 
     def _image_url(self, url_template):
         from olympia.amo.templatetags.jinja_helpers import user_media_url
@@ -424,8 +425,7 @@ class BasePreview(object):
         return user_media_url(self.media_folder) + url_template % tuple(args)
 
     def _image_path(self, url_template):
-        from olympia.amo.templatetags.jinja_helpers import user_media_path
-        args = [user_media_path(self.media_folder), self.id / 1000, self.id]
+        args = [self.media_folder_path, self.id / 1000, self.id]
         return url_template % tuple(args)
 
     @property

@@ -2,6 +2,7 @@
 import json
 import os
 
+from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage as storage
 from django.db.models import Q
@@ -15,7 +16,6 @@ from olympia import amo
 from olympia.activity.models import ActivityLog
 from olympia.addons.models import (
     Addon, AddonCategory, AddonDependency, Category)
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.tests import (
     TestCase, addon_factory, formset, initial, req_factory_factory)
 from olympia.amo.tests.test_helpers import get_image_path
@@ -851,7 +851,7 @@ class TestEditMedia(BaseTestEdit):
         assert data['icon_type'] == 'image/png'
 
         # Check that it was actually uploaded
-        dirname = os.path.join(user_media_path('addon_icons'),
+        dirname = os.path.join(settings.ADDON_ICONS_PATH,
                                '%s' % (addon.id / 1000))
         dest = os.path.join(dirname, '%s-32.png' % addon.id)
 
@@ -897,7 +897,7 @@ class TestEditMedia(BaseTestEdit):
         assert data['icon_type'] == 'image/png'
 
         # Check that it was actually uploaded
-        dirname = os.path.join(user_media_path('addon_icons'),
+        dirname = os.path.join(settings.ADDON_ICONS_PATH,
                                '%s' % (addon.id / 1000))
         dest = os.path.join(dirname, '%s-64.png' % addon.id)
 

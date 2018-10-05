@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.files.storage import default_storage as storage
 from django.db.models import Count
 
@@ -6,7 +7,6 @@ import olympia.core.logger
 from olympia import amo
 from olympia.amo.celery import task
 from olympia.amo.decorators import set_modified_on, use_primary_db
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.utils import resize_image
 from olympia.tags.models import Tag
 
@@ -33,7 +33,7 @@ def resize_icon(src, dst, **kw):
 def delete_icon(dst, **kw):
     log.info('[1@None] Deleting icon: %s.' % dst)
 
-    if not dst.startswith(user_media_path('collection_icons')):
+    if not dst.startswith(settings.COLLECTION_ICONS_PATH):
         log.error("Someone tried deleting something they shouldn't: %s" % dst)
         return
 

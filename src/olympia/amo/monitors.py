@@ -13,7 +13,6 @@ from PIL import Image
 import olympia.core.logger
 
 from olympia.amo import search
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.applications.management.commands import dump_apps
 
 
@@ -96,12 +95,13 @@ def path():
     # Check file paths / permissions
     rw = (settings.TMP_PATH,
           settings.MEDIA_ROOT,
-          user_media_path('addons'),
-          user_media_path('guarded_addons'),
-          user_media_path('addon_icons'),
-          user_media_path('collection_icons'),
-          user_media_path('previews'),
-          user_media_path('userpics'),
+          settings.ADDONS_PATH,
+          settings.GUARDED_ADDONS_PATH,
+          settings.ADDON_ICONS_PATH,
+          settings.COLLECTION_ICONS_PATH,
+          settings.PREVIEWS_PATH,
+          settings.VERSION_PREVIEWS_PATH,
+          settings.USERPICS_PATH,
           dump_apps.Command.get_json_path(),)
     r = [os.path.join(settings.ROOT, 'locale'),
          # The deploy process will want write access to this.

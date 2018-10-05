@@ -1753,6 +1753,13 @@ SHARED_STORAGE = os.path.join(STORAGE_ROOT, 'shared_storage')
 MEDIA_ROOT = os.path.join(SHARED_STORAGE, 'uploads')
 TMP_PATH = os.path.join(SHARED_STORAGE, 'tmp')
 
+ADDON_ICONS_PATH = os.path.join(MEDIA_ROOT, 'addon_icons')
+COLLECTION_ICONS_PATH = os.path.join(MEDIA_ROOT, 'collection_icons')
+
+PREVIEWS_PATH = os.path.join(MEDIA_ROOT, 'previews')
+VERSION_PREVIEWS_PATH = os.path.join(MEDIA_ROOT, 'version-previews')
+USERPICS_PATH = os.path.join(MEDIA_ROOT, 'userpics')
+
 # These are key files that must be present on disk to encrypt/decrypt certain
 # database fields.
 # {'api_key:secret': os.path.join(ROOT, 'path', 'to', 'file.key'),}

@@ -4,6 +4,7 @@ import os
 
 import django.dispatch
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage as storage
 from django.db import models
@@ -24,7 +25,7 @@ from olympia.amo.decorators import use_primary_db
 from olympia.amo.models import (
     BasePreview, ManagerBase, ModelBase, OnChangeMixin)
 from olympia.amo.templatetags.jinja_helpers import (
-    id_to_path, user_media_path, user_media_url)
+    id_to_path, user_media_url)
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import (
     sorted_groupby, utc_millesecs_from_epoch, walkfiles)
@@ -259,7 +260,7 @@ class Version(OnChangeMixin, ModelBase):
         # Generate a preview and icon for listed static themes
         if (addon.type == amo.ADDON_STATICTHEME and
                 channel == amo.RELEASE_CHANNEL_LISTED):
-            dst_root = os.path.join(user_media_path('addons'), str(addon.id))
+            dst_root = os.path.join(settings.ADDONS_PATH, str(addon.id))
             theme_data = parsed_data.get('theme', {})
             version_root = os.path.join(dst_root, unicode(version.id))
 
@@ -639,7 +640,7 @@ class Version(OnChangeMixin, ModelBase):
         if self.addon.type != amo.ADDON_STATICTHEME:
             return []
         background_images_folder = os.path.join(
-            user_media_path('addons'), str(self.addon.id), unicode(self.id))
+            settings.ADDONS_PATH, str(self.addon.id), unicode(self.id))
         background_images_url = '/'.join(
             (user_media_url('addons'), str(self.addon.id), unicode(self.id)))
         out = [
@@ -662,6 +663,7 @@ class VersionPreview(BasePreview, ModelBase):
     position = models.IntegerField(default=0)
     sizes = JSONField(default={})
     media_folder = 'version-previews'
+    media_folder_path = settings.VERSION_PREVIEWS_PATH
 
     class Meta:
         db_table = 'version_previews'

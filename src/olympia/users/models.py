@@ -297,9 +297,8 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
 
     @property
     def picture_dir(self):
-        from olympia.amo.templatetags.jinja_helpers import user_media_path
         split_id = re.match(r'((\d*?)(\d{0,3}?))\d{1,3}$', str(self.id))
-        return os.path.join(user_media_path('userpics'),
+        return os.path.join(settings.USERPICS_PATH,
                             split_id.group(2) or '0',
                             split_id.group(1) or '0')
 

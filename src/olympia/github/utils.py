@@ -12,7 +12,6 @@ from django_statsd.clients import statsd
 
 import olympia.core.logger
 
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.files.utils import SafeZip
 
 
@@ -123,7 +122,7 @@ def rezip_file(response, pk):
     # An .xpi does not have a directory inside the zip, yet zips from github
     # do, so we'll need to rezip the file before passing it through to the
     # validator.
-    loc = os.path.join(user_media_path('addons'), 'temp', uuid.uuid4().hex)
+    loc = os.path.join(settings.ADDONS_PATH, 'temp', uuid.uuid4().hex)
     old_filename = '{}_github_webhook.zip'.format(pk)
     old_path = os.path.join(loc, old_filename)
 

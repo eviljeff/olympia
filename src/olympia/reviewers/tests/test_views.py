@@ -30,8 +30,7 @@ from olympia.activity.models import ActivityLog
 from olympia.addons.models import (
     Addon, AddonApprovalsCounter, AddonDependency, AddonReviewerFlags,
     AddonUser)
-from olympia.amo.templatetags.jinja_helpers import (
-    user_media_path, user_media_url)
+from olympia.amo.templatetags.jinja_helpers import user_media_url
 from olympia.amo.tests import (
     APITestClient, TestCase, addon_factory, check_links, file_factory, formset,
     initial, reverse_ns, user_factory, version_factory)
@@ -4426,7 +4425,7 @@ class TestReview(ReviewBase):
     def test_static_theme_backgrounds(self, walkfiles_mock):
         background_files = ['a.png', 'b.png', 'c.png']
         walkfiles_folder = os.path.join(
-            user_media_path('addons'), str(self.addon.id),
+            settings.ADDONS_PATH, str(self.addon.id),
             unicode(self.addon.current_version.id))
         walkfiles_mock.return_value = [
             os.path.join(walkfiles_folder, filename)

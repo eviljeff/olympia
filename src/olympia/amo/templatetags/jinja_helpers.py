@@ -481,20 +481,6 @@ def _relative_to_absolute(url):
 
 
 # A (temporary?) copy of this is in services/utils.py. See bug 1055654.
-def user_media_path(what):
-    """Make it possible to override storage paths in settings.
-
-    By default, all storage paths are in the MEDIA_ROOT.
-
-    This is backwards compatible.
-
-    """
-    default = os.path.join(settings.MEDIA_ROOT, what)
-    key = "{0}_PATH".format(what.upper())
-    return getattr(settings, key, default)
-
-
-# A (temporary?) copy of this is in services/utils.py. See bug 1055654.
 def user_media_url(what):
     """
     Generate default media url, and make possible to override it from

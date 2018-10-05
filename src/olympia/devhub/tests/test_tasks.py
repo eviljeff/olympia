@@ -19,7 +19,6 @@ from PIL import Image
 
 from olympia import amo
 from olympia.addons.models import Addon, AddonUser, Preview
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.tests import (
     TestCase, addon_factory, user_factory, version_factory)
 from olympia.amo.tests.test_helpers import get_addon_file, get_image_path
@@ -81,7 +80,7 @@ def _uploader(resize_size, final_size):
     if not isinstance(final_size, list):
         final_size = [final_size]
         resize_size = [resize_size]
-    uploadto = user_media_path('addon_icons')
+    uploadto = settings.ADDON_ICONS_PATH
     try:
         os.makedirs(uploadto)
     except OSError:

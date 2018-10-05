@@ -9,7 +9,6 @@ from PIL import Image, ImageColor
 
 from olympia.addons.models import Preview
 from olympia.addons.tasks import save_theme
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.devhub.tasks import resize_preview
 
 
@@ -41,7 +40,7 @@ def create_theme_images(theme, placement, hash_):
         os.makedirs(tmp_path)
     tmp_loc = os.path.join(tmp_path, hash_)
     image.save(tmp_loc, 'jpeg')
-    media_path = os.path.join(user_media_path('addons'), str(theme.id))
+    media_path = os.path.join(settings.ADDONS_PATH, str(theme.id))
     if not os.path.exists(media_path):
         os.makedirs(media_path)
     media_loc = os.path.join(media_path, hash_)

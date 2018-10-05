@@ -495,20 +495,6 @@ def test_format_unicode():
     assert render(u'{{ "foo {0}"|format_html("baré") }}') == u'foo baré'
 
 
-class TestStoragePath(TestCase):
-
-    @override_settings(ADDONS_PATH=None, MEDIA_ROOT="/path/")
-    def test_without_settings(self):
-        del settings.ADDONS_PATH
-        path = jinja_helpers.user_media_path('addons')
-        assert path == '/path/addons'
-
-    @override_settings(ADDONS_PATH="/another/path/")
-    def test_with_settings(self):
-        path = jinja_helpers.user_media_path('addons')
-        assert path == '/another/path/'
-
-
 class TestMediaUrl(TestCase):
 
     @override_settings(USERPICS_URL=None)

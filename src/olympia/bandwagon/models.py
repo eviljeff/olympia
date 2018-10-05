@@ -16,7 +16,7 @@ from olympia.addons.utils import clear_get_featured_ids_cache
 from olympia.amo.fields import PositiveAutoField
 from olympia.amo.models import ManagerBase, ModelBase, BaseQuerySet
 from olympia.amo.templatetags.jinja_helpers import (
-    absolutify, user_media_path, user_media_url)
+    absolutify, user_media_url)
 from olympia.amo.urlresolvers import reverse
 from olympia.translations.fields import (
     LinkifiedField, NoLinksNoMarkupField, TranslatedField, save_signal)
@@ -171,7 +171,7 @@ class Collection(ModelBase):
         return absolutify(self.get_url_path())
 
     def get_img_dir(self):
-        return os.path.join(user_media_path('collection_icons'),
+        return os.path.join(settings.COLLECTION_ICONS_PATH,
                             str(self.id / 1000))
 
     def edit_url(self):

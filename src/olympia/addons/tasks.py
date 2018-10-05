@@ -24,7 +24,6 @@ from olympia.addons.utils import (
 from olympia.amo.celery import task
 from olympia.amo.decorators import set_modified_on, use_primary_db
 from olympia.amo.storage_utils import rm_stored_dir
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.utils import (
     ImageCheck, LocalFileStorage, cache_ns_key, pngcrush_image)
 from olympia.applications.models import AppVersion
@@ -127,7 +126,7 @@ def unindex_addons(ids, **kw):
 @task
 def delete_persona_image(dst, **kw):
     log.info('[1@None] Deleting persona image: %s.' % dst)
-    if not dst.startswith(user_media_path('addons')):
+    if not dst.startswith(settings.ADDONS_PATH):
         log.error("Someone tried deleting something they shouldn't: %s" % dst)
         return
     try:
@@ -303,7 +302,7 @@ def rereviewqueuetheme_checksum(rqt, **kw):
 def save_theme(header, addon_pk, **kw):
     """Save theme image and calculates checksum after theme save."""
     addon = Addon.objects.get(pk=addon_pk)
-    dst_root = os.path.join(user_media_path('addons'), str(addon.id))
+    dst_root = os.path.join(settings.ADDONS_PATH, str(addon.id))
     header = os.path.join(settings.TMP_PATH, 'persona_header', header)
     header_dst = os.path.join(dst_root, 'header.png')
 
@@ -324,7 +323,7 @@ def save_theme(header, addon_pk, **kw):
 def save_theme_reupload(header, addon_pk, **kw):
     addon = Addon.objects.get(pk=addon_pk)
     header_dst = None
-    dst_root = os.path.join(user_media_path('addons'), str(addon.id))
+    dst_root = os.path.join(settings.ADDONS_PATH, str(addon.id))
 
     try:
         if header:
@@ -549,7 +548,7 @@ def add_static_theme_from_lwt(lwt):
     upload = FileUpload.objects.create(
         user=author, valid=True)
     destination = os.path.join(
-        user_media_path('addons'), 'temp', uuid.uuid4().hex + '.xpi')
+        settings.ADDONS_PATH, 'temp', uuid.uuid4().hex + '.xpi')
     build_static_theme_xpi_from_lwt(lwt, destination)
     upload.update(path=destination)
 
@@ -702,7 +701,7 @@ def migrate_legacy_dictionary_to_webextension(addon):
     upload = FileUpload.objects.create(
         user=user, valid=True)
     destination = os.path.join(
-        user_media_path('addons'), 'temp', uuid.uuid4().hex + '.xpi')
+        settings.ADDONS_PATH, 'temp', uuid.uuid4().hex + '.xpi')
     target_language = build_webext_dictionary_from_legacy(addon, destination)
     if not addon.target_locale:
         addon.update(target_locale=target_language)

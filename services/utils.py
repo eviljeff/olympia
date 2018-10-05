@@ -1,6 +1,5 @@
 import logging
 import logging.config
-import os
 import posixpath
 import re
 import sys
@@ -17,22 +16,6 @@ import olympia.core.logger
 # Perhaps we can import these without any problems and we can
 # remove all this.
 from olympia.constants.platforms import PLATFORMS
-
-
-# This is not DRY: it's a copy of amo.helpers.user_media_path, to avoid an
-# import (which should triggers an import loop).
-# See bug 1055654.
-def user_media_path(what):
-    """Make it possible to override storage paths in settings.
-
-    By default, all storage paths are in the MEDIA_ROOT.
-
-    This is backwards compatible.
-
-    """
-    default = os.path.join(settings.MEDIA_ROOT, what)
-    key = "{0}_PATH".format(what.upper())
-    return getattr(settings, key, default)
 
 
 # This is not DRY: it's a copy of amo.helpers.user_media_url, to avoid an

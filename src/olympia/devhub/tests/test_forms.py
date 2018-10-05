@@ -16,7 +16,6 @@ from waffle.testutils import override_switch
 from olympia import amo
 from olympia.addons.forms import EditThemeForm, EditThemeOwnerForm, ThemeForm
 from olympia.addons.models import Addon, Category, Persona
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.tests import TestCase, req_factory_factory
 from olympia.amo.tests.test_helpers import get_image_path
 from olympia.amo.urlresolvers import reverse
@@ -462,7 +461,7 @@ class TestThemeForm(TestCase):
         assert v[0].version == '0'
 
         # Test for header and preview images.
-        dst = os.path.join(user_media_path('addons'), str(addon.id))
+        dst = os.path.join(settings.ADDONS_PATH, str(addon.id))
 
         header_src = os.path.join(settings.TMP_PATH, 'persona_header',
                                   u'b4ll1n')
@@ -624,7 +623,7 @@ class TestEditThemeForm(TestCase):
         assert self.form.is_valid()
         self.form.save()
 
-        dst = os.path.join(user_media_path('addons'), str(self.instance.id))
+        dst = os.path.join(settings.ADDONS_PATH, str(self.instance.id))
         header_src = os.path.join(settings.TMP_PATH, 'persona_header',
                                   u'y0l0')
 

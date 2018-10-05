@@ -13,7 +13,6 @@ import olympia.core.logger
 
 from olympia import amo
 from olympia.activity.models import ActivityLog
-from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.utils import chunked
 from olympia.bandwagon.models import Collection
 from olympia.constants.base import VALID_ADDON_STATUSES, VALID_FILE_STATUSES
@@ -69,10 +68,10 @@ def gc(test_result=True):
     else:
         log.warning('MEDIA_ROOT not defined.')
 
-    if user_media_path('collection_icons'):
+    if settings.COLLECTION_ICONS_PATH:
         log.debug('Cleaning up uncompressed icons.')
 
-        cmd = ('find', user_media_path('collection_icons'),
+        cmd = ('find', settings.COLLECTION_ICONS_PATH,
                '-name', '*__unconverted', '-mtime', '+1', '-type', 'f',
                '-exec', 'rm', '{}', ';')
         output = Popen(cmd, stdout=PIPE).communicate()[0]
@@ -80,11 +79,10 @@ def gc(test_result=True):
         for line in output.split("\n"):
             log.debug(line)
 
-    USERPICS_PATH = user_media_path('userpics')
-    if USERPICS_PATH:
+    if settings.USERPICS_PATH:
         log.debug('Cleaning up uncompressed userpics.')
 
-        cmd = ('find', USERPICS_PATH,
+        cmd = ('find', settings.USERPICS_PATH,
                '-name', '*__unconverted', '-mtime', '+1', '-type', 'f',
                '-exec', 'rm', '{}', ';')
         output = Popen(cmd, stdout=PIPE).communicate()[0]
