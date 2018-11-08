@@ -253,11 +253,16 @@ def application(environ, start_response):
 
         try:
             query_string = environ.get('QUERY_STRING')
+            user_agent_string = environ.get('HTTP_USER_AGENT')
             update = MigratedUpdate(locale, id_, query_string)
             is_migrated = update.is_migrated
+            log_exception(
+                "HTTP_USER_AGENT %s; is_migrated: %s, is_android_ua: %s" % (
+                    user_agent_string, update.is_migrated,
+                    is_android_ua(user_agent_string)))
             if not is_migrated:
                 update = LWThemeUpdate(locale, id_, query_string)
-            elif is_android_ua(environ.get('HTTP_USER_AGENT')):
+            elif is_android_ua(user_agent_string):
                 update = None
             output = update.get_json() if update else None
             if not output:
