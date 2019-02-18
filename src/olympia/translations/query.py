@@ -28,7 +28,7 @@ def order_by_translation(qs, fieldname, model=None):
 
     # Doing the manual joins is flying under Django's radar, so we need to make
     # sure the initial alias (the main table) is set up.
-    if not qs.query.tables:
+    if not qs.query.table_map:
         qs.query.get_initial_alias()
 
     # Force two new joins against the translation table, without reusing any
@@ -38,7 +38,7 @@ def order_by_translation(qs, fieldname, model=None):
     # building the query manually, does not detect that an inner join would
     # remove results and happily simplifies the LEFT OUTER JOINs to
     # INNER JOINs)
-    qs.query = qs.query.clone(TranslationQuery)
+    qs.query = qs.query.clone()
     t1 = qs.query.join(
         Join(field.remote_field.model._meta.db_table, model._meta.db_table,
              None, LOUTER, field, True),
@@ -65,9 +65,9 @@ class TranslationQuery(models.sql.query.Query):
     translations.
     """
 
-    def clone(self, klass=None, **kwargs):
+    def clone(self):
         # Maintain translation_aliases across clones.
-        c = super(TranslationQuery, self).clone(klass, **kwargs)
+        c = super(TranslationQuery, self).clone()
         c.translation_aliases = self.translation_aliases
         return c
 
