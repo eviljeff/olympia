@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Django settings for addons-server project.
-
 import environ
 import logging
 import os
@@ -144,7 +143,6 @@ def get_db_config(environ_var, atomic_requests=True, charset='utf8'):
                 'utf8mb4_general_ci')
         },
     })
-
     return values
 
 
