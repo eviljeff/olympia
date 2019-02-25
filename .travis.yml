@@ -28,6 +28,12 @@ jobs:
     - { python: 3.6, env: TOXENV=amo-lib-locales-and-signing }
     - { python: 3.6, env: TOXENV=main }
     - { python: 3.6, env: TOXENV=assets  DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=es DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=addons-versions-and-files DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=devhub DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=reviewers-and-zadmin DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=accounts-users-and-ratings DJANGO=django22 }
+    - { python: 3.6, env: TOXENV=main DJANGO=django22 }
 
 env:
   global:
