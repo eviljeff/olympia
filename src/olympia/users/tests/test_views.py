@@ -2,11 +2,13 @@ import json
 
 from datetime import datetime, timedelta
 
+import django
 from django.conf import settings
 from django.core import mail
 from django.forms.models import model_to_dict
 from django.utils.encoding import force_bytes, force_text
 
+import pytest
 import six
 
 from dateutil.parser import parse
@@ -811,6 +813,9 @@ class TestThemesProfile(TestCase):
         self._test_good(res)
 
 
+@pytest.mark.skipif(
+    django.VERSION[0] >= 2,
+    reason='Legacy UI tests')
 @patch.object(settings, 'NOBOT_RECAPTCHA_PRIVATE_KEY', 'something')
 class TestReportAbuse(TestCase):
     fixtures = ['base/users']
