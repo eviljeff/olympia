@@ -2,9 +2,13 @@ import contextlib
 import os
 import time
 
+import django
 from django.conf import settings
 from django.core.files.storage import default_storage as storage
 from django.db import models
+from django.db.models.fields.related_descriptors import (
+    create_forward_many_to_many_manager as
+    create_forward_many_to_many_manager_original)
 from django.db.models.query import ModelIterable
 from django.utils import timezone, translation
 
@@ -19,6 +23,19 @@ from . import search
 
 
 log = olympia.core.logger.getLogger('z.addons')
+
+
+def create_forward_many_to_many_manager(superclass, rel, reverse):
+    """Monkey-patch create_forward_many_to_many_manager to override the
+    constrained_target optimization which doesn't work with our Managers that
+    filter out objects (deleted instances) by default."""
+    manager = create_forward_many_to_many_manager_original(
+        superclass, rel, reverse)
+    setattr(manager, 'constrained_target', None)
+    return manager
+
+django.db.models.fields.related_descriptors.create_forward_many_to_many_manager = (  # noqa
+    create_forward_many_to_many_manager)
 
 
 @contextlib.contextmanager
