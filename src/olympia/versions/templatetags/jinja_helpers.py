@@ -2,7 +2,7 @@ import jinja2
 
 from django_jinja import library
 
-from olympia.addons.templatetags.jinja_helpers import new_context
+from olympia.devhub.templatetags.jinja_helpers import new_context
 
 
 @library.global_function

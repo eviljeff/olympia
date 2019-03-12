@@ -12,7 +12,7 @@ from django_jinja import library
 from olympia import amo
 from olympia.access import acl
 from olympia.addons.models import Addon
-from olympia.addons.templatetags.jinja_helpers import new_context
+from olympia.devhub.templatetags.jinja_helpers import new_context
 from olympia.amo.templatetags.jinja_helpers import page_title
 from olympia.reviewers.models import ReviewerScore
 from olympia.versions.models import Version

@@ -13,9 +13,14 @@ from olympia import amo
 from olympia.access import acl
 from olympia.activity.models import ActivityLog
 from olympia.activity.utils import filter_queryset_to_pending_replies
-from olympia.addons.templatetags.jinja_helpers import new_context
 from olympia.amo.templatetags.jinja_helpers import format_date, page_title
 from olympia.files.models import File
+
+
+def new_context(context, **kw):
+    c = dict(context.items())
+    c.update(kw)
+    return c
 
 
 library.global_function(acl.check_addon_ownership)

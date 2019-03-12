@@ -9,6 +9,7 @@ from django.views.static import serve as serve_static
 from olympia.addons import views as addons_views
 from olympia.amo.urlresolvers import reverse
 from olympia.amo.utils import urlparams
+from olympia.amo.views import frontend_view
 from olympia.versions import views as version_views
 from olympia.versions.urls import download_patterns
 
@@ -25,13 +26,22 @@ urlpatterns = [
     url(r'^discovery/', include('olympia.legacy_discovery.urls')),
 
     # Home.
-    url(r'^$', addons_views.home, name='home'),
+    url(r'^$', frontend_view, name='home'),
 
     # Add-ons.
     url(r'', include('olympia.addons.urls')),
 
     # Browse pages.
-    url(r'', include('olympia.browse.urls')),
+    url(r'^language-tools/(?P<category>[^/]+)?$', frontend_view,
+        name='browse.language-tools'),
+    url(r'^themes/(?:(?P<category>[^ /]+)/)?$', frontend_view,
+        name='browse.personas'),
+    url(r'^complete-themes/(?P<category>[^/]+)?$', frontend_view,
+        name='browse.themes'),
+    url(r'^extensions/(?:(?P<category>[^/]+)/)?$', frontend_view,
+        name='browse.extensions'),
+    url(r'^search-tools/(?P<category>[^/]+)?$', frontend_view,
+        name='browse.search-tools'),
 
     # Tags.
     url(r'', include('olympia.tags.urls')),

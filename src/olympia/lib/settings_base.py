@@ -455,7 +455,6 @@ INSTALLED_APPS = (
     'olympia.api',
     'olympia.applications',
     'olympia.bandwagon',
-    'olympia.browse',
     'olympia.devhub',
     'olympia.discovery',
     'olympia.files',

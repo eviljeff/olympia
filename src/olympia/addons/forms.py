@@ -18,7 +18,7 @@ from olympia.addons import tasks as addons_tasks
 from olympia.addons.models import Addon, AddonCategory, Category, DeniedSlug
 from olympia.addons.widgets import CategoriesSelectMultiple, IconTypeSelect
 from olympia.addons.utils import verify_mozilla_trademark
-from olympia.amo.fields import HttpHttpsOnlyURLField, ReCaptchaField
+from olympia.amo.fields import HttpHttpsOnlyURLField
 from olympia.amo.utils import (
     remove_icons, slug_validator, slugify, sorted_groupby)
 from olympia.amo.validators import OneOrMoreLetterOrNumberCharacterValidator
@@ -405,18 +405,3 @@ class AddonFormTechnicalUnlisted(AddonFormBase):
     class Meta:
         model = Addon
         fields = ()
-
-
-class AbuseForm(forms.Form):
-    recaptcha = ReCaptchaField(label='')
-    text = forms.CharField(required=True,
-                           label='',
-                           widget=forms.Textarea())
-
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request')
-        super(AbuseForm, self).__init__(*args, **kwargs)
-
-        if (not self.request.user.is_anonymous or
-                not settings.NOBOT_RECAPTCHA_PRIVATE_KEY):
-            del self.fields['recaptcha']

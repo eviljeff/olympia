@@ -32,7 +32,6 @@ from olympia.activity.models import ActivityLog, VersionLog
 from olympia.activity.utils import log_and_notify
 from olympia.addons import forms as addon_forms
 from olympia.addons.models import Addon, AddonReviewerFlags, AddonUser
-from olympia.addons.views import BaseFilter
 from olympia.amo import messages, utils as amo_utils
 from olympia.amo.decorators import json_view, login_required, post_required
 from olympia.amo.templatetags.jinja_helpers import absolutify, urlparams
@@ -43,7 +42,7 @@ from olympia.devhub.decorators import dev_required, no_admin_disabled
 from olympia.devhub.forms import AgreementForm, SourceForm
 from olympia.devhub.models import BlogPost, RssKey
 from olympia.devhub.utils import (
-    add_dynamic_theme_tag, extract_theme_properties,
+    add_dynamic_theme_tag, BaseFilter, extract_theme_properties,
     fetch_existing_translations_from_addon, get_addon_akismet_reports,
     wizard_unsupported_properties)
 from olympia.files.models import File, FileUpload, FileValidation

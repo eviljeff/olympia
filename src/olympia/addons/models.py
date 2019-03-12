@@ -664,12 +664,12 @@ class Addon(OnChangeMixin, ModelBase):
 
         return data
 
-    def get_url_path(self, more=False, add_prefix=True):
+    def get_url_path(self, add_prefix=True):
         if not self.current_version:
             return ''
         # If more=True you get the link to the ajax'd middle chunk of the
         # detail page.
-        view = 'addons.detail_more' if more else 'addons.detail'
+        view = 'addons.detail'
         return reverse(view, args=[self.slug], add_prefix=add_prefix)
 
     def get_dev_url(self, action='edit', args=None, prefix_only=False):
@@ -687,9 +687,6 @@ class Addon(OnChangeMixin, ModelBase):
             args = []
         return reverse('addons.%s' % action, args=[self.slug] + args)
 
-    def meet_the_dev_url(self):
-        return reverse('addons.meet', args=[self.slug])
-
     @property
     def ratings_url(self):
         return reverse('addons.ratings.list', args=[self.slug])
@@ -701,13 +698,6 @@ class Addon(OnChangeMixin, ModelBase):
         except KeyError:
             return None
         return reverse('browse.%s' % type)
-
-    def type_url(self):
-        """The url for this add-on's type."""
-        return Addon.get_type_url(self.type)
-
-    def share_url(self):
-        return reverse('addons.share', args=[self.slug])
 
     @cached_property
     def listed_authors(self):
@@ -1142,11 +1132,6 @@ class Addon(OnChangeMixin, ModelBase):
                   .filter(addonuser__listed=True,
                           authors__in=self.listed_authors)
                   .distinct())
-
-    @property
-    def contribution_url(self, lang=settings.LANGUAGE_CODE,
-                         app=settings.DEFAULT_APP):
-        return reverse('addons.contribute', args=[self.slug])
 
     @property
     def thumbnail_url(self):
