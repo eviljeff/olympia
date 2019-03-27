@@ -6,7 +6,7 @@ from django import http
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.db.transaction import non_atomic_requests
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 
 import six
@@ -119,14 +119,18 @@ def version(request):
     return HttpResponse(json.dumps(contents), content_type='application/json')
 
 
-def _frontend_view(*args, **kwargs):
+def _frontend_view(request, *args, **kwargs):
     """View has migrated to addons-frontend but we still have the url so we
-    can reverse() to it in addons-server code.
-    If you ever hit this url somethunk gun wrong!"""
+    can reverse() to it in addons-server code."""
+    # If we have a different external site url redirect to there instead.
+    external_site_url = settings.EXTERNAL_SITE_URL
+    if external_site_url and external_site_url != settings.SITE_URL:
+        return HttpResponseRedirect(external_site_url + '/' + request.path)
+    # Otherwise, oh no, you really shouldn't be here.
     raise ViewDoesNotExist()
 
 
 @non_atomic_requests
-def frontend_view(*args, **kwargs):
+def frontend_view(request, *args, **kwargs):
     """Wrap _frontend_view so we can mock it in tests."""
-    return _frontend_view(*args, **kwargs)
+    return _frontend_view(request, *args, **kwargs)
