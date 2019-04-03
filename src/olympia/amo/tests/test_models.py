@@ -1,11 +1,15 @@
+import os
 import pytest
 from mock import Mock
 
+from django.conf import settings
 from django.core.files.storage import default_storage as storage
+from django.test.utils import override_settings
 
 from olympia import amo
 from olympia.addons.models import Addon
 from olympia.amo import models as amo_models
+from olympia.amo.urlresolvers import reverse
 from olympia.amo.tests import TestCase
 from olympia.users.models import UserProfile
 from olympia.zadmin.models import Config
@@ -147,6 +151,25 @@ class TestModelBase(TestCase):
     def test_get_unfiltered_manager(self):
         Addon.get_unfiltered_manager() == Addon.unfiltered
         UserProfile.get_unfiltered_manager() == UserProfile.objects
+
+    def test_get_url_path(self):
+        addon = Addon.objects.get(pk=3615)
+        assert addon.get_url_path() == reverse(
+            'addons.detail', args=[addon.slug], add_prefix=True)
+
+    def test_get_absolute_url_with_frontend_view(self):
+        addon = Addon.objects.get(pk=3615)
+        relative = reverse('addons.detail', args=[addon.slug], add_prefix=True)
+        assert addon.get_absolute_url() == settings.SITE_URL + relative
+        with override_settings(EXTERNAL_SITE_URL='https://example.com'):
+            assert addon.get_absolute_url() == (
+                'https://example.com' + relative)
+
+    def test_get_absolute_url_with_django_view(self):
+        file = Addon.objects.get(pk=3615).current_version.all_files[0]
+        relative = os.path.join(
+            reverse('downloads.file', args=[file.id]), file.filename)
+        assert file.get_absolute_url() == settings.SITE_URL + relative
 
 
 class BasePreviewMixin(object):

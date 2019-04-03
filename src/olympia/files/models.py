@@ -123,7 +123,7 @@ class File(OnChangeMixin, ModelBase):
         return posixpath.join(
             *map(force_bytes, [host, self.version.addon.id, self.filename]))
 
-    def get_url_path(self, src, attachment=False):
+    def get_url_path(self, src=None, attachment=False):
         return self._make_download_url(
             'downloads.file', src, attachment=attachment)
 
