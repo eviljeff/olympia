@@ -5,6 +5,7 @@ import time
 
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from waffle.testutils import override_flag
 
 from django.conf import settings
 from django.core import mail
@@ -35,6 +36,7 @@ from olympia.amo.tests import (
     APITestClient, TestCase, addon_factory, check_links, file_factory, formset,
     initial, reverse_ns, user_factory, version_factory)
 from olympia.amo.urlresolvers import reverse
+from olympia.amo.templatetags.jinja_helpers import absolutify
 from olympia.files.models import File, FileValidation, WebextPermission
 from olympia.ratings.models import Rating, RatingFlag
 from olympia.reviewers.models import (
@@ -2615,6 +2617,7 @@ class ReviewBase(QueueTest):
         return data
 
 
+@override_flag('code-manager', active=False)
 class TestReview(ReviewBase):
 
     def test_reviewer_required(self):
@@ -2931,7 +2934,7 @@ class TestReview(ReviewBase):
         """ Make sure the weight is shown on the review page"""
         AutoApprovalSummary.objects.create(
             version=self.version, verdict=amo.AUTO_APPROVED,
-            weight=284)
+            weight=284, weight_info={'fôo': 200, 'bär': 84})
         self.grant_permission(self.reviewer, 'Addons:PostReview')
         url = reverse('reviewers.review', args=[self.addon.slug])
         response = self.client.get(url)
@@ -2939,6 +2942,7 @@ class TestReview(ReviewBase):
         doc = pq(response.content)
         risk = doc('.listing-body .file-weight')
         assert risk.text() == "Weight: 284"
+        assert risk.attr['title'] == 'bär: 84\nfôo: 200'
 
     def test_item_history_notes(self):
         version = self.addon.versions.all()[0]
@@ -4387,6 +4391,61 @@ class TestReview(ReviewBase):
         )
 
 
+@override_flag('code-manager', active=True)
+class TestCodeManagerLinks(ReviewBase):
+
+    def get_links(self):
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+
+        doc = pq(response.content)
+        return doc.find('.code-manager-links')
+
+    def test_link_to_contents(self):
+        links = self.get_links()
+
+        contents = links.find('a').eq(0)
+        assert contents.text() == "Contents"
+        assert contents.attr('href').endswith(
+            '/browse/{}/versions/{}/'.format(
+                self.addon.pk, self.version.pk
+            )
+        )
+
+        # There should only be one Contents link for the version.
+        assert links.find('a').length == 1
+
+    def test_link_to_version_comparison(self):
+        last_version = self.addon.current_version
+        last_version.files.update(status=amo.STATUS_PUBLIC)
+        last_version.update(created=self.days_ago(2))
+
+        new_version = version_factory(addon=self.addon, version='0.2')
+        self.addon.update(_current_version=new_version)
+
+        links = self.get_links()
+
+        compare = links.find('a').eq(2)
+        assert compare.text() == "Compare"
+        assert compare.attr('href').endswith(
+            '/compare/{}/versions/{}...{}/'.format(
+                self.addon.pk,
+                last_version.pk,
+                new_version.pk,
+            )
+        )
+
+        # There should be three links:
+        # 1. The first version's Contents link
+        # 2. The second version's Contents link
+        # 3. The second version's Compare link
+        assert links.find('a').length == 3
+
+    def test_hide_links_when_flag_is_inactive(self):
+        with override_flag('code-manager', active=False):
+            assert self.get_links() == []
+
+
 class TestReviewPending(ReviewBase):
 
     def setUp(self):
@@ -5271,14 +5330,13 @@ class TestReviewAddonVersionViewSetDetail(
         assert result['file']['content'] == '# beastify\n'
 
         # make sure the correct download url is correctly generated
-        assert result['file']['download_url'] == reverse_ns(
-            'reviewers-versions-download',
+        assert result['file']['download_url'] == absolutify(reverse(
+            'reviewers.download_git_file',
             kwargs={
-                'addon_pk': self.addon.pk,
-                'pk': self.version.pk,
+                'version_id': self.version.pk,
                 'filename': 'README.md'
             }
-        )
+        ))
 
     def test_version_get_not_found(self):
         user = UserProfile.objects.create(username='reviewer')
@@ -5315,61 +5373,6 @@ class TestReviewAddonVersionViewSetDetail(
         url = reverse_ns('reviewers-versions-detail', kwargs={
             'addon_pk': self.addon.pk,
             'pk': unlisted_version.pk})
-
-        response = self.client.get(url)
-        assert response.status_code == 404
-
-    def test_download_basic(self):
-        user = UserProfile.objects.create(username='reviewer')
-        self.grant_permission(user, 'Addons:Review')
-        self.client.login_api(user)
-
-        url = reverse_ns('reviewers-versions-download', kwargs={
-            'addon_pk': self.addon.pk,
-            'pk': self.version.pk,
-            'filename': 'manifest.json'
-        })
-
-        response = self.client.get(url)
-        assert response.status_code == 200
-        assert (
-            response['Content-Disposition'] ==
-            'attachment; filename="manifest.json"')
-
-    def test_download_emoji_filename(self):
-        new_version = version_factory(
-            addon=self.addon, file_kw={'filename': 'webextension_no_id.xpi'})
-
-        repo = AddonGitRepository.extract_and_commit_from_version(new_version)
-
-        apply_changes(repo, new_version, u'\n', u'😀❤.txt')
-
-        user = UserProfile.objects.create(username='reviewer')
-        self.grant_permission(user, 'Addons:Review')
-        self.client.login_api(user)
-
-        url = reverse_ns('reviewers-versions-download', kwargs={
-            'addon_pk': self.addon.pk,
-            'pk': new_version.pk,
-            'filename': u'😀❤.txt'
-        })
-
-        response = self.client.get(url)
-        assert response.status_code == 200
-        assert (
-            response['Content-Disposition'] ==
-            "attachment; filename*=utf-8''%F0%9F%98%80%E2%9D%A4.txt")
-
-    def test_download_notfound(self):
-        user = UserProfile.objects.create(username='reviewer')
-        self.grant_permission(user, 'Addons:Review')
-        self.client.login_api(user)
-
-        url = reverse_ns('reviewers-versions-download', kwargs={
-            'addon_pk': self.addon.pk,
-            'pk': self.version.pk,
-            'filename': 'doesnotexist.json'
-        })
 
         response = self.client.get(url)
         assert response.status_code == 404
@@ -5603,6 +5606,171 @@ class TestReviewAddonVersionCompareViewSet(
                 'type': 'insert'
             }
         ]
+
+
+class TestDownloadGitFileView(TestCase):
+    def setUp(self):
+        super(TestDownloadGitFileView, self).setUp()
+
+        self.addon = addon_factory(
+            name=u'My Addôn', slug='my-addon',
+            file_kw={'filename': 'webextension_no_id.xpi'})
+
+        extract_version_to_git(self.addon.current_version.pk)
+
+        self.version = self.addon.current_version
+        self.version.refresh_from_db()
+
+    def test_download_basic(self):
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:Review')
+        self.client.login(email=user.email)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'manifest.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert (
+            response['Content-Disposition'] ==
+            'attachment; filename="manifest.json"')
+
+        content = b''.join(response.streaming_content).decode('utf-8')
+        assert content.startswith('{')
+        assert '"manifest_version": 2' in content
+
+    def test_download_emoji_filename(self):
+        new_version = version_factory(
+            addon=self.addon, file_kw={'filename': 'webextension_no_id.xpi'})
+
+        repo = AddonGitRepository.extract_and_commit_from_version(new_version)
+
+        apply_changes(repo, new_version, u'\n', u'😀❤.txt')
+
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:Review')
+        self.client.login(email=user.email)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': new_version.pk,
+            'filename': u'😀❤.txt'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert (
+            response['Content-Disposition'] ==
+            "attachment; filename*=utf-8''%F0%9F%98%80%E2%9D%A4.txt")
+
+    def test_download_notfound(self):
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:Review')
+        self.client.login(email=user.email)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'doesnotexist.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+    def _test_url_success(self):
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'manifest.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+
+        content = b''.join(response.streaming_content).decode('utf-8')
+        assert content.startswith('{')
+        assert '"manifest_version": 2' in content
+
+    def test_disabled_version_reviewer(self):
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:Review')
+        self.client.login(email=user.email)
+        self.version.files.update(status=amo.STATUS_DISABLED)
+        self._test_url_success()
+
+    def test_disabled_version_author(self):
+        user = UserProfile.objects.create(username='author')
+        AddonUser.objects.create(user=user, addon=self.addon)
+        self.client.login(email=user.email)
+        self.version.files.update(status=amo.STATUS_DISABLED)
+        self._test_url_success()
+
+    def test_disabled_version_admin(self):
+        user = UserProfile.objects.create(username='admin')
+        self.grant_permission(user, '*:*')
+        self.client.login(email=user.email)
+        self.version.files.update(status=amo.STATUS_DISABLED)
+        self._test_url_success()
+
+    def test_disabled_version_user_but_not_author(self):
+        user = UserProfile.objects.create(username='simpleuser')
+        self.client.login(email=user.email)
+        self.version.files.update(status=amo.STATUS_DISABLED)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'manifest.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 403
+
+    def test_unlisted_version_reviewer(self):
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:Review')
+        self.client.login(email=user.email)
+        self.version.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'manifest.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+    def test_unlisted_version_unlisted_reviewer(self):
+        user = UserProfile.objects.create(username='reviewer')
+        self.grant_permission(user, 'Addons:ReviewUnlisted')
+        self.client.login(email=user.email)
+        self.version.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
+        self._test_url_success()
+
+    def test_unlisted_version_author(self):
+        user = UserProfile.objects.create(username='author')
+        AddonUser.objects.create(user=user, addon=self.addon)
+        self.client.login(email=user.email)
+        self.version.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
+        self._test_url_success()
+
+    def test_unlisted_version_admin(self):
+        user = UserProfile.objects.create(username='admin')
+        self.grant_permission(user, '*:*')
+        self.client.login(email=user.email)
+        self.version.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
+        self._test_url_success()
+
+    def test_unlisted_version_user_but_not_author(self):
+        user = UserProfile.objects.create(username='simpleuser')
+        self.client.login(email=user.email)
+        self.version.update(channel=amo.RELEASE_CHANNEL_UNLISTED)
+
+        url = reverse('reviewers.download_git_file', kwargs={
+            'version_id': self.version.pk,
+            'filename': 'manifest.json'
+        })
+
+        response = self.client.get(url)
+        assert response.status_code == 404
 
 
 class TestThemeBackgroundImages(ReviewBase):

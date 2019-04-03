@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AMO\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-18 07:57+0000\n"
-"PO-Revision-Date: 2019-03-18 13:40+0000\n"
+"POT-Creation-Date: 2019-04-02 14:07+0000\n"
+"PO-Revision-Date: 2019-04-02 15:32+0000\n"
 "Last-Translator: passionforlife <eloli@foxmail.com>\n"
 "Language-Team: Chinese Simplified, China <LL@li.org>\n"
 "Language: zh_CN\n"
@@ -97,57 +97,6 @@ msgstr "实验性"
 msgid "Add to {0}"
 msgstr "添加到 {0}"
 
-msgid "This slug is already in use. Please choose another."
-msgstr "这个短网址已经被使用，请另选一个。"
-
-#, python-format
-msgid "The slug cannot be \"%(slug)s\". Please choose another."
-msgstr "短网址不能是“%(slug)s”。请另选一个。"
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "Invalid tag: {0}"
-msgid_plural "Invalid tags: {0}"
-msgstr[0] "无效的标签：{0}"
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "\"{0}\" is a reserved tag and cannot be used."
-msgid_plural "\"{0}\" are reserved tags and cannot be used."
-msgstr[0] "“{0}”为保留标签，不能使用。"
-
-msgid "You have {0} too many tags."
-msgid_plural "You have {0} too many tags."
-msgstr[0] "您的标签多出了 {0} 个。"
-
-#, python-format
-msgid "All tags must be %s characters or less after invalid characters are removed."
-msgstr "移除无效字符后，所有标签都必须少于或等于 %s 字符。"
-
-msgid "All tags must be at least {0} character."
-msgid_plural "All tags must be at least {0} characters."
-msgstr[0] "所有标签至少要包含 {0} 个字符。"
-
-msgid "The text entered has been flagged as spam."
-msgstr "输入的文本已被标记为垃圾留言。"
-
-msgid "Categories cannot be changed while your add-on is featured for this application."
-msgstr "您的附加组件目前为此应用程序的精选附加组件，无法更改分类。"
-
-#. L10n: {0} is the number of categories.
-msgid "You can have only {0} category."
-msgid_plural "You can have only {0} categories."
-msgstr[0] "您只能选择 {0} 个分类。"
-
-msgid "The miscellaneous category cannot be combined with additional categories."
-msgstr "这个杂项分类不能与其他分类混用。"
-
-#, python-format
-msgid "URL domain must be one of [%s], or a subdomain."
-msgstr "网址域名必须是 [%s] 之一，或其子域。"
-
-#, python-format
-msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
-msgstr "在您更改您的默认语言之前，您必须为那个语言环境输入名称、概述及描述。您目前没有输入 %s。"
-
 # Column name in a table.
 msgid "Listed"
 msgstr "显示"
@@ -160,9 +109,6 @@ msgstr "附加组件名称不得包含 Mozilla 或 Firefox 商标。"
 
 msgid "Abuse reported."
 msgstr "已报告滥用。"
-
-msgid "My add-on doesn't fit into any of the categories"
-msgstr "我的附加组件不适合任何分类"
 
 msgid "No compatible versions"
 msgstr "没有兼容的版本"
@@ -223,9 +169,6 @@ msgstr "崭露头角"
 
 msgid "Featured Themes"
 msgstr "精选主题"
-
-msgid "Featured Collections"
-msgstr "精选收藏集"
 
 msgid "Sort by:"
 msgstr "排序依照："
@@ -445,9 +388,6 @@ msgstr "撰写评价"
 msgid "Related Categories"
 msgstr "相关分类"
 
-msgid "Part of these Collections"
-msgstr "在这些收藏集中"
-
 #, python-format
 msgid "Other add-ons by %(author)s"
 msgid_plural "Other add-ons by these authors"
@@ -576,14 +516,14 @@ msgstr "此附加组件还没有评价呢。"
 msgid "Be the first!"
 msgstr "来第一个参与评价吧！"
 
+msgid "No results found."
+msgstr "未找到结果。"
+
 msgid "{0} users"
 msgstr "{0} 位用户"
 
 msgid "More"
 msgstr "更多"
-
-msgid "Add to collection"
-msgstr "添加到收藏集"
 
 msgid "My Add-ons"
 msgstr "我的附加组件"
@@ -609,9 +549,6 @@ msgstr "抱歉，这个主题处于待定状态，请稍后再来。"
 
 msgid "This theme is pending. It is invisible to everyone but you."
 msgstr "这个主题处于待定状态，只有你能看到。"
-
-msgid "Collector's Note"
-msgstr "收藏者说明"
 
 #. {0} is the number of downloads.
 msgid "<strong>{0}</strong> weekly download"
@@ -797,35 +734,6 @@ msgstr "最新"
 msgid "Explore"
 msgstr "浏览"
 
-# Plural in this context means many of the add-on type
-msgid "Extensions"
-msgstr "扩展"
-
-#. {0} is a category name. Ex: "Sports"
-msgid "Themes"
-msgstr "主题"
-
-msgid "Want more customization? Try <b>Complete Themes</b>"
-msgstr "想要更强定制性？尝试<b>完整主题</b>"
-
-msgid "Collections"
-msgstr "收藏集"
-
-msgid "Collections I've Made"
-msgstr "我建立的收藏集"
-
-msgid "More&hellip;"
-msgstr "更多 &hellip;"
-
-msgid "Add-ons for Mobile"
-msgstr "移动版附加组件"
-
-msgid "Dictionaries & Language Packs"
-msgstr "字典和语言包"
-
-msgid "Search Tools"
-msgstr "搜索工具"
-
 #. This is a page range (e.g., Page 1 of 50).
 #, python-format
 msgid "Page <a href=\"%(current_pg_url)s\">%(current_pg)s</a> of <a href=\"%(last_pg_url)s\">%(last_pg)s</a>"
@@ -845,6 +753,12 @@ msgstr "跳到最后一页"
 #, python-format
 msgid "Showing <b>%(begin)s</b>&ndash;<b>%(end)s</b> of <b>%(count)s</b>"
 msgstr "目前显示第 <b>%(begin)s</b>&ndash;<b>%(end)s</b> 项，共 <b>%(count)s</b> 项"
+
+msgid "Collections"
+msgstr "收藏集"
+
+msgid "Dictionaries & Language Packs"
+msgstr "字典和语言包"
 
 msgid "Add-ons"
 msgstr "附加组件"
@@ -930,38 +844,17 @@ msgid ""
 "%(amo_manifests_mdn_link_open)shere%(amo_manifests_mdn_link_close)s."
 msgstr "即便您所支持的应用程序本身不需要一个清单文件，您仍必须按%(amo_manifests_mdn_link_open)s这里%(amo_manifests_mdn_link_close)s的要求附上包含所有必要属性的清单文件。"
 
-msgid "Only I can view this collection."
-msgstr "只有我能查看此收藏集。"
-
-msgid "Anybody can view this collection."
-msgstr "任何人都能查看此收藏集。"
-
-msgid "Give your collection a name."
-msgstr "给您的收藏集起个名。"
-
-msgid "URL:"
-msgstr "网址："
-
-msgid "Describe your collection (no links allowed)."
-msgstr "描述您的收藏集（不允许使用链接）。"
-
-msgid "Privacy:"
-msgstr "公开范围："
-
-msgid "Please don't fill out this field, it's used to catch bots"
-msgstr "请不要填写此字段，它用于抓捕机器人"
-
-msgid "This name cannot be used."
-msgstr "不能使用这个名字。"
-
-msgid "This url is already in use by another collection"
-msgstr "此网址已被其他收藏集使用"
+msgid "The text entered has been flagged as spam."
+msgstr "输入的文本已被标记为垃圾留言。"
 
 msgid "This custom URL is already in use by another one of your collections."
 msgstr "此自定义网址已被您的另一个收藏集使用。"
 
 msgid "Name cannot be empty."
 msgstr "名称不能为空。"
+
+msgid "This name cannot be used."
+msgstr "不能使用这个名字。"
 
 msgid "The custom URL must consist of letters, numbers, underscores or hyphens."
 msgstr "请输入一个有效的自定义网址，只能由字母、数字、下划线及连字符构成。"
@@ -972,223 +865,18 @@ msgstr "不能使用此自定义网址。"
 msgid "This add-on already belongs to the collection"
 msgstr "此附加组件已在收藏集中"
 
-msgid "Added"
-msgstr "添加时间"
-
-msgid "Popularity"
-msgstr "热门度"
-
-msgid "Name"
-msgstr "名称"
-
-msgid "Collection created!"
-msgstr "收藏集已创建！"
-
-#, python-format
-msgid "Your new collection is shown below. You can <a href=\"%(url)s\">edit additional settings</a> if you'd like."
-msgstr "您的新收藏集已显示在下方。如果需要，您可以<a href=\"%(url)s\">编辑其他设置</a>。"
-
-msgid "Collection updated!"
-msgstr "收藏集已更新！"
-
-#, python-format
-msgid "<a href=\"%(url)s\">View your collection</a> to see the changes."
-msgstr "<a href=\"%(url)s\">查看您的收藏集</a>以了解变动。"
-
-msgid "Create a New Collection"
-msgstr "创建新收藏集"
-
-#, python-format
-msgid "As noted in our <a href=\"%(legal)s\">Legal Notices</a>, individual collection arrangements are governed by the Creative Commons Attribution Share-Alike License"
-msgstr "正如我们在<a href=\"%(legal)s\">法律声明</a>中所提到的，个人的收藏集采用知识共享“署名-相同方式共享”许可协议授权"
-
-msgid "Create Collection"
-msgstr "创建收藏集"
-
-msgid "View this collection"
-msgstr "查看此收藏集"
-
-msgid "Start a new collection..."
-msgstr "创建新收藏集..."
-
-msgid "Start a New Collection"
-msgstr "创建新收藏集"
-
-msgid "Name:"
-msgstr "名称："
-
-msgid "(optional)"
-msgstr "（可选）"
-
-msgid "or <a id=\"collections-new-cancel\" href=\"#\">Cancel</a>"
-msgstr "或者 <a id=\"collections-new-cancel\" href=\"#\">取消</a>"
-
-msgid "{0} :: Collections"
-msgstr "{0} :: 收藏集"
-
-msgid "private"
-msgstr "私有"
-
-msgid "About this Collection"
-msgstr "关于这个收藏集"
-
-msgid "Add-ons synced to my Mobile Firefox"
-msgstr "同步到你的移动版 Firefox 的附加组件"
-
-msgid "Make this Collection Private"
-msgstr "将这个收藏集设置为私有"
-
-msgid "Make this Collection Public"
-msgstr "将这个收藏集设置为公开"
-
-msgid "More Options:"
-msgstr "更多选项："
-
-msgid "Edit Collection"
-msgstr "编辑收藏集"
-
-msgid "Delete Collection"
-msgstr "删除收藏集"
-
-#, python-format
-msgid "%(num)s Theme in this Collection"
-msgid_plural "%(num)s Themes in this Collection"
-msgstr[0] "此收藏集有 %(num)s 个主题"
-
-#, python-format
-msgid "%(num)s Add-on in this Collection"
-msgid_plural "%(num)s Add-ons in this Collection"
-msgstr[0] "此收藏集中有 %(num)s 个附加组件"
-
-msgid "Go"
-msgstr "转到"
-
-msgid "What are Collections?"
-msgstr "什么是收藏集？"
-
-msgid "Collections are groups of related add-ons that anyone can create and share."
-msgstr "收藏集是相关附加组件的集合，任何人都可以创建与分享。"
-
-msgid "Explore Collections"
-msgstr "探索收藏集"
-
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>public</b>, which means everyone can see it. If you would like to hide it "
-"from public view, click the button below to make it private."
-msgstr "以下附加组件已被您使用<b>添加到我最喜爱</b>功能标记为您的喜爱。目前此收藏集处于<b>公开</b>状态，每个人都能看到它。如果您不想让他人看到您喜爱哪些附加组件，可以点击下面的按钮设置为私密。"
-
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>private</b>, which means only you can see it. If you would like everyone to"
-" be able to see your favorites, click the button below to make it public."
-msgstr "以下附加组件已被您使用<b>添加到我最喜爱</b>功能标记为您的喜爱。目前此收藏集处于<b>私密</b>状态，只有您能看到里面的内容。如果您想每个人都看到您喜爱哪些附加组件，可以点击下面的按钮将它公开。"
-
-msgid "My favorite add-ons"
-msgstr "我最爱的附加组件"
-
-#, python-format
-msgid "<span>%(addons)s</span> add-on"
-msgid_plural "<span>%(addons)s</span> add-ons"
-msgstr[0] "<span>%(addons)s</span> 个附加组件"
-
-msgid "by {0}"
-msgstr "作者 {0}"
-
-msgid "Edit this Collection"
-msgstr "编辑这个收藏集"
-
-#. %s is the name of the collection.
-msgid "Delete {0}"
-msgstr "删除 {0}"
-
-msgid "Are you sure?"
-msgstr "您确定吗？"
-
-msgid "Yes"
-msgstr "是"
-
-msgid "No"
-msgstr "否"
-
-#. {0} is the name of the collection.
-msgid "Edit {0}"
-msgstr "编辑 {0}"
-
-msgid "Description"
-msgstr "描述"
-
-msgid "Save Changes"
-msgstr "保存更改"
-
-msgid "Remove from favorites"
-msgstr "从我最喜爱中移除"
-
-msgid "Add to favorites"
-msgstr "添加到我最喜爱"
-
-#. {0} is a the user's name.
-msgid "Collections by {0}"
-msgstr "{0} 的收藏集"
-
-msgid "No collections found."
-msgstr "未找到收藏集。"
-
-#, python-format
-msgid "Collections are groups of related add-ons that anyone can create and share. Explore collections created by other users or <a href=\"%(url)s\">create your own</a>."
-msgstr "收藏集是相关附加组件的集合，任何人都可以创建与分享。您可以探索其他用户创建的收藏集，或者<a href=\"%(url)s\">创建您自己的收藏集</a>。"
-
-#, python-format
-msgid "by %(author_link)s"
-msgstr "作者：%(author_link)s"
-
-msgid "My Favorite Add-ons"
-msgstr "我最爱的附加组件"
-
-msgid "Create a Collection"
-msgstr "创建收藏集"
-
-msgid "Collections make it easy to keep track of favorite add-ons and share your perfectly customized browser with others."
-msgstr "收藏集可以很方便的将您喜爱的附加组件记录下来，让您与别人分享充满个性的浏览器。"
-
-msgid "There are errors in this form.  Please correct them below."
-msgstr "此表单存在错误。请在下面进行更正。"
-
-msgid "Add-ons in Your Collection"
-msgstr "您收藏集中的附加组件"
-
-msgid "To include an add-on in this collection, enter its name in the box below and hit enter."
-msgstr "要在此收藏集中添加一个附加组件，请在下面的框中输入名称并按回车。"
-
-msgid "Add-on"
-msgstr "附加组件"
-
-msgid "Comment"
-msgstr "评论"
-
-msgid "Remove"
-msgstr "移除"
-
-msgid "Enter the name of the add-on to include"
-msgstr "输入要加入的附加组件名称"
-
-msgid "Add to Collection"
-msgstr "添加到收藏集"
-
-msgid "Pending"
-msgstr "即将"
-
-msgid "Add a comment"
-msgstr "添加评论"
-
-msgid "Remove this add-on from the collection"
-msgstr "从收藏集中移除此附加组件"
-
-msgid "Favorite"
-msgstr "我最喜爱"
+# Plural in this context means many of the add-on type
+msgid "Extensions"
+msgstr "扩展"
 
 #. L10n: %s is a category name.
 #, python-format
 msgid "%s Add-ons"
 msgstr "%s 附加组件"
+
+#. {0} is a category name. Ex: "Sports"
+msgid "Themes"
+msgstr "主题"
 
 #. L10n: %s is a category name.
 #, python-format
@@ -1215,8 +903,14 @@ msgstr "搜索工具和搜索相关的扩展"
 msgid "Search tools"
 msgstr "搜索工具"
 
+msgid "Search Tools"
+msgstr "搜索工具"
+
 msgid "Most Users"
 msgstr "用户最多"
+
+msgid "Name"
+msgstr "名称"
 
 msgid "Weekly Downloads"
 msgstr "周下载量"
@@ -2144,6 +1838,9 @@ msgstr "Solaris"
 msgid "Android"
 msgstr "Android"
 
+msgid "Add-on"
+msgstr "附加组件"
+
 msgid "Static Theme"
 msgstr "静态主题"
 
@@ -2328,6 +2025,54 @@ msgstr "我们允许和鼓励升级，但您不能逆转此过程。一旦您的
 msgid "[{field}] The text in the \"{field}\" field has been flagged as spam."
 msgstr "[{field}]“{field}”栏中输入的文本已被标记为垃圾留言。"
 
+msgid "This slug is already in use. Please choose another."
+msgstr "这个短网址已经被使用，请另选一个。"
+
+#, python-format
+msgid "The slug cannot be \"%(slug)s\". Please choose another."
+msgstr "短网址不能是“%(slug)s”。请另选一个。"
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "Invalid tag: {0}"
+msgid_plural "Invalid tags: {0}"
+msgstr[0] "无效的标签：{0}"
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "\"{0}\" is a reserved tag and cannot be used."
+msgid_plural "\"{0}\" are reserved tags and cannot be used."
+msgstr[0] "“{0}”为保留标签，不能使用。"
+
+msgid "You have {0} too many tags."
+msgid_plural "You have {0} too many tags."
+msgstr[0] "您的标签多出了 {0} 个。"
+
+#, python-format
+msgid "All tags must be %s characters or less after invalid characters are removed."
+msgstr "移除无效字符后，所有标签都必须少于或等于 %s 字符。"
+
+msgid "All tags must be at least {0} character."
+msgid_plural "All tags must be at least {0} characters."
+msgstr[0] "所有标签至少要包含 {0} 个字符。"
+
+msgid "Categories cannot be changed while your add-on is featured for this application."
+msgstr "您的附加组件目前为此应用程序的精选附加组件，无法更改分类。"
+
+#. L10n: {0} is the number of categories.
+msgid "You can have only {0} category."
+msgid_plural "You can have only {0} categories."
+msgstr[0] "您只能选择 {0} 个分类。"
+
+msgid "The miscellaneous category cannot be combined with additional categories."
+msgstr "这个杂项分类不能与其他分类混用。"
+
+#, python-format
+msgid "URL domain must be one of [%s], or a subdomain."
+msgstr "网址域名必须是 [%s] 之一，或其子域。"
+
+#, python-format
+msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
+msgstr "在您更改您的默认语言之前，您必须为那个语言环境输入名称、概述及描述。您目前没有输入 %s。"
+
 msgid "Must have at least one owner."
 msgstr "至少要有一个所有者。"
 
@@ -2397,6 +2142,12 @@ msgstr "版本 {version} 已经存在。"
 msgid "Continue with existing upload instead?"
 msgstr "继续使用现有上传？"
 
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
 msgid "You have not uploaded a source file."
 msgstr "您尚未上传源文件。"
 
@@ -2416,6 +2167,9 @@ msgstr "我自己托管。<span class=\"helptext\">您的提交将被立即签�
 
 msgid "Categories cannot be changed while your add-on is featured."
 msgstr "您的附加组件列入精选时，不能更改分类。"
+
+msgid "Invalid or corrupt add-on file."
+msgstr "无效或损坏的附加组件文件。"
 
 msgid "Your developer API key was found in the submitted file. To protect your account, the key will be revoked."
 msgstr "在提交的文件中发现了您的开发者 API 密钥。为确保您的账户安全，将作废此密钥。"
@@ -2525,14 +2279,14 @@ msgstr "本次上传校验失败，可能缺少完整校验结果。请在检查
 msgid "Header area background"
 msgstr "标题区域背景色"
 
-msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  accentcolor."
-msgstr "标题区域背景的颜色，显示在标题区域或标题图像未覆盖的部分。清单字段：accentcolor。"
+msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  frame."
+msgstr "标题区域背景的颜色，显示在标题区域或标题图像未覆盖的部分。清单字段：frame。"
 
 msgid "Header area text and icons"
 msgstr "标题区域文本和图标"
 
-msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  textcolor."
-msgstr "标题区域所显示文字和图标的颜色。清单字段：textcolor。"
+msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  tab_background_text."
+msgstr "标题区域所显示文字和图标的颜色。清单字段：tab_background_text。"
 
 msgid "Toolbar area background"
 msgstr "工具栏区域背景色"
@@ -2543,8 +2297,8 @@ msgstr "导航栏、书签栏和已选标签页的背景颜色。清单字段：
 msgid "Toolbar area text and icons"
 msgstr "工具栏区域文本和图标"
 
-msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  toolbar_text."
-msgstr "工具栏和活跃标签页中的文字和图标的颜色。清单字段：toolbar_text。"
+msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  bookmark_text."
+msgstr "工具栏和活跃标签页中的文字和图标的颜色。清单字段：bookmark_text。"
 
 msgid "Toolbar field area background"
 msgstr "工具栏文本框区域背景颜色"
@@ -2576,6 +2330,9 @@ msgstr "新的 API 密钥已创建"
 msgid "API key revoked"
 msgstr "API密钥已废除"
 
+msgid "My add-on doesn't fit into any of the categories"
+msgstr "我的附加组件不适合任何分类"
+
 msgid ""
 "Before starting, please read and accept our Firefox Add-on Distribution Agreement as well as our Review Policies and Rules. The Firefox Add-on Distribution Agreement also links to our Privacy Notice"
 " which explains how we handle your information."
@@ -2596,9 +2353,6 @@ msgstr "接受"
 msgid "or <a href=\"{0}\">Cancel</a>"
 msgstr "或<a href=\"{0}\">取消</a>"
 
-msgid "Back to Add-ons"
-msgstr "返回附加组件"
-
 #. {0} is an application, like Firefox.
 msgid "{0} Add-ons"
 msgstr "{0} 附加组件"
@@ -2613,14 +2367,15 @@ msgstr "<small>附加组件</small>开发者中心"
 msgid "more add-ons..."
 msgstr "更多附加组件..."
 
+# Plural in this context means many of the add-on type
+msgid "Extension Workshop"
+msgstr "扩展工坊"
+
 msgid "Documentation"
 msgstr "文档"
 
 msgid "Extension Development"
 msgstr "扩展开发"
-
-msgid "Lightweight Themes"
-msgstr "轻量级主题"
 
 msgid "Developer Policies"
 msgstr "开发者政策"
@@ -2679,9 +2434,6 @@ msgstr "{0} 的近期动态"
 msgid "<time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time> by %(user)s"
 msgstr "<time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time> 由 %(user)s"
 
-msgid "No results found."
-msgstr "未找到结果。"
-
 msgid "Refine Activity"
 msgstr "动态提要"
 
@@ -2719,8 +2471,14 @@ msgstr "应用程序"
 msgid "Supported Versions"
 msgstr "支持的版本"
 
+msgid "Remove"
+msgstr "移除"
+
 msgid "Add Another Application&hellip;"
 msgstr "添加其他应用程序&hellip;"
+
+msgid "Save Changes"
+msgstr "保存更改"
 
 msgid "Close"
 msgstr "关闭"
@@ -2841,6 +2599,9 @@ msgstr "查看产品页面"
 
 msgid "This summary should clearly explain what your add-on does. It will be shown in listings and searches, and it will be used by reviewers to test your add-on."
 msgstr "此摘要应清楚阐述您的附加组件的作用。它将在信息页面和搜索结果中显示，审核员也将基于它来测试您的附加组件。"
+
+msgid "Description"
+msgstr "描述"
 
 msgid "Experimental?"
 msgstr "实验性？"
@@ -3189,6 +2950,9 @@ msgstr "附加组件网址："
 
 msgid "Please use only letters, numbers, underscores, and dashes in your URL."
 msgstr "在网址中仅能使用字母、数字、下划线和连字符。"
+
+msgid "Name:"
+msgstr "名称："
 
 msgid "Name on listing on this site. May be different to the name inside the add-on, which is shown inside Firefox"
 msgstr "在此站点上列出的名称；可能与附加组件的名称（显示在 Firefox 之中）不同"
@@ -5305,11 +5069,17 @@ msgstr "此文件是一个目录。"
 msgid "Cannot diff a version against itself"
 msgstr "无法判断一个版本与他自身的差别"
 
+msgid "Could not parse the manifest file."
+msgstr "未能解析清单文件。"
+
 msgid "GUID is required for Firefox 47 and below."
 msgstr "Firefox 47 及以下版本需要 GUID。"
 
 msgid "Lowest supported \"strict_min_version\" is 42.0."
 msgstr "支持的最低 \"strict_min_version\" 为 42.0。"
+
+msgid "Unknown \"strict_min_version\" {appver} for {app}"
+msgstr "{app} 的“strict_min_version”版本 {appver} 未知"
 
 #, python-format
 msgid "Could not parse uploaded file, missing or empty <%s> element"
@@ -5340,9 +5110,6 @@ msgstr "超过体积限制的文件存在于压缩包：{0}"
 
 msgid "Invalid archive."
 msgstr "无效的压缩文件。"
-
-msgid "Could not parse the manifest file."
-msgstr "未能解析清单文件。"
 
 msgid "Could not find an add-on ID."
 msgstr "无法找到附加组件 ID。"
@@ -5409,6 +5176,9 @@ msgstr "文件内容不支持语法高亮"
 msgid "The output can be broken, please be careful and %(link_start)sreport an issue%(link_end)s immediately!"
 msgstr "输出可能损坏，请小心及%(link_start)s立即报告问题%(link_end)s！"
 
+msgid "Go"
+msgstr "转到"
+
 msgid "Add-on file being processed, please wait."
 msgstr "正在处理附加组件文件，请稍候。"
 
@@ -5423,9 +5193,6 @@ msgstr "已删除的文件："
 
 msgid "Hide known files"
 msgstr "隐藏已知文件"
-
-msgid "Add-on SDK Version:"
-msgstr "附加组件SDK版本："
 
 msgid "Tab stops:"
 msgstr "制表符宽度："
@@ -6044,9 +5811,6 @@ msgstr "需要管理员审核内容"
 msgid "Needs Admin Static Theme Review"
 msgstr "需要管理员审核静态主题"
 
-msgid "Jetpack Add-on"
-msgstr "Jetpack 附加组件"
-
 msgid "More Information Requested"
 msgstr "要求更多信息"
 
@@ -6139,6 +5903,9 @@ msgstr "要求超级审核"
 
 msgid "If you have concerns about this add-on that an admin reviewer should look into, enter your comments in the area below. They will not be sent to the developer."
 msgstr "如果您担心此附加组件可能有安全隐患、著作权争议或者有其他需要管理员深入调查的事项，请在下方输入您的意见。这将不会发送给其开发者。"
+
+msgid "Comment"
+msgstr "评论"
 
 msgid "Make a comment on this version. The developer won't be able to see this."
 msgstr "对此版本进行注释。其开发者不会看到这些。"
@@ -6662,96 +6429,6 @@ msgstr "“%s”，“%s”和“%s”参数的组合无效。"
 msgid "Maximum query length exceeded."
 msgstr "超出最大查询长度。"
 
-msgid "search for add-ons"
-msgstr "搜索附加组件"
-
-msgid "search for themes"
-msgstr "搜索主题"
-
-msgid "search for apps"
-msgstr "搜索应用"
-
-msgid "Relevance"
-msgstr "相关性"
-
-msgid "All Add-ons"
-msgstr "所有附加组件"
-
-msgid "Any {0}"
-msgstr "任何 {0}"
-
-#. L10n: "All Systems" means show everything regardless of platform.
-msgid "All Systems"
-msgstr "所有系统"
-
-msgid "All Tags"
-msgstr "所有标签"
-
-#. {0} is the string the user was searching for
-msgid "Collection Search Results for {0}"
-msgstr "{0} 的收藏集搜索结果"
-
-msgid "Collection Search Results"
-msgstr "收藏集搜索结果"
-
-msgid "Search Results"
-msgstr "搜索结果"
-
-msgid "Search Unavailable"
-msgstr "搜索不可用"
-
-msgid "Search is temporarily unavailable. Please try again in a few minutes."
-msgstr "搜索功能暂时不可用。请在几分钟后重试。"
-
-#. {0} is the string the user was searching for
-msgid "Themes Search Results for {0}"
-msgstr "{0} 的主题搜索结果"
-
-msgid "Themes Search Results"
-msgstr "主题搜索结果"
-
-#. {0} is a search term, such as Firebug.
-msgid "{0} :: Search"
-msgstr "{0} :: 搜索"
-
-#. {0} is a search term, such as Firebug.
-msgid "Search Results for \"{0}\""
-msgstr "“{0}”的搜索结果"
-
-#. {0} is a tag, such as jetpack.
-msgid "{0} :: Tag"
-msgstr "{0} :: 标签"
-
-#. {0} is a tag, such as jetpack.
-msgid "Search Results for tag \"{0}\""
-msgstr "“{0}”标签的搜索结果"
-
-msgid "<b>{0}</b> matching result"
-msgid_plural "<b>{0}</b> matching results"
-msgstr[0] "<b>{0}</b> 个匹配的结果"
-
-msgid "Filter Results"
-msgstr "过滤结果"
-
-msgid "Category"
-msgstr "类别"
-
-msgid "Tag"
-msgstr "标签"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-# {3} is the word the person is searching for
-msgid "Showing {0} - {1} of {2} results for <strong>{3}</strong>"
-msgstr "包含 <strong>{3}</strong> 的结果共有 {2} 项，显示第 {0} - {1} 项"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-msgid "Showing {0} - {1} of {2} results"
-msgstr "共有 {2} 项结果，显示 {0} - {1} 项"
-
 msgid "Could not find add-on with guid \"{}\"."
 msgstr "未能找到 GUID 为“{}”的附加组件。"
 
@@ -6807,33 +6484,6 @@ msgstr "依照平台"
 
 msgid "by Add-on Status"
 msgstr "依照附加组件状态"
-
-msgid "Add-on Statistics"
-msgstr "附加组件统计"
-
-msgid "Add-ons in Use"
-msgstr "附加组件使用量"
-
-msgid "Add-ons Created"
-msgstr "附加组件创建量"
-
-msgid "Add-ons Downloaded"
-msgstr "附加组件下载量"
-
-msgid "Add-ons Updated"
-msgstr "附加组件更新量"
-
-msgid "Collections Created"
-msgstr "收藏集创建量"
-
-msgid "Reviews Written"
-msgstr "评价数量"
-
-msgid "User Signups"
-msgstr "用户注册量"
-
-msgid "Archived Data"
-msgstr "存档日期"
 
 msgid "Custom Date Range"
 msgstr "自定日期范围"
@@ -6922,23 +6572,8 @@ msgstr "这个面板目前<b>私密</b>。"
 msgid "Change settings."
 msgstr "更改设置。"
 
-msgid "Add-ons Created by Date"
-msgstr "依照日期统计的附加组件创建"
-
-msgid "Add-ons Downloaded by Date"
-msgstr "依照日期统计的附加组件下载"
-
-msgid "Add-ons in Use by Date"
-msgstr "依照日期统计的附加组件使用"
-
-msgid "Add-ons Updated by Date"
-msgstr "依照日期统计的附加组件更新"
-
 msgid "Application usage by Date"
 msgstr "依照日期统计的应用程序使用"
-
-msgid "Collections Created by Date"
-msgstr "依照日期统计的收藏集创建"
 
 msgid "Downloaded by Date"
 msgstr "依照日期统计的下载"
@@ -6984,12 +6619,6 @@ msgstr "热门平台"
 msgid "See more platforms&hellip;"
 msgstr "查看更多平台&hellip;"
 
-msgid "Ratings by Date"
-msgstr "依照日期统计的评分"
-
-msgid "Reviews Created by Date"
-msgstr "依照日期统计的评价创建"
-
 msgid "Download sources by Date"
 msgstr "依照日期统计的下载来源"
 
@@ -7011,9 +6640,6 @@ msgstr ""
 msgid "Add-on Status by Date"
 msgstr "依照日期统计的附加组件状态"
 
-msgid "Subscribers by Date"
-msgstr "依照日期统计的订阅者"
-
 msgid "Daily Users by Date"
 msgstr "依照日期统计的每日用户量"
 
@@ -7030,36 +6656,14 @@ msgid ""
 "down by add-on version, operating system, add-on status, application, and locale. </p>"
 msgstr "<h2>什么是每日用户量？</h2> <p> 从本网站下载的附加组件会在每日检查更新。这些更新的请求数量将作为每日活跃用户数。每日用户量可以按照附加组件版本、操作系统、附加组件状态、应用程序以及地区语言划分。</p>"
 
-msgid "User Signups by Date"
-msgstr "依照日期统计的用户注册"
-
 msgid "Application versions by Date"
 msgstr "依照日期统计的应用程序版本"
 
 msgid "Mozilla Add-ons"
 msgstr "Mozilla 附加组件"
 
-msgid "Find add-ons for other applications"
-msgstr "查找其他应用程序的附加组件"
-
-msgid "Other Applications"
-msgstr "其他应用程序"
-
-msgid "AMO is getting a new look. Would you like to see it?"
-msgstr "AMO 正更换新款界面。先睹为快？"
-
-msgid "Visit the new site"
-msgstr "查看新版网站"
-
-msgid "To create your own collections, you must have a Mozilla Add-ons account."
-msgstr "创建您自已的收藏集，您必须一个 Mozilla 附加组件账户。"
-
-msgid "Create an Add-ons Account"
-msgstr "创建附加组件账户"
-
-#, python-format
-msgid "or <a href=\"%(login)s\">log in to your current account</a>"
-msgstr "或者<a href=\"%(login)s\">登录您已有的账户</a>"
+msgid "Back to Add-ons"
+msgstr "返回附加组件"
 
 msgid "Footer logo"
 msgstr "页脚标志"
@@ -7125,32 +6729,14 @@ msgstr "欢迎，{0}"
 msgid "<a href=\"%(reg)s\">Register</a> or <a href=\"%(login)s\">Log in</a>"
 msgstr "<a href=\"%(reg)s\">注册</a> 或 <a href=\"%(login)s\">登录</a>"
 
-#, python-format
-msgid "To try the thousands of add-ons available here, download <a href=\"%(url)s\">Mozilla Firefox</a>, a fast, free way to surf the Web!"
-msgstr "要尝试这里成千上万的附加组件，下载 <a href=\"%(url)s\">Mozilla Firefox</a>，一个快速、自由的上网工具！"
-
-#. {0} is an application, such as Firefox.
-msgid "Welcome to {0} Add-ons."
-msgstr "欢迎访问 {0} 附加组件。"
-
-msgid "Choose from thousands of extra features and styles to make Firefox your own."
-msgstr "从成千上万的额外功能和样式中选择，打造您专属的 Firefox。"
-
-#, python-format
-msgid "Add extra features and styles to make %(app)s your own."
-msgstr "添加额外的功能和样式打造您的专属 %(app)s。"
-
-msgid "On the go?"
-msgstr "随身查看？"
-
-msgid "Check out our <a class=\"mobile-link\" href=\"#\">Mobile Add-ons site</a>."
-msgstr "查看我们的<a class=\"mobile-link\" href=\"#\">移动版附加组件网站</a>。"
-
 msgid "Android Add-ons"
 msgstr "Android 附加组件"
 
 msgid "Required fields"
 msgstr "必填字段"
+
+msgid "(optional)"
+msgstr "（可选）"
 
 #. {0} is a language name, like 'French'
 #, python-format
@@ -7213,6 +6799,9 @@ msgstr "Firefox 用户 {id}"
 
 msgid "My Mobile Add-ons"
 msgstr "我的移动版附加组件"
+
+msgid "My Favorite Add-ons"
+msgstr "我最爱的附加组件"
 
 msgid "an add-on developer replies to my review"
 msgstr "一名附加组件开发者回复了我的评价"

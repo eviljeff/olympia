@@ -24,6 +24,8 @@ SERVER_EMAIL = 'zprod@addons.mozilla.org'
 SITE_URL = 'https://' + DOMAIN
 SERVICES_URL = env('SERVICES_URL',
                    default='https://services.addons.mozilla.org')
+CODE_MANAGER_URL = env('CODE_MANAGER_URL',
+                       default='https://code.addons.mozilla.org')
 STATIC_URL = '%s/static/' % CDN_HOST
 MEDIA_URL = '%s/user-media/' % CDN_HOST
 
@@ -96,14 +98,23 @@ FXA_CONFIG = {
         'content_host': 'https://accounts.firefox.com',
         'oauth_host': 'https://oauth.accounts.firefox.com/v1',
         'profile_host': 'https://profile.accounts.firefox.com/v1',
-        'redirect_url':
-            'https://addons.mozilla.org/api/v3/accounts/authenticate/',
+        'redirect_url': 'https://addons.mozilla.org/api/v3/accounts/authenticate/?config=amo', # noqa
+        'scope': 'profile',
+        'skip_register_redirect': True,
+    },
+    'code-manager': {
+        'client_id': env('CODE_MANAGER_FXA_CLIENT_ID'),
+        'client_secret': env('CODE_MANAGER_FXA_CLIENT_SECRET'),
+        'content_host': 'https://accounts.firefox.com',
+        'oauth_host': 'https://oauth.accounts.firefox.com/v1',
+        'profile_host': 'https://profile.accounts.firefox.com/v1',
+        'redirect_url': 'https://addons.mozilla.org/api/v4/accounts/authenticate/?config=code-manager', # noqa
         'scope': 'profile',
         'skip_register_redirect': True,
     },
 }
 DEFAULT_FXA_CONFIG_NAME = 'default'
-ALLOWED_FXA_CONFIGS = ['default', 'amo']
+ALLOWED_FXA_CONFIGS = ['default', 'amo', 'code-manager']
 
 VALIDATOR_TIMEOUT = 360
 

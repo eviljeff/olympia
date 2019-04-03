@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  addons\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-18 07:57+0000\n"
+"POT-Creation-Date: 2019-04-02 14:07+0000\n"
 "PO-Revision-Date: 2009-02-26 15:08-0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -103,62 +103,6 @@ msgstr "Experimental"
 msgid "Add to {0}"
 msgstr "Add to {0}"
 
-msgid "This slug is already in use. Please choose another."
-msgstr "This slug is already in use. Please choose another."
-
-#, fuzzy, python-format
-msgid "The slug cannot be \"%(slug)s\". Please choose another."
-msgstr "The slug cannot be \"%s\". Please choose another."
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "Invalid tag: {0}"
-msgid_plural "Invalid tags: {0}"
-msgstr[0] "Invalid tag: {0}"
-msgstr[1] "Invalid tags: {0}"
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "\"{0}\" is a reserved tag and cannot be used."
-msgid_plural "\"{0}\" are reserved tags and cannot be used."
-msgstr[0] "\"{0}\" is a reserved tag and cannot be used."
-msgstr[1] "\"{0}\" are reserved tags and cannot be used."
-
-msgid "You have {0} too many tags."
-msgid_plural "You have {0} too many tags."
-msgstr[0] "You have {0} too many tags."
-msgstr[1] "You have {0} too many tags."
-
-#, python-format
-msgid "All tags must be %s characters or less after invalid characters are removed."
-msgstr "All tags must be %s characters or less after invalid characters are removed."
-
-msgid "All tags must be at least {0} character."
-msgid_plural "All tags must be at least {0} characters."
-msgstr[0] "All tags must be at least {0} character."
-msgstr[1] "All tags must be at least {0} characters."
-
-msgid "The text entered has been flagged as spam."
-msgstr "The text entered has been flagged as spam."
-
-msgid "Categories cannot be changed while your add-on is featured for this application."
-msgstr "Categories cannot be changed while your add-on is featured for this application."
-
-#. L10n: {0} is the number of categories.
-msgid "You can have only {0} category."
-msgid_plural "You can have only {0} categories."
-msgstr[0] "You can have only {0} category."
-msgstr[1] "You can have only {0} categories."
-
-msgid "The miscellaneous category cannot be combined with additional categories."
-msgstr "The miscellaneous category cannot be combined with additional categories."
-
-#, fuzzy, python-format
-msgid "URL domain must be one of [%s], or a subdomain."
-msgstr "URL domain must be one of [%s], or a subdomain., "
-
-#, python-format
-msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
-msgstr "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
-
 # Column name in a table.
 msgid "Listed"
 msgstr "Listed"
@@ -171,9 +115,6 @@ msgstr "Add-on names cannot contain the Mozilla or Firefox trademarks."
 
 msgid "Abuse reported."
 msgstr "Abuse reported."
-
-msgid "My add-on doesn't fit into any of the categories"
-msgstr "My add-on doesn't fit into any of the categories"
 
 msgid "No compatible versions"
 msgstr "No compatible versions"
@@ -235,9 +176,6 @@ msgstr "Up &amp; Coming Extensions"
 
 msgid "Featured Themes"
 msgstr "Featured Themes"
-
-msgid "Featured Collections"
-msgstr "Featured Collections"
 
 msgid "Sort by:"
 msgstr "Sort by:"
@@ -474,9 +412,6 @@ msgstr "Write a review"
 msgid "Related Categories"
 msgstr "Related Categories"
 
-msgid "Part of these Collections"
-msgstr "Part of these Collections"
-
 #, fuzzy, python-format
 msgid "Other add-ons by %(author)s"
 msgid_plural "Other add-ons by these authors"
@@ -617,14 +552,14 @@ msgstr "This add-on has not yet been reviewed."
 msgid "Be the first!"
 msgstr "Be the first!"
 
+msgid "No results found."
+msgstr "No results found."
+
 msgid "{0} users"
 msgstr "{0} users"
 
 msgid "More"
 msgstr "More"
-
-msgid "Add to collection"
-msgstr "Add to collection"
 
 msgid "My Add-ons"
 msgstr "My Add-ons"
@@ -650,9 +585,6 @@ msgstr "Sorry, this theme is pending. Please come back later."
 
 msgid "This theme is pending. It is invisible to everyone but you."
 msgstr "This theme is pending. It is invisible to everyone but you."
-
-msgid "Collector's Note"
-msgstr "Collector's Note"
 
 #. {0} is the number of downloads.
 msgid "<strong>{0}</strong> weekly download"
@@ -858,35 +790,6 @@ msgstr "Newest"
 msgid "Explore"
 msgstr "Explore"
 
-# Plural in this context means many of the add-on type
-msgid "Extensions"
-msgstr "Extensions"
-
-#. {0} is a category name. Ex: "Sports"
-msgid "Themes"
-msgstr "Themes"
-
-msgid "Want more customization? Try <b>Complete Themes</b>"
-msgstr "Want more customization? Try <b>Complete Themes</b>"
-
-msgid "Collections"
-msgstr "Collections"
-
-msgid "Collections I've Made"
-msgstr "Collections I've Made"
-
-msgid "More&hellip;"
-msgstr "More&hellip;"
-
-msgid "Add-ons for Mobile"
-msgstr "Add-ons for Mobile"
-
-msgid "Dictionaries & Language Packs"
-msgstr "Dictionaries & Language Packs"
-
-msgid "Search Tools"
-msgstr "Search Tools"
-
 #. This is a page range (e.g., Page 1 of 50).
 #, python-format
 msgid "Page <a href=\"%(current_pg_url)s\">%(current_pg)s</a> of <a href=\"%(last_pg_url)s\">%(last_pg)s</a>"
@@ -906,6 +809,12 @@ msgstr "Jump to last page"
 #, python-format
 msgid "Showing <b>%(begin)s</b>&ndash;<b>%(end)s</b> of <b>%(count)s</b>"
 msgstr "Showing <b>%(begin)s</b>&ndash;<b>%(end)s</b> of <b>%(count)s</b>"
+
+msgid "Collections"
+msgstr "Collections"
+
+msgid "Dictionaries & Language Packs"
+msgstr "Dictionaries & Language Packs"
 
 msgid "Add-ons"
 msgstr "Add-ons"
@@ -993,32 +902,8 @@ msgid ""
 "%(amo_manifests_mdn_link_close)s."
 msgstr "If your supported application does not require a manifest file, you still must include one with the required properties as specified <a href=\"%(url)s\">here</a>."
 
-msgid "Only I can view this collection."
-msgstr "Only I can view this collection."
-
-msgid "Anybody can view this collection."
-msgstr "Anybody can view this collection."
-
-msgid "Give your collection a name."
-msgstr "Give your collection a name."
-
-msgid "URL:"
-msgstr "URL:"
-
-msgid "Describe your collection (no links allowed)."
-msgstr "Describe your collection (no links allowed)."
-
-msgid "Privacy:"
-msgstr "Privacy:"
-
-msgid "Please don't fill out this field, it's used to catch bots"
-msgstr "Please don't fill out this field, it's used to catch bots"
-
-msgid "This name cannot be used."
-msgstr "This name cannot be used."
-
-msgid "This url is already in use by another collection"
-msgstr "This url is already in use by another collection"
+msgid "The text entered has been flagged as spam."
+msgstr "The text entered has been flagged as spam."
 
 #, fuzzy
 msgid "This custom URL is already in use by another one of your collections."
@@ -1026,6 +911,9 @@ msgstr "This url is already in use by another collection"
 
 #, fuzzy
 msgid "Name cannot be empty."
+msgstr "This name cannot be used."
+
+msgid "This name cannot be used."
 msgstr "This name cannot be used."
 
 #, fuzzy
@@ -1040,231 +928,18 @@ msgstr "This username cannot be used."
 msgid "This add-on already belongs to the collection"
 msgstr "This url is already in use by another collection"
 
-msgid "Added"
-msgstr "Added"
-
-msgid "Popularity"
-msgstr "Popularity"
-
-msgid "Name"
-msgstr "Name"
-
-msgid "Collection created!"
-msgstr "Collection created!"
-
-#, python-format
-msgid "Your new collection is shown below. You can <a href=\"%(url)s\">edit additional settings</a> if you'd like."
-msgstr "Your new collection is shown below. You can <a href=\"%(url)s\">edit additional settings</a> if you'd like."
-
-msgid "Collection updated!"
-msgstr "Collection updated!"
-
-#, python-format
-msgid "<a href=\"%(url)s\">View your collection</a> to see the changes."
-msgstr "<a href=\"%(url)s\">View your collection</a> to see the changes."
-
-msgid "Create a New Collection"
-msgstr "Create a New Collection"
-
-#, python-format
-msgid "As noted in our <a href=\"%(legal)s\">Legal Notices</a>, individual collection arrangements are governed by the Creative Commons Attribution Share-Alike License"
-msgstr "As noted in our <a href=\"%(legal)s\">Legal Notices</a>, individual collection arrangements are governed by the Creative Commons Attribution Share-Alike License"
-
-msgid "Create Collection"
-msgstr "Create Collection"
-
-msgid "View this collection"
-msgstr "View this collection"
-
-msgid "Start a new collection..."
-msgstr "Start a new collection..."
-
-msgid "Start a New Collection"
-msgstr "Start a New Collection"
-
-msgid "Name:"
-msgstr "Name:"
-
-msgid "(optional)"
-msgstr "(optional)"
-
-msgid "or <a id=\"collections-new-cancel\" href=\"#\">Cancel</a>"
-msgstr "or <a id=\"collections-new-cancel\" href=\"#\">Cancel</a>"
-
-msgid "{0} :: Collections"
-msgstr "{0} :: Collections"
-
-msgid "private"
-msgstr "private"
-
-msgid "About this Collection"
-msgstr "About this Collection"
-
-msgid "Add-ons synced to my Mobile Firefox"
-msgstr "Add-ons synced to my Mobile Firefox"
-
-msgid "Make this Collection Private"
-msgstr "Make this Collection Private"
-
-msgid "Make this Collection Public"
-msgstr "Make this Collection Public"
-
-msgid "More Options:"
-msgstr "More Options:"
-
-msgid "Edit Collection"
-msgstr "Edit Collection"
-
-msgid "Delete Collection"
-msgstr "Delete Collection"
-
-#, python-format
-msgid "%(num)s Theme in this Collection"
-msgid_plural "%(num)s Themes in this Collection"
-msgstr[0] "%(num)s Theme in this Collection"
-msgstr[1] "%(num)s Themes in this Collection"
-
-#, python-format
-msgid "%(num)s Add-on in this Collection"
-msgid_plural "%(num)s Add-ons in this Collection"
-msgstr[0] "%(num)s Add-on in this Collection"
-msgstr[1] "%(num)s Add-ons in this Collection"
-
-msgid "Go"
-msgstr "Go"
-
-msgid "What are Collections?"
-msgstr "What are Collections?"
-
-msgid "Collections are groups of related add-ons that anyone can create and share."
-msgstr "Collections are groups of related add-ons that anyone can create and share."
-
-msgid "Explore Collections"
-msgstr "Explore Collections"
-
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>public</b>, which means everyone can see it. If you would like to hide it "
-"from public view, click the button below to make it private."
-msgstr ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>public</b>, which means everyone can see it. If you would like to hide it "
-"from public view, click the button below to make it private."
-
-#, fuzzy
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>private</b>, which means only you can see it. If you would like everyone "
-"to be able to see your favorites, click the button below to make it public."
-msgstr ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>private</b>, which means only you can see it.  If you would like everyone "
-"to be able to see your favorites, click the button below to make it public."
-
-msgid "My favorite add-ons"
-msgstr "My favorite add-ons"
-
-#, python-format
-msgid "<span>%(addons)s</span> add-on"
-msgid_plural "<span>%(addons)s</span> add-ons"
-msgstr[0] "<span>%(addons)s</span> add-on"
-msgstr[1] "<span>%(addons)s</span> add-ons"
-
-msgid "by {0}"
-msgstr "by {0}"
-
-msgid "Edit this Collection"
-msgstr "Edit this Collection"
-
-#. %s is the name of the collection.
-msgid "Delete {0}"
-msgstr "Delete {0}"
-
-msgid "Are you sure?"
-msgstr "Are you sure?"
-
-msgid "Yes"
-msgstr "Yes"
-
-msgid "No"
-msgstr "No"
-
-#. {0} is the name of the collection.
-msgid "Edit {0}"
-msgstr "Edit {0}"
-
-msgid "Description"
-msgstr "Description"
-
-msgid "Save Changes"
-msgstr "Save Changes"
-
-msgid "Remove from favorites"
-msgstr "Remove from favorites"
-
-msgid "Add to favorites"
-msgstr "Add to favorites"
-
-#. {0} is a the user's name.
-msgid "Collections by {0}"
-msgstr "Collections by {0}"
-
-msgid "No collections found."
-msgstr "No collections found."
-
-#, python-format
-msgid "Collections are groups of related add-ons that anyone can create and share. Explore collections created by other users or <a href=\"%(url)s\">create your own</a>."
-msgstr "Collections are groups of related add-ons that anyone can create and share. Explore collections created by other users or <a href=\"%(url)s\">create your own</a>."
-
-#, fuzzy, python-format
-msgid "by %(author_link)s"
-msgstr "by %(users)s"
-
-msgid "My Favorite Add-ons"
-msgstr "My Favorite Add-ons"
-
-msgid "Create a Collection"
-msgstr "Create a Collection"
-
-msgid "Collections make it easy to keep track of favorite add-ons and share your perfectly customized browser with others."
-msgstr "Collections make it easy to keep track of favorite add-ons and share your perfectly customized browser with others."
-
-msgid "There are errors in this form.  Please correct them below."
-msgstr "There are errors in this form.  Please correct them below."
-
-msgid "Add-ons in Your Collection"
-msgstr "Add-ons in Your Collection"
-
-msgid "To include an add-on in this collection, enter its name in the box below and hit enter."
-msgstr "To include an add-on in this collection, enter its name in the box below and hit enter."
-
-msgid "Add-on"
-msgstr "Add-on"
-
-msgid "Comment"
-msgstr "Comment"
-
-msgid "Remove"
-msgstr "Remove"
-
-msgid "Enter the name of the add-on to include"
-msgstr "Enter the name of the add-on to include"
-
-msgid "Add to Collection"
-msgstr "Add to Collection"
-
-msgid "Pending"
-msgstr "Pending"
-
-msgid "Add a comment"
-msgstr "Add a comment"
-
-msgid "Remove this add-on from the collection"
-msgstr "Remove this add-on from the collection"
-
-msgid "Favorite"
-msgstr "Favorite"
+# Plural in this context means many of the add-on type
+msgid "Extensions"
+msgstr "Extensions"
 
 #. L10n: %s is a category name.
 #, python-format
 msgid "%s Add-ons"
 msgstr "%s Add-ons"
+
+#. {0} is a category name. Ex: "Sports"
+msgid "Themes"
+msgstr "Themes"
 
 #. L10n: %s is a category name.
 #, python-format
@@ -1291,8 +966,14 @@ msgstr "Search tools and search-related extensions"
 msgid "Search tools"
 msgstr "Search tools"
 
+msgid "Search Tools"
+msgstr "Search Tools"
+
 msgid "Most Users"
 msgstr "Most Users"
+
+msgid "Name"
+msgstr "Name"
 
 msgid "Weekly Downloads"
 msgstr "Weekly Downloads"
@@ -2284,6 +1965,9 @@ msgstr "Solaris"
 msgid "Android"
 msgstr "Android"
 
+msgid "Add-on"
+msgstr "Add-on"
+
 #, fuzzy
 msgid "Static Theme"
 msgstr "Submit Theme"
@@ -2485,6 +2169,59 @@ msgstr "We allow and encourage an upgrade but you cannot reverse this process. O
 msgid "[{field}] The text in the \"{field}\" field has been flagged as spam."
 msgstr "The text entered has been flagged as spam."
 
+msgid "This slug is already in use. Please choose another."
+msgstr "This slug is already in use. Please choose another."
+
+#, fuzzy, python-format
+msgid "The slug cannot be \"%(slug)s\". Please choose another."
+msgstr "The slug cannot be \"%s\". Please choose another."
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "Invalid tag: {0}"
+msgid_plural "Invalid tags: {0}"
+msgstr[0] "Invalid tag: {0}"
+msgstr[1] "Invalid tags: {0}"
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "\"{0}\" is a reserved tag and cannot be used."
+msgid_plural "\"{0}\" are reserved tags and cannot be used."
+msgstr[0] "\"{0}\" is a reserved tag and cannot be used."
+msgstr[1] "\"{0}\" are reserved tags and cannot be used."
+
+msgid "You have {0} too many tags."
+msgid_plural "You have {0} too many tags."
+msgstr[0] "You have {0} too many tags."
+msgstr[1] "You have {0} too many tags."
+
+#, python-format
+msgid "All tags must be %s characters or less after invalid characters are removed."
+msgstr "All tags must be %s characters or less after invalid characters are removed."
+
+msgid "All tags must be at least {0} character."
+msgid_plural "All tags must be at least {0} characters."
+msgstr[0] "All tags must be at least {0} character."
+msgstr[1] "All tags must be at least {0} characters."
+
+msgid "Categories cannot be changed while your add-on is featured for this application."
+msgstr "Categories cannot be changed while your add-on is featured for this application."
+
+#. L10n: {0} is the number of categories.
+msgid "You can have only {0} category."
+msgid_plural "You can have only {0} categories."
+msgstr[0] "You can have only {0} category."
+msgstr[1] "You can have only {0} categories."
+
+msgid "The miscellaneous category cannot be combined with additional categories."
+msgstr "The miscellaneous category cannot be combined with additional categories."
+
+#, fuzzy, python-format
+msgid "URL domain must be one of [%s], or a subdomain."
+msgstr "URL domain must be one of [%s], or a subdomain., "
+
+#, python-format
+msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
+msgstr "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
+
 msgid "Must have at least one owner."
 msgstr "Must have at least one owner."
 
@@ -2558,6 +2295,12 @@ msgstr "Version already exists."
 msgid "Continue with existing upload instead?"
 msgstr "Continue with existing upload instead?"
 
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
 #, fuzzy
 msgid "You have not uploaded a source file."
 msgstr "Could not parse uploaded file."
@@ -2585,6 +2328,10 @@ msgstr "This version will be immediately signed for self-distribution. Updates a
 #, fuzzy
 msgid "Categories cannot be changed while your add-on is featured."
 msgstr "Categories cannot be changed while your add-on is featured for this application."
+
+#, fuzzy
+msgid "Invalid or corrupt add-on file."
+msgstr "Invalid archive."
 
 #, fuzzy
 msgid "Your developer API key was found in the submitted file. To protect your account, the key will be revoked."
@@ -2701,7 +2448,7 @@ msgid "Header area background"
 msgstr "Header area background (accentcolor)"
 
 #, fuzzy
-msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  accentcolor."
+msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  frame."
 msgstr "The color of the header area background, displayed in the part of the header not covered or visible through the header image."
 
 #, fuzzy
@@ -2709,7 +2456,7 @@ msgid "Header area text and icons"
 msgstr "Header area text (textcolor)"
 
 #, fuzzy
-msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  textcolor."
+msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  tab_background_text."
 msgstr "The color of the text displayed in the header area."
 
 #, fuzzy
@@ -2725,7 +2472,7 @@ msgid "Toolbar area text and icons"
 msgstr "Toolbar area text (toolbar_text)."
 
 #, fuzzy
-msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  toolbar_text."
+msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  bookmark_text."
 msgstr "The color of text in fields in the toolbar, such as the URL bar"
 
 #, fuzzy
@@ -2764,6 +2511,9 @@ msgstr "New API key created"
 msgid "API key revoked"
 msgstr "API key revoked"
 
+msgid "My add-on doesn't fit into any of the categories"
+msgstr "My add-on doesn't fit into any of the categories"
+
 #, fuzzy
 msgid ""
 "Before starting, please read and accept our Firefox Add-on Distribution Agreement as well as our Review Policies and Rules. The Firefox Add-on Distribution Agreement also links to our Privacy "
@@ -2786,9 +2536,6 @@ msgstr "Accept"
 msgid "or <a href=\"{0}\">Cancel</a>"
 msgstr "or <a href=\"{0}\">Cancel</a>"
 
-msgid "Back to Add-ons"
-msgstr "Back to Add-ons"
-
 #. {0} is an application, like Firefox.
 msgid "{0} Add-ons"
 msgstr "{0} Add-ons"
@@ -2803,14 +2550,16 @@ msgstr "<small>Add-on</small> Developer Hub"
 msgid "more add-ons..."
 msgstr "more add-ons..."
 
+# Plural in this context means many of the add-on type
+#, fuzzy
+msgid "Extension Workshop"
+msgstr "Extensions"
+
 msgid "Documentation"
 msgstr "Documentation"
 
 msgid "Extension Development"
 msgstr "Extension Development"
-
-msgid "Lightweight Themes"
-msgstr "Lightweight Themes"
 
 #, fuzzy
 msgid "Developer Policies"
@@ -2870,9 +2619,6 @@ msgstr "Recent Activity for {0}"
 msgid "<time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time> by %(user)s"
 msgstr "<time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time> by %(user)s"
 
-msgid "No results found."
-msgstr "No results found."
-
 msgid "Refine Activity"
 msgstr "Refine Activity"
 
@@ -2917,8 +2663,14 @@ msgstr "Application"
 msgid "Supported Versions"
 msgstr "Supported Versions"
 
+msgid "Remove"
+msgstr "Remove"
+
 msgid "Add Another Application&hellip;"
 msgstr "Add Another Application&hellip;"
+
+msgid "Save Changes"
+msgstr "Save Changes"
 
 msgid "Close"
 msgstr "Close"
@@ -3059,6 +2811,9 @@ msgstr "Edit Product Page"
 
 msgid "This summary should clearly explain what your add-on does. It will be shown in listings and searches, and it will be used by reviewers to test your add-on."
 msgstr "This summary should clearly explain what your add-on does. It will be shown in listings and searches, and it will be used by reviewers to test your add-on."
+
+msgid "Description"
+msgstr "Description"
 
 #, fuzzy
 msgid "Experimental?"
@@ -3452,6 +3207,9 @@ msgstr "Add-on URL"
 
 msgid "Please use only letters, numbers, underscores, and dashes in your URL."
 msgstr "Please use only letters, numbers, underscores, and dashes in your URL."
+
+msgid "Name:"
+msgstr "Name:"
 
 msgid "Name on listing on this site. May be different to the name inside the add-on, which is shown inside Firefox"
 msgstr "Name on listing on this site. May be different to the name inside the add-on, which is shown inside Firefox"
@@ -5858,11 +5616,17 @@ msgstr "This file is a directory."
 msgid "Cannot diff a version against itself"
 msgstr "Cannot diff a version against itself"
 
+msgid "Could not parse the manifest file."
+msgstr "Could not parse the manifest file."
+
 msgid "GUID is required for Firefox 47 and below."
 msgstr "GUID is required for Firefox 47 and below."
 
 msgid "Lowest supported \"strict_min_version\" is 42.0."
 msgstr "Lowest supported \"strict_min_version\" is 42.0."
+
+msgid "Unknown \"strict_min_version\" {appver} for {app}"
+msgstr "Unknown \"strict_min_version\" {appver} for {app}"
 
 #, fuzzy, python-format
 msgid "Could not parse uploaded file, missing or empty <%s> element"
@@ -5893,9 +5657,6 @@ msgstr "File exceeding size limit in archive: {0}"
 
 msgid "Invalid archive."
 msgstr "Invalid archive."
-
-msgid "Could not parse the manifest file."
-msgstr "Could not parse the manifest file."
 
 msgid "Could not find an add-on ID."
 msgstr "Could not find an add-on ID."
@@ -5966,6 +5727,9 @@ msgstr "File content not supported for syntax highlighting"
 msgid "The output can be broken, please be careful and %(link_start)sreport an issue%(link_end)s immediately!"
 msgstr "The output can be broken, please be careful and %(link_start)sreport an issue%(link_end)s immediately!"
 
+msgid "Go"
+msgstr "Go"
+
 msgid "Add-on file being processed, please wait."
 msgstr "Add-on file being processed, please wait."
 
@@ -5980,9 +5744,6 @@ msgstr "Deleted files:"
 
 msgid "Hide known files"
 msgstr "Hide known files"
-
-msgid "Add-on SDK Version:"
-msgstr "Add-on SDK Version:"
 
 msgid "Tab stops:"
 msgstr "Tab stops:"
@@ -6654,9 +6415,6 @@ msgstr "Commit Review"
 msgid "Needs Admin Static Theme Review"
 msgstr "Admin Review"
 
-msgid "Jetpack Add-on"
-msgstr "Jetpack Add-on"
-
 msgid "More Information Requested"
 msgstr "More Information Requested"
 
@@ -6766,6 +6524,9 @@ msgid "If you have concerns about this add-on that an admin reviewer should look
 msgstr ""
 "If you have concerns about this add-on's security, copyright issues, or other concerns that an administrator should look into, enter your comments in the area below. They will be sent to "
 "administrators, not the author."
+
+msgid "Comment"
+msgstr "Comment"
 
 #, fuzzy
 msgid "Make a comment on this version. The developer won't be able to see this."
@@ -7345,97 +7106,6 @@ msgstr "Invalid combination of \"%s\", \"%s\" and \"%s\" parameters."
 msgid "Maximum query length exceeded."
 msgstr "Maximum query length exceeded."
 
-msgid "search for add-ons"
-msgstr "search for add-ons"
-
-msgid "search for themes"
-msgstr "search for themes"
-
-msgid "search for apps"
-msgstr "search for apps"
-
-msgid "Relevance"
-msgstr "Relevance"
-
-msgid "All Add-ons"
-msgstr "All Add-ons"
-
-msgid "Any {0}"
-msgstr "Any {0}"
-
-#. L10n: "All Systems" means show everything regardless of platform.
-msgid "All Systems"
-msgstr "All Systems"
-
-msgid "All Tags"
-msgstr "All Tags"
-
-#. {0} is the string the user was searching for
-msgid "Collection Search Results for {0}"
-msgstr "Collection Search Results for {0}"
-
-msgid "Collection Search Results"
-msgstr "Collection Search Results"
-
-msgid "Search Results"
-msgstr "Search Results"
-
-msgid "Search Unavailable"
-msgstr "Search Unavailable"
-
-msgid "Search is temporarily unavailable. Please try again in a few minutes."
-msgstr "Search is temporarily unavailable. Please try again in a few minutes."
-
-#. {0} is the string the user was searching for
-msgid "Themes Search Results for {0}"
-msgstr "Themes Search Results for {0}"
-
-msgid "Themes Search Results"
-msgstr "Themes Search Results"
-
-#. {0} is a search term, such as Firebug.
-msgid "{0} :: Search"
-msgstr "{0} :: Search"
-
-#. {0} is a search term, such as Firebug.
-msgid "Search Results for \"{0}\""
-msgstr "Search Results for \"{0}\""
-
-#. {0} is a tag, such as jetpack.
-msgid "{0} :: Tag"
-msgstr "{0} :: Tag"
-
-#. {0} is a tag, such as jetpack.
-msgid "Search Results for tag \"{0}\""
-msgstr "Search Results for tag \"{0}\""
-
-msgid "<b>{0}</b> matching result"
-msgid_plural "<b>{0}</b> matching results"
-msgstr[0] "<b>{0}</b> matching result"
-msgstr[1] "<b>{0}</b> matching results"
-
-msgid "Filter Results"
-msgstr "Filter Results"
-
-msgid "Category"
-msgstr "Category"
-
-msgid "Tag"
-msgstr "Tag"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-# {3} is the word the person is searching for
-msgid "Showing {0} - {1} of {2} results for <strong>{3}</strong>"
-msgstr "Showing {0} - {1} of {2} results for <strong>{3}</strong>"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-msgid "Showing {0} - {1} of {2} results"
-msgstr "Showing {0} - {1} of {2} results"
-
 #, fuzzy
 msgid "Could not find add-on with guid \"{}\"."
 msgstr "Could not find add-on with id \"{}\"."
@@ -7492,33 +7162,6 @@ msgstr "by Platform"
 
 msgid "by Add-on Status"
 msgstr "by Add-on Status"
-
-msgid "Add-on Statistics"
-msgstr "Add-on Statistics"
-
-msgid "Add-ons in Use"
-msgstr "Add-ons in Use"
-
-msgid "Add-ons Created"
-msgstr "Add-ons Created"
-
-msgid "Add-ons Downloaded"
-msgstr "Add-ons Downloaded"
-
-msgid "Add-ons Updated"
-msgstr "Add-ons Updated"
-
-msgid "Collections Created"
-msgstr "Collections Created"
-
-msgid "Reviews Written"
-msgstr "Reviews Written"
-
-msgid "User Signups"
-msgstr "User Signups"
-
-msgid "Archived Data"
-msgstr "Archived Data"
 
 msgid "Custom Date Range"
 msgstr "Custom Date Range"
@@ -7607,23 +7250,8 @@ msgstr "This dashboard is currently <b>private</b>."
 msgid "Change settings."
 msgstr "Change settings."
 
-msgid "Add-ons Created by Date"
-msgstr "Add-ons Created by Date"
-
-msgid "Add-ons Downloaded by Date"
-msgstr "Add-ons Downloaded by Date"
-
-msgid "Add-ons in Use by Date"
-msgstr "Add-ons in Use by Date"
-
-msgid "Add-ons Updated by Date"
-msgstr "Add-ons Updated by Date"
-
 msgid "Application usage by Date"
 msgstr "Application usage by Date"
-
-msgid "Collections Created by Date"
-msgstr "Collections Created by Date"
 
 msgid "Downloaded by Date"
 msgstr "Downloaded by Date"
@@ -7671,12 +7299,6 @@ msgstr "Top Platforms"
 msgid "See more platforms&hellip;"
 msgstr "See more platforms&hellip;"
 
-msgid "Ratings by Date"
-msgstr "Ratings by Date"
-
-msgid "Reviews Created by Date"
-msgstr "Reviews Created by Date"
-
 msgid "Download sources by Date"
 msgstr "Download sources by Date"
 
@@ -7700,9 +7322,6 @@ msgstr ""
 msgid "Add-on Status by Date"
 msgstr "Add-on Status by Date"
 
-msgid "Subscribers by Date"
-msgstr "Subscribers by Date"
-
 msgid "Daily Users by Date"
 msgstr "Daily Users by Date"
 
@@ -7723,36 +7342,14 @@ msgstr ""
 "<h2>What are daily users?</h2> <p> Add-ons downloaded from this site check for updates once per day. The total number of these update pings is known as Active Daily Users. Daily users can be broken "
 "down by add-on version, operating system, add-on status, application, and locale. </p>"
 
-msgid "User Signups by Date"
-msgstr "User Signups by Date"
-
 msgid "Application versions by Date"
 msgstr "Application versions by Date"
 
 msgid "Mozilla Add-ons"
 msgstr "Mozilla Add-ons"
 
-msgid "Find add-ons for other applications"
-msgstr "Find add-ons for other applications"
-
-msgid "Other Applications"
-msgstr "Other Applications"
-
-msgid "AMO is getting a new look. Would you like to see it?"
-msgstr "AMO is getting a new look. Would you like to see it?"
-
-msgid "Visit the new site"
-msgstr "Visit the new site"
-
-msgid "To create your own collections, you must have a Mozilla Add-ons account."
-msgstr "To create your own collections, you must have a Mozilla Add-ons account."
-
-msgid "Create an Add-ons Account"
-msgstr "Create an Add-ons Account"
-
-#, python-format
-msgid "or <a href=\"%(login)s\">log in to your current account</a>"
-msgstr "or <a href=\"%(login)s\">log in to your current account</a>"
+msgid "Back to Add-ons"
+msgstr "Back to Add-ons"
 
 msgid "Footer logo"
 msgstr "Footer logo"
@@ -7825,32 +7422,14 @@ msgstr "Welcome, {0}"
 msgid "<a href=\"%(reg)s\">Register</a> or <a href=\"%(login)s\">Log in</a>"
 msgstr "<a href=\"%(reg)s\">Register</a> or <a href=\"%(login)s\">Log in</a>"
 
-#, python-format
-msgid "To try the thousands of add-ons available here, download <a href=\"%(url)s\">Mozilla Firefox</a>, a fast, free way to surf the Web!"
-msgstr "To try the thousands of add-ons available here, download <a href=\"%(url)s\">Mozilla Firefox</a>, a fast, free way to surf the Web!"
-
-#. {0} is an application, such as Firefox.
-msgid "Welcome to {0} Add-ons."
-msgstr "Welcome to {0} Add-ons."
-
-msgid "Choose from thousands of extra features and styles to make Firefox your own."
-msgstr "Choose from thousands of extra features and styles to make Firefox your own."
-
-#, python-format
-msgid "Add extra features and styles to make %(app)s your own."
-msgstr "Add extra features and styles to make %(app)s your own."
-
-msgid "On the go?"
-msgstr "On the go?"
-
-msgid "Check out our <a class=\"mobile-link\" href=\"#\">Mobile Add-ons site</a>."
-msgstr "Check out our <a class=\"mobile-link\" href=\"#\">Mobile Add-ons site</a>."
-
 msgid "Android Add-ons"
 msgstr "Android Add-ons"
 
 msgid "Required fields"
 msgstr "Required fields"
+
+msgid "(optional)"
+msgstr "(optional)"
 
 #. {0} is a language name, like 'French'
 #, python-format
@@ -7915,6 +7494,9 @@ msgstr "Firefox for Android"
 
 msgid "My Mobile Add-ons"
 msgstr "My Mobile Add-ons"
+
+msgid "My Favorite Add-ons"
+msgstr "My Favorite Add-ons"
 
 msgid "an add-on developer replies to my review"
 msgstr "an add-on developer replies to my review"

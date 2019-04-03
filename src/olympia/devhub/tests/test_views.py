@@ -15,7 +15,6 @@ from django.utils.translation import trim_whitespace
 import mock
 import pytest
 import responses
-import waffle
 
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
@@ -648,6 +647,8 @@ class TestActivityFeed(TestCase):
         assert self.client.login(email='del@icio.us')
         self.addon = Addon.objects.get(id=3615)
         self.version = self.addon.versions.first()
+        self.action_user = UserProfile.objects.get(
+            email='reviewer@mozilla.com')
 
     def test_feed_for_all(self):
         response = self.client.get(reverse('devhub.feed_all'))
@@ -676,7 +677,7 @@ class TestActivityFeed(TestCase):
         assert response.status_code == 302
 
     def add_log(self, action=amo.LOG.ADD_RATING):
-        core.set_user(UserProfile.objects.get(email='del@icio.us'))
+        core.set_user(self.action_user)
         ActivityLog.create(action, self.addon, self.version)
 
     def add_hidden_log(self, action=amo.LOG.COMMENT_VERSION):
@@ -728,6 +729,32 @@ class TestActivityFeed(TestCase):
         res = self.client.get(reverse('devhub.feed', args=[self.addon.slug]))
         doc = pq(res.content)
         assert len(doc('#recent-activity .item')) == 1
+
+    def test_reviewer_name_is_used_for_reviewer_actions(self):
+        self.action_user.update(display_name='HîdeMe', reviewer_name='ShöwMe')
+        self.add_log(action=amo.LOG.APPROVE_VERSION)
+        response = self.client.get(
+            reverse('devhub.feed', args=[self.addon.slug]))
+        doc = pq(response.content)
+        assert len(doc('#recent-activity .item')) == 1
+
+        content = force_text(response.content)
+        assert self.action_user.reviewer_name in content
+        assert self.action_user.name not in content
+
+    def test_regular_name_is_used_for_non_reviewer_actions(self):
+        # Fields are inverted compared to the test above.
+        self.action_user.update(reviewer_name='HîdeMe', display_name='ShöwMe')
+        self.add_log(action=amo.LOG.ADD_RATING)  # not a reviewer action.
+        response = self.client.get(
+            reverse('devhub.feed', args=[self.addon.slug]))
+        doc = pq(response.content)
+        assert len(doc('#recent-activity .item')) == 1
+
+        content = force_text(response.content)
+        # Assertions are inverted compared to the test above.
+        assert self.action_user.reviewer_name not in content
+        assert self.action_user.name in content
 
 
 class TestAPIAgreement(TestCase):
@@ -1062,19 +1089,25 @@ class TestUploadDetail(BaseUploadTest):
         assert message == expected
 
     @mock.patch('olympia.devhub.tasks.run_addons_linter')
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_unparsable_xpi(self, flag_is_active, v):
-        flag_is_active.return_value = True
-        v.return_value = json.dumps(self.validation_ok())
+    def test_not_a_valid_xpi(self, run_addons_linter_mock):
+        run_addons_linter_mock.return_value = json.dumps(self.validation_ok())
         self.upload_file('unopenable.xpi')
+        # We never even reach the linter (we can't: because we're repacking
+        # zip files, we should raise an error if the zip is invalid before
+        # calling the linter, even though the linter has a perfectly good error
+        # message for this kind of situation).
+        assert not run_addons_linter_mock.called
         upload = FileUpload.objects.get()
         response = self.client.get(
             reverse('devhub.upload_detail', args=[upload.uuid.hex, 'json']))
         data = json.loads(force_text(response.content))
         message = [(m['message'], m.get('fatal', False))
                    for m in data['validation']['messages']]
+        # We do raise a specific error message explaining that the archive is
+        # not valid instead of a generic exception.
         assert message == [
-            (u'Sorry, we couldn&#39;t load your WebExtension.', True)
+            ('Invalid or corrupt add-on file.', False),
+            ('Sorry, we couldn&#39;t load your WebExtension.', True),
         ]
 
     @mock.patch('olympia.devhub.tasks.run_addons_linter')

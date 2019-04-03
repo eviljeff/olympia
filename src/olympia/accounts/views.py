@@ -12,12 +12,16 @@ from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 from django.utils.html import format_html
-from django.utils.http import is_safe_url
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 import six
 import waffle
 
+from corsheaders.conf import conf as corsheaders_conf
+from corsheaders.middleware import (
+    ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_CREDENTIALS,
+    ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS,
+    ACCESS_CONTROL_MAX_AGE)
 from rest_framework import serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
@@ -53,7 +57,7 @@ from . import verify
 from .serializers import (
     AccountSuperCreateSerializer, PublicUserProfileSerializer,
     UserNotificationSerializer, UserProfileSerializer)
-from .utils import fxa_login_url, generate_fxa_state
+from .utils import _is_safe_url, fxa_login_url, generate_fxa_state
 
 
 log = olympia.core.logger.getLogger('accounts')
@@ -86,8 +90,8 @@ LOGIN_ERROR_MESSAGES = {
 API_TOKEN_COOKIE = 'frontend_auth_token'
 
 
-def safe_redirect(url, action):
-    if not is_safe_url(url, allowed_hosts=(settings.DOMAIN,)):
+def safe_redirect(url, action, request):
+    if not _is_safe_url(url, request):
         url = reverse('home')
     log.info(u'Redirecting after {} to: {}'.format(action, url))
     return HttpResponseRedirect(url)
@@ -175,7 +179,7 @@ def render_error(request, error, next_path=None, format=None):
         status = ERROR_STATUSES.get(error, 422)
         response = Response({'error': error}, status=status)
     else:
-        if not is_safe_url(next_path, allowed_hosts=(settings.DOMAIN,)):
+        if not _is_safe_url(next_path, request):
             next_path = None
         messages.error(
             request,
@@ -188,7 +192,7 @@ def render_error(request, error, next_path=None, format=None):
     return response
 
 
-def parse_next_path(state_parts):
+def parse_next_path(state_parts, request=None):
     next_path = None
     if len(state_parts) == 2:
         # The = signs will be stripped off so we need to add them back
@@ -201,7 +205,7 @@ def parse_next_path(state_parts):
             log.info('Error decoding next_path {}'.format(
                 encoded_path))
             pass
-    if not is_safe_url(next_path, allowed_hosts=(settings.DOMAIN,)):
+    if not _is_safe_url(next_path, request):
         next_path = None
     return next_path
 
@@ -228,7 +232,7 @@ def with_user(format, config=None):
 
             state_parts = data.get('state', '').split(':', 1)
             state = state_parts[0]
-            next_path = parse_next_path(state_parts)
+            next_path = parse_next_path(state_parts, request)
             if not data.get('code'):
                 log.info('No code provided.')
                 return render_error(
@@ -279,7 +283,8 @@ def with_user(format, config=None):
                             state=request.session['fxa_state'],
                             next_path=next_path,
                             action='signin',
-                            force_two_factor=True
+                            force_two_factor=True,
+                            request=request,
                         )
                     )
                 return fn(
@@ -344,7 +349,10 @@ class LoginStartBaseView(FxAConfigMixin, APIView):
                 config=self.get_fxa_config(request),
                 state=request.session['fxa_state'],
                 next_path=request.GET.get('to'),
-                action=request.GET.get('action', 'signin')))
+                action=request.GET.get('action', 'signin'),
+                request=request,
+            )
+        )
 
 
 class LoginStartView(LoginStartBaseView):
@@ -366,13 +374,12 @@ class AuthenticateView(FxAConfigMixin, APIView):
         if user is None:
             user = register_user(self.__class__, request, identity)
             fxa_config = self.get_fxa_config(request)
-            if fxa_config.get('skip_register_redirect'):
-                response = safe_redirect(next_path, 'register')
-            else:
-                response = safe_redirect(reverse('users.edit'), 'register')
+            if fxa_config.get('skip_register_redirect') is not True:
+                next_path = reverse('users.edit')
+            response = safe_redirect(next_path, 'register', request)
         else:
             login_user(self.__class__, request, user, identity)
-            response = safe_redirect(next_path, 'login')
+            response = safe_redirect(next_path, 'login', request)
         add_api_token_to_response(response, user)
         return response
 
@@ -383,12 +390,44 @@ def logout_user(request, response):
         API_TOKEN_COOKIE, domain=settings.SESSION_COOKIE_DOMAIN)
 
 
+# This view is not covered by the CORS middleware, see:
+# https://github.com/mozilla/addons-server/issues/11100
 class SessionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        ByHttpMethod({
+            'options': AllowAny,  # Needed for CORS.
+            'delete': IsAuthenticated,
+        }),
+    ]
+
+    def options(self, request, *args, **kwargs):
+        response = Response()
+        response['Content-Length'] = '0'
+        origin = request.META.get('HTTP_ORIGIN')
+        if not origin:
+            return response
+        response[ACCESS_CONTROL_ALLOW_ORIGIN] = origin
+        response[ACCESS_CONTROL_ALLOW_CREDENTIALS] = 'true'
+        # Mimics the django-cors-headers middleware.
+        response[ACCESS_CONTROL_ALLOW_HEADERS] = ', '.join(
+            corsheaders_conf.CORS_ALLOW_HEADERS
+        )
+        response[ACCESS_CONTROL_ALLOW_METHODS] = ', '.join(
+            corsheaders_conf.CORS_ALLOW_METHODS
+        )
+        if corsheaders_conf.CORS_PREFLIGHT_MAX_AGE:
+            response[ACCESS_CONTROL_MAX_AGE] = (
+                corsheaders_conf.CORS_PREFLIGHT_MAX_AGE)
+        return response
 
     def delete(self, request, *args, **kwargs):
         response = Response({'ok': True})
         logout_user(request, response)
+        origin = request.META.get('HTTP_ORIGIN')
+        if not origin:
+            return response
+        response[ACCESS_CONTROL_ALLOW_ORIGIN] = origin
+        response[ACCESS_CONTROL_ALLOW_CREDENTIALS] = 'true'
         return response
 
 

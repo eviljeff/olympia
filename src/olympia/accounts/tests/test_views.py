@@ -141,6 +141,32 @@ class TestLoginStartBaseView(WithDynamicEndpoints, TestCase):
         query = parse_qs(url.query)
         assert ':' not in query['state'][0]
 
+    def test_allows_code_manager_url(self):
+        self.initialize_session({})
+        code_manager_url = 'https://code.example.org'
+        to = '{}/foobar'.format(code_manager_url)
+        with override_settings(CODE_MANAGER_URL=code_manager_url):
+            response = self.client.get(
+                '{url}?to={to}'.format(to=to, url=self.url)
+            )
+        url = urlparse(response['location'])
+        query = parse_qs(url.query)
+        state_parts = query['state'][0].split(':')
+        assert base64.urlsafe_b64decode(state_parts[1] + '====') == to.encode()
+
+    def test_allows_absolute_urls(self):
+        self.initialize_session({})
+        domain = 'example.org'
+        to = 'https://{}/foobar'.format(domain)
+        with override_settings(DOMAIN=domain):
+            response = self.client.get(
+                '{url}?to={to}'.format(to=to, url=self.url)
+            )
+        url = urlparse(response['location'])
+        query = parse_qs(url.query)
+        state_parts = query['state'][0].split(':')
+        assert base64.urlsafe_b64decode(state_parts[1] + '====') == to.encode()
+
 
 def has_cors_headers(response, origin='https://addons-frontend'):
     return (
@@ -153,7 +179,7 @@ class TestLoginStartView(TestCase):
     def test_default_config_is_used(self):
         assert views.LoginStartView.DEFAULT_FXA_CONFIG_NAME == 'default'
         assert views.LoginStartView.ALLOWED_FXA_CONFIGS == (
-            ['default', 'amo', 'local'])
+            ['default', 'amo', 'local', 'code-manager'])
 
 
 class TestLoginUserAndRegisterUser(TestCase):
@@ -898,6 +924,73 @@ class TestAuthenticateView(BaseAuthenticationView):
             views.AuthenticateView, mock.ANY, user, identity)
         assert not self.register_user.called
 
+    def test_log_in_redirects_to_absolute_url(self):
+        email = 'real@yeahoo.com'
+        UserProfile.objects.create(email=email)
+        self.fxa_identify.return_value = {'email': email, 'uid': '9001'}
+        domain = 'example.org'
+        next_path = 'https://{}/path'.format(domain)
+        with override_settings(DOMAIN=domain):
+            response = self.client.get(self.url, {
+                'code': 'code',
+                'state': ':'.join([
+                    self.fxa_state,
+                    force_text(base64.urlsafe_b64encode(next_path.encode())),
+                ]),
+            })
+        self.assertRedirects(response, next_path,
+                             fetch_redirect_response=False)
+
+    def test_log_in_redirects_to_code_manager(self):
+        email = 'real@yeahoo.com'
+        UserProfile.objects.create(email=email)
+        self.fxa_identify.return_value = {'email': email, 'uid': '9001'}
+        code_manager_url = 'https://example.org'
+        next_path = '{}/path'.format(code_manager_url)
+        with override_settings(CODE_MANAGER_URL=code_manager_url):
+            response = self.client.get(self.url, {
+                'code': 'code',
+                'state': ':'.join([
+                    self.fxa_state,
+                    force_text(base64.urlsafe_b64encode(next_path.encode())),
+                ]),
+            })
+        self.assertRedirects(response, next_path,
+                             fetch_redirect_response=False)
+
+    def test_log_in_requires_https_when_request_is_secure(self):
+        email = 'real@yeahoo.com'
+        UserProfile.objects.create(email=email)
+        self.fxa_identify.return_value = {'email': email, 'uid': '9001'}
+        domain = 'example.org'
+        next_path = 'https://{}/path'.format(domain)
+        with override_settings(DOMAIN=domain):
+            response = self.client.get(self.url, secure=True, data={
+                'code': 'code',
+                'state': ':'.join([
+                    self.fxa_state,
+                    force_text(base64.urlsafe_b64encode(next_path.encode())),
+                ]),
+            })
+        self.assertRedirects(response, next_path,
+                             fetch_redirect_response=False)
+
+    def test_log_in_redirects_to_home_when_request_is_secure_but_next_path_is_not(self): # noqa
+        email = 'real@yeahoo.com'
+        UserProfile.objects.create(email=email)
+        self.fxa_identify.return_value = {'email': email, 'uid': '9001'}
+        domain = 'example.org'
+        next_path = 'http://{}/path'.format(domain)
+        with override_settings(DOMAIN=domain):
+            response = self.client.get(self.url, secure=True, data={
+                'code': 'code',
+                'state': ':'.join([
+                    self.fxa_state,
+                    force_text(base64.urlsafe_b64encode(next_path.encode())),
+                ]),
+            })
+        self.assertRedirects(response, reverse('home'))
+
 
 class TestAccountViewSet(TestCase):
     client_class = APITestClient
@@ -1492,6 +1585,52 @@ class TestSessionView(TestCase):
     def test_delete_when_unauthenticated(self):
         response = self.client.delete(reverse_ns('accounts.session'))
         assert response.status_code == 401
+
+    def test_cors_headers_are_exposed(self):
+        user = user_factory(fxa_id='123123412')
+        token = self.login_user(user)
+        authorization = 'Bearer {token}'.format(token=token)
+        origin = 'http://example.org'
+        response = self.client.delete(
+            reverse_ns('accounts.session'),
+            HTTP_AUTHORIZATION=authorization,
+            HTTP_ORIGIN=origin,
+        )
+        assert response['Access-Control-Allow-Origin'] == origin
+        assert response['Access-Control-Allow-Credentials'] == 'true'
+
+    def test_delete_omits_cors_headers_when_there_is_no_origin(self):
+        user = user_factory(fxa_id='123123412')
+        token = self.login_user(user)
+        authorization = 'Bearer {token}'.format(token=token)
+        response = self.client.delete(
+            reverse_ns('accounts.session'),
+            HTTP_AUTHORIZATION=authorization,
+        )
+        assert not response.has_header('Access-Control-Allow-Origin')
+        assert not response.has_header('Access-Control-Allow-Credentials')
+
+    def test_responds_to_cors_preflight_requests(self):
+        origin = 'http://example.org'
+        response = self.client.options(
+            reverse_ns('accounts.session'),
+            HTTP_ORIGIN=origin,
+        )
+        assert response['Content-Length'] == '0'
+        assert response['Access-Control-Allow-Credentials'] == 'true'
+        assert response.has_header('Access-Control-Allow-Headers')
+        assert response.has_header('Access-Control-Allow-Methods')
+        assert 'DELETE' in response['Access-Control-Allow-Methods']
+        assert response.has_header('Access-Control-Max-Age')
+        assert response['Access-Control-Allow-Origin'] == origin
+
+    def test_options_omits_cors_headers_when_there_is_no_origin(self):
+        response = self.client.options(reverse_ns('accounts.session'))
+        assert not response.has_header('Access-Control-Allow-Credentials')
+        assert not response.has_header('Access-Control-Allow-Headers')
+        assert not response.has_header('Access-Control-Allow-Methods')
+        assert not response.has_header('Access-Control-Allow-Origin')
+        assert not response.has_header('Access-Control-Max-Age')
 
 
 class TestAccountNotificationViewSetList(TestCase):

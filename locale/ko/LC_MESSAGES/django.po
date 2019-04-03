@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: addons-ko\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-18 07:57+0000\n"
+"POT-Creation-Date: 2019-04-02 14:07+0000\n"
 "PO-Revision-Date: 2019-02-12 02:26+0000\n"
 "Last-Translator: Hyeonseok Shin <hyeonseok@gmail.com>\n"
 "Language-Team: none\n"
@@ -100,57 +100,6 @@ msgstr "실험적"
 msgid "Add to {0}"
 msgstr "{0}에 추가"
 
-msgid "This slug is already in use. Please choose another."
-msgstr "이미 사용중인 주화입니다. 다른걸 사용해 주세요."
-
-#, python-format
-msgid "The slug cannot be \"%(slug)s\". Please choose another."
-msgstr "\"%(slug)s\" 주소는 슬러그로 사용할 수 없습니다. 다른 것을 사용해주세요."
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "Invalid tag: {0}"
-msgid_plural "Invalid tags: {0}"
-msgstr[0] "유효하지 않은 태그: {0}"
-
-#. L10n: {0} is a single tag or a comma-separated list of tags.
-msgid "\"{0}\" is a reserved tag and cannot be used."
-msgid_plural "\"{0}\" are reserved tags and cannot be used."
-msgstr[0] "\"{0}\"은(는) 금지 태그로 사용하실 수 없습니다."
-
-msgid "You have {0} too many tags."
-msgid_plural "You have {0} too many tags."
-msgstr[0] "{0}에 태그가 너무 많습니다."
-
-#, python-format
-msgid "All tags must be %s characters or less after invalid characters are removed."
-msgstr "모든 태그는 유효하지 않은 글자 제거 후 %s자 이하여야 합니다."
-
-msgid "All tags must be at least {0} character."
-msgid_plural "All tags must be at least {0} characters."
-msgstr[0] "태그는 최소한 {0} 글자 이상이어야 합니다."
-
-msgid "The text entered has been flagged as spam."
-msgstr "입력한 글이 스팸으로 처리되었습니다."
-
-msgid "Categories cannot be changed while your add-on is featured for this application."
-msgstr "이 애플리케이션의 추천 부가 기능으로 선정되어 있는 동안은 분류를 변경할 수 없습니다."
-
-#. L10n: {0} is the number of categories.
-msgid "You can have only {0} category."
-msgid_plural "You can have only {0} categories."
-msgstr[0] "{0}개의 분류만 사용할 수 있습니다."
-
-msgid "The miscellaneous category cannot be combined with additional categories."
-msgstr "기타 카테고리는 다른 카테고리와 결합할 수 없습니다."
-
-#, python-format
-msgid "URL domain must be one of [%s], or a subdomain."
-msgstr ""
-
-#, python-format
-msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
-msgstr "기본 언어를 변경하려면 먼저 이름, 요약 정보, 설명을 해당 언어로 작성해야 합니다. %s 정보가 현재 빠져 있습니다."
-
 # Column name in a table.
 msgid "Listed"
 msgstr "나열됨"
@@ -163,9 +112,6 @@ msgstr ""
 
 msgid "Abuse reported."
 msgstr "정책 위반을 신고했습니다."
-
-msgid "My add-on doesn't fit into any of the categories"
-msgstr "어떤 분류에도 이 부가 기능과 부합하지 않습니다"
 
 msgid "No compatible versions"
 msgstr "호환 가능한 버전이 없음"
@@ -226,9 +172,6 @@ msgstr "인기 급상승 확장 기능"
 
 msgid "Featured Themes"
 msgstr "추천 테마"
-
-msgid "Featured Collections"
-msgstr "추천 모음집"
 
 msgid "Sort by:"
 msgstr "정렬 방식:"
@@ -452,9 +395,6 @@ msgstr "검토 작성하기"
 msgid "Related Categories"
 msgstr "관련 분류"
 
-msgid "Part of these Collections"
-msgstr "속해있는 모음집"
-
 #, python-format
 msgid "Other add-ons by %(author)s"
 msgid_plural "Other add-ons by these authors"
@@ -583,14 +523,14 @@ msgstr "이 부가 기능은 아직 검토를 거치지 않았습니다."
 msgid "Be the first!"
 msgstr "1등으로 달아보세요!"
 
+msgid "No results found."
+msgstr "검색 결과가 없습니다."
+
 msgid "{0} users"
 msgstr "사용자 {0}명"
 
 msgid "More"
 msgstr "더 보기"
-
-msgid "Add to collection"
-msgstr "모음집에 추가하기"
 
 msgid "My Add-ons"
 msgstr "나의 부가 기능"
@@ -616,9 +556,6 @@ msgstr "죄송합니다. 이 테마는 현재 검토 대기중입니다. 나중�
 
 msgid "This theme is pending. It is invisible to everyone but you."
 msgstr "이 테마는 현재 검토 대기중입니다. 제작자 이외에는 노출되지 않습니다."
-
-msgid "Collector's Note"
-msgstr "모음집 제작자의 메모"
 
 #. {0} is the number of downloads.
 msgid "<strong>{0}</strong> weekly download"
@@ -808,35 +745,6 @@ msgstr "신규 등록"
 msgid "Explore"
 msgstr "열기"
 
-# Plural in this context means many of the add-on type
-msgid "Extensions"
-msgstr "확장 기능"
-
-#. {0} is a category name. Ex: "Sports"
-msgid "Themes"
-msgstr "테마"
-
-msgid "Want more customization? Try <b>Complete Themes</b>"
-msgstr "더 많이 바꾸고 싶으세요? <b>완전 테마</b>를 사용해 보세요."
-
-msgid "Collections"
-msgstr "모음집"
-
-msgid "Collections I've Made"
-msgstr "내가 만든 모음집"
-
-msgid "More&hellip;"
-msgstr "기타 메뉴&hellip;"
-
-msgid "Add-ons for Mobile"
-msgstr "모바일 부가 기능"
-
-msgid "Dictionaries & Language Packs"
-msgstr "맞춤법 사전 및 언어팩"
-
-msgid "Search Tools"
-msgstr "검색 도구"
-
 #. This is a page range (e.g., Page 1 of 50).
 #, python-format
 msgid "Page <a href=\"%(current_pg_url)s\">%(current_pg)s</a> of <a href=\"%(last_pg_url)s\">%(last_pg)s</a>"
@@ -856,6 +764,12 @@ msgstr "마지막 페이지로 이동"
 #, python-format
 msgid "Showing <b>%(begin)s</b>&ndash;<b>%(end)s</b> of <b>%(count)s</b>"
 msgstr "총 <b>%(count)s</b>개 / <b>%(begin)s</b>&ndash;<b>%(end)s</b> 표시중"
+
+msgid "Collections"
+msgstr "모음집"
+
+msgid "Dictionaries & Language Packs"
+msgstr "맞춤법 사전 및 언어팩"
 
 msgid "Add-ons"
 msgstr "부가 기능"
@@ -943,38 +857,17 @@ msgid ""
 "%(amo_manifests_mdn_link_close)s."
 msgstr "지원되는 애플리케이션이 매니페스트 파일을 요구하지 않으면, %(amo_manifests_mdn_link_open)s이곳%(amo_manifests_mdn_link_close)s에 명시된 요구 항목을 반드시 포함하고 있어야 합니다."
 
-msgid "Only I can view this collection."
-msgstr "자기 자신만 이 모음집을 볼 수 있습니다."
-
-msgid "Anybody can view this collection."
-msgstr "누구나 이 모음집을 볼 수 있습니다."
-
-msgid "Give your collection a name."
-msgstr "모음집에 이름을 지어주세요."
-
-msgid "URL:"
-msgstr "URL:"
-
-msgid "Describe your collection (no links allowed)."
-msgstr "모음집에 대한 설명을 입력해주세요. (링크 첨부 금지)"
-
-msgid "Privacy:"
-msgstr "프라이버시:"
-
-msgid "Please don't fill out this field, it's used to catch bots"
-msgstr "이 필드를 채우지 마십시오 - 이 필드는 봇을 잡기 위해 사용됩니다."
-
-msgid "This name cannot be used."
-msgstr "이 이름은 사용할 수 없습니다."
-
-msgid "This url is already in use by another collection"
-msgstr "이 url은 이미 다른 모음집에서 사용중입니다"
+msgid "The text entered has been flagged as spam."
+msgstr "입력한 글이 스팸으로 처리되었습니다."
 
 msgid "This custom URL is already in use by another one of your collections."
 msgstr "이 URL은 이미 다른 모음집에서 사용중입니다."
 
 msgid "Name cannot be empty."
 msgstr "이름은 비워둘 수 없습니다."
+
+msgid "This name cannot be used."
+msgstr "이 이름은 사용할 수 없습니다."
 
 msgid "The custom URL must consist of letters, numbers, underscores or hyphens."
 msgstr "문자, 숫자, 밑줄, 하이픈으로 이루어진 URL을 입력하세요."
@@ -985,228 +878,18 @@ msgstr "이 URL은 사용할 수 없습니다."
 msgid "This add-on already belongs to the collection"
 msgstr "이 부가 기능은 이미 다른 모음집에서 사용중입니다"
 
-msgid "Added"
-msgstr "신규"
-
-msgid "Popularity"
-msgstr "인기도"
-
-msgid "Name"
-msgstr "이름"
-
-msgid "Collection created!"
-msgstr "모음집이 제작되었습니다!"
-
-#, python-format
-msgid "Your new collection is shown below. You can <a href=\"%(url)s\">edit additional settings</a> if you'd like."
-msgstr "새 모음집이 아래에 표시되었습니다. 원할 경우 <a href=\"%(url)s\">추가 설정 사항을 편집</a>하실 수도 있습니다."
-
-msgid "Collection updated!"
-msgstr "모음집이 업데이트 되었습니다!"
-
-#, python-format
-msgid "<a href=\"%(url)s\">View your collection</a> to see the changes."
-msgstr "변경 내역을 보려면 <a href=\"%(url)s\">모음집을 확인하세요</a>."
-
-msgid "Create a New Collection"
-msgstr "새 모음집 제작하기"
-
-#, python-format
-msgid "As noted in our <a href=\"%(legal)s\">Legal Notices</a>, individual collection arrangements are governed by the Creative Commons Attribution Share-Alike License"
-msgstr "저희 <a href=\"%(legal)s\">법적 고지</a>에 언급된 바와 같이 각 모음집의 고유 구성 방식은 크리에이티브 커먼즈 저작자표시-동일조건변경허락 라이선스 하에 있습니다"
-
-msgid "Create Collection"
-msgstr "모음집 제작"
-
-msgid "View this collection"
-msgstr "이 모음집 보기"
-
-msgid "Start a new collection..."
-msgstr "새 모음집 만들기 시작..."
-
-msgid "Start a New Collection"
-msgstr "새 모음집 만들기 시작"
-
-msgid "Name:"
-msgstr "이름:"
-
-msgid "(optional)"
-msgstr "(선택사항)"
-
-msgid "or <a id=\"collections-new-cancel\" href=\"#\">Cancel</a>"
-msgstr "또는 <a id=\"collections-new-cancel\" href=\"#\">취소</a>"
-
-msgid "{0} :: Collections"
-msgstr "{0} :: 모음집"
-
-msgid "private"
-msgstr "비공개"
-
-msgid "About this Collection"
-msgstr "모음집 소개"
-
-msgid "Add-ons synced to my Mobile Firefox"
-msgstr "부가 기능이 모바일 Firefox와 동기화 되었습니다."
-
-msgid "Make this Collection Private"
-msgstr "모음집 비공개 전환"
-
-msgid "Make this Collection Public"
-msgstr "모음집 공개 전환"
-
-msgid "More Options:"
-msgstr "추가 옵션:"
-
-msgid "Edit Collection"
-msgstr "모음집 편집"
-
-msgid "Delete Collection"
-msgstr "모음집 삭제"
-
-#, python-format
-msgid "%(num)s Theme in this Collection"
-msgid_plural "%(num)s Themes in this Collection"
-msgstr[0] "이 콜렉션에 있는 %(num)s개의 테마"
-
-#, python-format
-msgid "%(num)s Add-on in this Collection"
-msgid_plural "%(num)s Add-ons in this Collection"
-msgstr[0] "모음집에 포함된 부가 기능: %(num)s개"
-
-msgid "Go"
-msgstr "실행"
-
-msgid "What are Collections?"
-msgstr "모음집이란?"
-
-msgid "Collections are groups of related add-ons that anyone can create and share."
-msgstr "모음집은 서로 관련이 있는 부가 기능을 한데 엮어놓은 것으로 누구나 제작과 공유가 가능합니다."
-
-msgid "Explore Collections"
-msgstr "모음집 살펴보기"
-
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>public</b>, which means everyone can see it. If you would like to hide it "
-"from public view, click the button below to make it private."
-msgstr ""
-"아래의 <b>선호 목록에 추가하기</b>를 선택하면 해당 부가 기능은 좋아하는 부가 기능으로 표시가 됩니다. 이 목록은 현재 <b>공개</b> 상태로, 모든 사람들이 목록을 볼 수 있다는 의미입니다. 남에게 보이고 싶"
-"지 않다면 아래의 버튼을 클릭해서 비공개 상태로 전환하시기 바랍니다."
-
-msgid ""
-"Add-ons that you mark as favorites using the <b>Add to Favorites</b> feature appear below. This collection is currently <b>private</b>, which means only you can see it. If you would like everyone "
-"to be able to see your favorites, click the button below to make it public."
-msgstr ""
-"<b>선호 목록에 추가하기</b> 기능을 사용해 선호 하는것으로 표시한 부가 기능은 아래에 나타납니다. 이 모음집은 현재 <b>비공개</b> 상태로, 자기 자신만 볼 수 있습니다. 다른 사람들도 내 선호 목록을 보게 "
-"하고 싶다면 아래의 버튼을 클릭해서 공개 상태로 전환하시기 바랍니다."
-
-msgid "My favorite add-ons"
-msgstr "좋아하는 부가 기능"
-
-#, python-format
-msgid "<span>%(addons)s</span> add-on"
-msgid_plural "<span>%(addons)s</span> add-ons"
-msgstr[0] "부가 기능 <span>%(addons)s</span>개"
-
-msgid "by {0}"
-msgstr "제작: {0}"
-
-msgid "Edit this Collection"
-msgstr "모음집 편집하기"
-
-#. %s is the name of the collection.
-msgid "Delete {0}"
-msgstr "{0} 삭제하기"
-
-msgid "Are you sure?"
-msgstr "확실합니까?"
-
-msgid "Yes"
-msgstr "예"
-
-msgid "No"
-msgstr "아니오"
-
-#. {0} is the name of the collection.
-msgid "Edit {0}"
-msgstr "{0} 편집"
-
-msgid "Description"
-msgstr "설명"
-
-msgid "Save Changes"
-msgstr "변경사항 저장"
-
-msgid "Remove from favorites"
-msgstr "선호 목록에서 삭제하기"
-
-msgid "Add to favorites"
-msgstr "선호목록에 추가하기"
-
-#. {0} is a the user's name.
-msgid "Collections by {0}"
-msgstr "{0}님이 제작한 모음집"
-
-msgid "No collections found."
-msgstr "모음집이 없습니다."
-
-#, python-format
-msgid "Collections are groups of related add-ons that anyone can create and share. Explore collections created by other users or <a href=\"%(url)s\">create your own</a>."
-msgstr ""
-"모음집은 서로 관련이 있는 부가 기능을 한데 엮어놓은 것으로 누구나 제작과 공유가 가능합니다. 다른 사용자가 제작한 모음집을 살펴보거나 <a href=\"%(url)s\">나만의 모음집을 제작</a>할 수도 있습니다."
-
-#, python-format
-msgid "by %(author_link)s"
-msgstr "제작: %(author_link)s"
-
-msgid "My Favorite Add-ons"
-msgstr "좋아하는 부가 기능"
-
-msgid "Create a Collection"
-msgstr "모음집 제작하기"
-
-msgid "Collections make it easy to keep track of favorite add-ons and share your perfectly customized browser with others."
-msgstr "모음집은 좋아하는 부가 기능을 쉽게 찾을 수 있게 해주며 남들에게 완벽하게 개인화한 브라우저 환경을 공유할 수 있게 해줍니다."
-
-msgid "There are errors in this form.  Please correct them below."
-msgstr "양식에 오류가 있습니다.  아래 사항을 정정해 주세요."
-
-msgid "Add-ons in Your Collection"
-msgstr "모음집에 들어있는 부가 기능"
-
-msgid "To include an add-on in this collection, enter its name in the box below and hit enter."
-msgstr "이 콜렉션에 부가 기능을 포함하고 싶다면, 부가 기능의 이름을 아래 칸 안에 넣고 엔터를 누르세요."
-
-msgid "Add-on"
-msgstr "부가 기능"
-
-msgid "Comment"
-msgstr "코멘트"
-
-msgid "Remove"
-msgstr "삭제"
-
-msgid "Enter the name of the add-on to include"
-msgstr "추가하고자 하는 부가 기능의 이름을 입력하세요"
-
-msgid "Add to Collection"
-msgstr "모음집에 추가하기"
-
-msgid "Pending"
-msgstr "대기중"
-
-msgid "Add a comment"
-msgstr "코멘트 작성"
-
-msgid "Remove this add-on from the collection"
-msgstr "모음집에서 부가 기능 삭제하기"
-
-msgid "Favorite"
-msgstr "선호 목록"
+# Plural in this context means many of the add-on type
+msgid "Extensions"
+msgstr "확장 기능"
 
 #. L10n: %s is a category name.
 #, python-format
 msgid "%s Add-ons"
 msgstr "%s 부가 기능"
+
+#. {0} is a category name. Ex: "Sports"
+msgid "Themes"
+msgstr "테마"
 
 #. L10n: %s is a category name.
 #, python-format
@@ -1233,8 +916,14 @@ msgstr "검색 도구 및 검색 관련 확장 기능"
 msgid "Search tools"
 msgstr "검색 도구"
 
+msgid "Search Tools"
+msgstr "검색 도구"
+
 msgid "Most Users"
 msgstr "최고 사용자 수"
+
+msgid "Name"
+msgstr "이름"
 
 msgid "Weekly Downloads"
 msgstr "주간 다운로드"
@@ -2164,6 +1853,9 @@ msgstr "Solaris"
 msgid "Android"
 msgstr "안드로이드"
 
+msgid "Add-on"
+msgstr "부가 기능"
+
 msgid "Static Theme"
 msgstr "정적 테마"
 
@@ -2350,6 +2042,54 @@ msgstr "우리는 업그레이드를 허용하고 장려하지만, 이 절차를
 msgid "[{field}] The text in the \"{field}\" field has been flagged as spam."
 msgstr ""
 
+msgid "This slug is already in use. Please choose another."
+msgstr "이미 사용중인 주화입니다. 다른걸 사용해 주세요."
+
+#, python-format
+msgid "The slug cannot be \"%(slug)s\". Please choose another."
+msgstr "\"%(slug)s\" 주소는 슬러그로 사용할 수 없습니다. 다른 것을 사용해주세요."
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "Invalid tag: {0}"
+msgid_plural "Invalid tags: {0}"
+msgstr[0] "유효하지 않은 태그: {0}"
+
+#. L10n: {0} is a single tag or a comma-separated list of tags.
+msgid "\"{0}\" is a reserved tag and cannot be used."
+msgid_plural "\"{0}\" are reserved tags and cannot be used."
+msgstr[0] "\"{0}\"은(는) 금지 태그로 사용하실 수 없습니다."
+
+msgid "You have {0} too many tags."
+msgid_plural "You have {0} too many tags."
+msgstr[0] "{0}에 태그가 너무 많습니다."
+
+#, python-format
+msgid "All tags must be %s characters or less after invalid characters are removed."
+msgstr "모든 태그는 유효하지 않은 글자 제거 후 %s자 이하여야 합니다."
+
+msgid "All tags must be at least {0} character."
+msgid_plural "All tags must be at least {0} characters."
+msgstr[0] "태그는 최소한 {0} 글자 이상이어야 합니다."
+
+msgid "Categories cannot be changed while your add-on is featured for this application."
+msgstr "이 애플리케이션의 추천 부가 기능으로 선정되어 있는 동안은 분류를 변경할 수 없습니다."
+
+#. L10n: {0} is the number of categories.
+msgid "You can have only {0} category."
+msgid_plural "You can have only {0} categories."
+msgstr[0] "{0}개의 분류만 사용할 수 있습니다."
+
+msgid "The miscellaneous category cannot be combined with additional categories."
+msgstr "기타 카테고리는 다른 카테고리와 결합할 수 없습니다."
+
+#, python-format
+msgid "URL domain must be one of [%s], or a subdomain."
+msgstr ""
+
+#, python-format
+msgid "Before changing your default locale you must have a name, summary, and description in that locale. You are missing %s."
+msgstr "기본 언어를 변경하려면 먼저 이름, 요약 정보, 설명을 해당 언어로 작성해야 합니다. %s 정보가 현재 빠져 있습니다."
+
 msgid "Must have at least one owner."
 msgstr "적어도 한명의 소유자는 있어야 합니다."
 
@@ -2421,6 +2161,12 @@ msgstr "{version} 버전이 이미 존재합니다."
 msgid "Continue with existing upload instead?"
 msgstr "대신 기존 업로드로 게속하십니까?"
 
+msgid "Yes"
+msgstr "예"
+
+msgid "No"
+msgstr "아니오"
+
 msgid "You have not uploaded a source file."
 msgstr "소스 파일을 업로드 하지 않았습니다."
 
@@ -2441,6 +2187,10 @@ msgstr ""
 
 msgid "Categories cannot be changed while your add-on is featured."
 msgstr "추천 부가 기능으로 선정되어 있는 동안은 분류를 변경할 수 없습니다."
+
+#, fuzzy
+msgid "Invalid or corrupt add-on file."
+msgstr "잘못된 압축 파일입니다."
 
 msgid "Your developer API key was found in the submitted file. To protect your account, the key will be revoked."
 msgstr ""
@@ -2553,14 +2303,15 @@ msgstr "업로드한 파일의 검사 작업에 실패했으므로 완전한 검
 msgid "Header area background"
 msgstr ""
 
-msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  accentcolor."
+msgid "The color of the header area background, displayed in the part of the header not covered or visible through the header image. Manifest field:  frame."
 msgstr ""
 
 msgid "Header area text and icons"
 msgstr ""
 
-msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  textcolor."
-msgstr ""
+#, fuzzy
+msgid "The color of the text and icons in the header area, except the active tab. Manifest field:  tab_background_text."
+msgstr "탭 부분의 글자색입니다."
 
 msgid "Toolbar area background"
 msgstr ""
@@ -2572,7 +2323,7 @@ msgid "Toolbar area text and icons"
 msgstr ""
 
 #, fuzzy
-msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  toolbar_text."
+msgid "The color of the text and icons in the toolbar and the active tab. Manifest field:  bookmark_text."
 msgstr "탭 부분의 글자색입니다."
 
 msgid "Toolbar field area background"
@@ -2605,6 +2356,9 @@ msgstr "새 API 키가 생성됨"
 msgid "API key revoked"
 msgstr "API 키 폐기됨"
 
+msgid "My add-on doesn't fit into any of the categories"
+msgstr "어떤 분류에도 이 부가 기능과 부합하지 않습니다"
+
 msgid ""
 "Before starting, please read and accept our Firefox Add-on Distribution Agreement as well as our Review Policies and Rules. The Firefox Add-on Distribution Agreement also links to our Privacy "
 "Notice which explains how we handle your information."
@@ -2627,9 +2381,6 @@ msgstr "동의"
 msgid "or <a href=\"{0}\">Cancel</a>"
 msgstr "또는 <a href=\"{0}\">취소</a>"
 
-msgid "Back to Add-ons"
-msgstr "부가 기능으로 돌아가기"
-
 #. {0} is an application, like Firefox.
 msgid "{0} Add-ons"
 msgstr "{0} 부가 기능"
@@ -2644,14 +2395,16 @@ msgstr "<small>부가 기능</small> 개발자 허브"
 msgid "more add-ons..."
 msgstr "그밖의 부가 기능..."
 
+# Plural in this context means many of the add-on type
+#, fuzzy
+msgid "Extension Workshop"
+msgstr "확장 기능"
+
 msgid "Documentation"
 msgstr "문서 자료"
 
 msgid "Extension Development"
 msgstr "확장 기능 개발"
-
-msgid "Lightweight Themes"
-msgstr "가벼운 테마"
 
 #, fuzzy
 msgid "Developer Policies"
@@ -2711,9 +2464,6 @@ msgstr "{0}의 최근 활동 내역"
 msgid "<time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time> by %(user)s"
 msgstr "%(user)s : <time datetime=\"%(iso)s\" title=\"%(pretty)s\">%(ago)s</time>"
 
-msgid "No results found."
-msgstr "검색 결과가 없습니다."
-
 msgid "Refine Activity"
 msgstr "활동 내역 정리"
 
@@ -2756,8 +2506,14 @@ msgstr "애플리케이션"
 msgid "Supported Versions"
 msgstr "지원 버전"
 
+msgid "Remove"
+msgstr "삭제"
+
 msgid "Add Another Application&hellip;"
 msgstr "다른 애플리케이션 추가&hellip;"
+
+msgid "Save Changes"
+msgstr "변경사항 저장"
 
 msgid "Close"
 msgstr "닫기"
@@ -2887,6 +2643,9 @@ msgstr "프로필 보기"
 
 msgid "This summary should clearly explain what your add-on does. It will be shown in listings and searches, and it will be used by reviewers to test your add-on."
 msgstr ""
+
+msgid "Description"
+msgstr "설명"
 
 msgid "Experimental?"
 msgstr "시험용인가요?"
@@ -3259,6 +3018,9 @@ msgstr "부가 기능 URL:"
 
 msgid "Please use only letters, numbers, underscores, and dashes in your URL."
 msgstr "URL엔 문자, 숫자, 밑줄과 대시문자만 사용하세요."
+
+msgid "Name:"
+msgstr "이름:"
 
 msgid "Name on listing on this site. May be different to the name inside the add-on, which is shown inside Firefox"
 msgstr ""
@@ -5419,10 +5181,16 @@ msgstr "이 파일은 디렉토리입니다."
 msgid "Cannot diff a version against itself"
 msgstr "같은 파일끼리 버전 비교는 할 수 없습니다."
 
+msgid "Could not parse the manifest file."
+msgstr ""
+
 msgid "GUID is required for Firefox 47 and below."
 msgstr ""
 
 msgid "Lowest supported \"strict_min_version\" is 42.0."
+msgstr ""
+
+msgid "Unknown \"strict_min_version\" {appver} for {app}"
 msgstr ""
 
 #, fuzzy, python-format
@@ -5454,9 +5222,6 @@ msgstr "압축 파일내 파일 용량 제한 초과: {0}"
 
 msgid "Invalid archive."
 msgstr "잘못된 압축 파일입니다."
-
-msgid "Could not parse the manifest file."
-msgstr ""
 
 msgid "Could not find an add-on ID."
 msgstr ""
@@ -5527,6 +5292,9 @@ msgstr ""
 msgid "The output can be broken, please be careful and %(link_start)sreport an issue%(link_end)s immediately!"
 msgstr ""
 
+msgid "Go"
+msgstr "실행"
+
 msgid "Add-on file being processed, please wait."
 msgstr "부가 기능 파일이 처리중입니다. 잠시만 기다려 주세요."
 
@@ -5541,9 +5309,6 @@ msgstr "삭제된 파일:"
 
 msgid "Hide known files"
 msgstr "알려진 파일 숨기기"
-
-msgid "Add-on SDK Version:"
-msgstr "부가 기능 SDK 버전:"
 
 msgid "Tab stops:"
 msgstr "탭 중단:"
@@ -6187,9 +5952,6 @@ msgstr "관리자 콘텐츠 검토가 필요"
 msgid "Needs Admin Static Theme Review"
 msgstr "관리자 정적 테마 검토 필요"
 
-msgid "Jetpack Add-on"
-msgstr "Jetpack 부가 기능"
-
 msgid "More Information Requested"
 msgstr "추가 정보 필요"
 
@@ -6287,6 +6049,9 @@ msgstr "상급 검토 요구"
 
 msgid "If you have concerns about this add-on that an admin reviewer should look into, enter your comments in the area below. They will not be sent to the developer."
 msgstr "이 부가 기능을 검토자가 봐야 한다고 생각되시면 아래에 의견을 입력해 주세요. 이 의견은 개발자에게는 보내지지 않습니다."
+
+msgid "Comment"
+msgstr "코멘트"
 
 #, fuzzy
 msgid "Make a comment on this version. The developer won't be able to see this."
@@ -6849,96 +6614,6 @@ msgstr ""
 msgid "Maximum query length exceeded."
 msgstr ""
 
-msgid "search for add-ons"
-msgstr "부가 기능 검색하기"
-
-msgid "search for themes"
-msgstr "테마 검색하기"
-
-msgid "search for apps"
-msgstr "앱 검색하기"
-
-msgid "Relevance"
-msgstr "연관성"
-
-msgid "All Add-ons"
-msgstr "모든 부가 기능"
-
-msgid "Any {0}"
-msgstr "{0} 모든 버전"
-
-#. L10n: "All Systems" means show everything regardless of platform.
-msgid "All Systems"
-msgstr "모든 운영 체제"
-
-msgid "All Tags"
-msgstr "모든 태그"
-
-#. {0} is the string the user was searching for
-msgid "Collection Search Results for {0}"
-msgstr "{0}에 대한 모음집 검색 결과"
-
-msgid "Collection Search Results"
-msgstr "모음집 검색 결과"
-
-msgid "Search Results"
-msgstr "검색 결과"
-
-msgid "Search Unavailable"
-msgstr "검색 이용 불가"
-
-msgid "Search is temporarily unavailable. Please try again in a few minutes."
-msgstr "검색 기능을 일시적으로 사용할 수 없습니다. 몇분 후 다시 이용해 주세요."
-
-#. {0} is the string the user was searching for
-msgid "Themes Search Results for {0}"
-msgstr "{0}에 대한 테마 검색 결과"
-
-msgid "Themes Search Results"
-msgstr "테마 검색 결과"
-
-#. {0} is a search term, such as Firebug.
-msgid "{0} :: Search"
-msgstr "{0} :: 검색"
-
-#. {0} is a search term, such as Firebug.
-msgid "Search Results for \"{0}\""
-msgstr "\"{0}\"에 대한 검색 결과"
-
-#. {0} is a tag, such as jetpack.
-msgid "{0} :: Tag"
-msgstr "{0} :: 태그"
-
-#. {0} is a tag, such as jetpack.
-msgid "Search Results for tag \"{0}\""
-msgstr "\"{0}\" 태그의 검색 결과"
-
-msgid "<b>{0}</b> matching result"
-msgid_plural "<b>{0}</b> matching results"
-msgstr[0] "검색 결과 <b>{0}</b>개"
-
-msgid "Filter Results"
-msgstr "필터 결과"
-
-msgid "Category"
-msgstr "분류"
-
-msgid "Tag"
-msgstr "태그"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-# {3} is the word the person is searching for
-msgid "Showing {0} - {1} of {2} results for <strong>{3}</strong>"
-msgstr "<strong>{3}</strong>(으)로 {2}개 검색 / {0} - {1} 표시중"
-
-# {0} is a number
-# {1} is a number
-# {2} is a number
-msgid "Showing {0} - {1} of {2} results"
-msgstr "{2}개 검색 / {0} - {1} 표시중"
-
 msgid "Could not find add-on with guid \"{}\"."
 msgstr ""
 
@@ -6994,33 +6669,6 @@ msgstr "플랫폼별"
 
 msgid "by Add-on Status"
 msgstr "부가 기능 상태별"
-
-msgid "Add-on Statistics"
-msgstr "부가 기능 통계"
-
-msgid "Add-ons in Use"
-msgstr "사용중인 부가 기능"
-
-msgid "Add-ons Created"
-msgstr "제작된 부가 기능"
-
-msgid "Add-ons Downloaded"
-msgstr "다운로드된 부가 기능"
-
-msgid "Add-ons Updated"
-msgstr "업데이트된 부가 기능"
-
-msgid "Collections Created"
-msgstr "제작된 모음집"
-
-msgid "Reviews Written"
-msgstr "작성된 검토"
-
-msgid "User Signups"
-msgstr "등록한 사용자"
-
-msgid "Archived Data"
-msgstr "보관된 데이터"
 
 msgid "Custom Date Range"
 msgstr "사용자 정의 날짜 범위"
@@ -7119,23 +6767,8 @@ msgstr "대시보드가 현재 <b>비공개</b> 상태입니다."
 msgid "Change settings."
 msgstr "설정을 변경합니다."
 
-msgid "Add-ons Created by Date"
-msgstr "날짜별 제작된 부가 기능"
-
-msgid "Add-ons Downloaded by Date"
-msgstr "날짜별 다운로드된 부가 기능"
-
-msgid "Add-ons in Use by Date"
-msgstr "날짜별 사용중인 부가 기능"
-
-msgid "Add-ons Updated by Date"
-msgstr "날짜별 업데이트된 부가 기능"
-
 msgid "Application usage by Date"
 msgstr "날짜별 애플리케이션 사용량"
-
-msgid "Collections Created by Date"
-msgstr "날짜별 제작된 모음집"
 
 msgid "Downloaded by Date"
 msgstr "날짜별 다운로드 횟수"
@@ -7183,12 +6816,6 @@ msgstr "상위 플랫폼"
 msgid "See more platforms&hellip;"
 msgstr "더 많은 플랫폼 보기&hellip;"
 
-msgid "Ratings by Date"
-msgstr "날짜별 별점"
-
-msgid "Reviews Created by Date"
-msgstr "날짜별 작성된 검토"
-
 msgid "Download sources by Date"
 msgstr "날짜별 다운로드 출처"
 
@@ -7212,9 +6839,6 @@ msgstr ""
 msgid "Add-on Status by Date"
 msgstr "날짜순 부가 기능 상태"
 
-msgid "Subscribers by Date"
-msgstr "날짜별 구독자"
-
 msgid "Daily Users by Date"
 msgstr "날짜별 일일 사용자"
 
@@ -7235,36 +6859,14 @@ msgstr ""
 "<h2>일일 사용자 수란?</h2> <p> 이 사이트를 통해 다운로드 된 부가 기능의 수는 일일 단위로 업데이트 됩니다. 이러한 업데이트 핑의 총합이 일일 사용자 수가 됩니다. 일일 사용자 수는 부가 기능 버전, 운영 "
 "체제, 부가 기능 상태, 애플리케이션 종류, 사용 언어별로 제대로 집계가 되지 않을 수도 있습니다. </p>"
 
-msgid "User Signups by Date"
-msgstr "날짜별 등록한 사용자"
-
 msgid "Application versions by Date"
 msgstr "날짜별 애플리케이션 버전"
 
 msgid "Mozilla Add-ons"
 msgstr "Mozilla 부가 기능"
 
-msgid "Find add-ons for other applications"
-msgstr "다른 애플리케이션의 부가 기능도 찾아보세요"
-
-msgid "Other Applications"
-msgstr "다른 애플리케이션"
-
-msgid "AMO is getting a new look. Would you like to see it?"
-msgstr ""
-
-msgid "Visit the new site"
-msgstr "새로운 사이트 방문"
-
-msgid "To create your own collections, you must have a Mozilla Add-ons account."
-msgstr "모음집을 제작하시려면 Mozilla 부가 기능 계정이 있어야 합니다."
-
-msgid "Create an Add-ons Account"
-msgstr "부가 기능 계정 만들기"
-
-#, python-format
-msgid "or <a href=\"%(login)s\">log in to your current account</a>"
-msgstr "아니면 <a href=\"%(login)s\">현재 사용중인 계정으로 로그인</a> 하세요"
+msgid "Back to Add-ons"
+msgstr "부가 기능으로 돌아가기"
 
 msgid "Footer logo"
 msgstr "푸터 로고"
@@ -7334,32 +6936,14 @@ msgstr "{0}님, 어서오세요"
 msgid "<a href=\"%(reg)s\">Register</a> or <a href=\"%(login)s\">Log in</a>"
 msgstr "<a href=\"%(reg)s\">계정 등록</a> 또는 <a href=\"%(login)s\">로그인</a>"
 
-#, python-format
-msgid "To try the thousands of add-ons available here, download <a href=\"%(url)s\">Mozilla Firefox</a>, a fast, free way to surf the Web!"
-msgstr "웹사이트를 빠르고 자유롭게 누빌 수 있는 <a href=\"%(url)s\">Mozilla Firefox</a>를 다운로드하면 이곳에서 수천가지 부가 기능을 사용하실 수 있습니다!"
-
-#. {0} is an application, such as Firefox.
-msgid "Welcome to {0} Add-ons."
-msgstr "{0} 부가 기능에 오신것을 환영합니다."
-
-msgid "Choose from thousands of extra features and styles to make Firefox your own."
-msgstr "수천가지 다양한 기능과 스타일을 선택해서 Firefox를 원하는 대로 만들어 보세요."
-
-#, python-format
-msgid "Add extra features and styles to make %(app)s your own."
-msgstr "수천가지 다양한 기능과 스타일을 추가해서 %(app)s을(를) 원하는 대로 만들어 보세요."
-
-msgid "On the go?"
-msgstr "시작해 볼까요?"
-
-msgid "Check out our <a class=\"mobile-link\" href=\"#\">Mobile Add-ons site</a>."
-msgstr "<a class=\"mobile-link\" href=\"#\">모바일 부가 기능 사이트</a>를 방문해 보세요."
-
 msgid "Android Add-ons"
 msgstr "안드로이드용 부가 기능"
 
 msgid "Required fields"
 msgstr "필수 입력 사항"
+
+msgid "(optional)"
+msgstr "(선택사항)"
 
 #. {0} is a language name, like 'French'
 #, python-format
@@ -7423,6 +7007,9 @@ msgstr "Firefox 안드로이드"
 
 msgid "My Mobile Add-ons"
 msgstr "내 모바일 부가 기능"
+
+msgid "My Favorite Add-ons"
+msgstr "좋아하는 부가 기능"
 
 msgid "an add-on developer replies to my review"
 msgstr "부가 기능 개발자가 검토에 댓글을 달았습니다"

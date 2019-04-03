@@ -22,7 +22,8 @@ handler500 = 'olympia.amo.views.handler500'
 
 urlpatterns = [
     # Legacy Discovery pane is first for undetectable efficiency wins.
-    url(r'^discovery/', include('olympia.legacy_discovery.urls')),
+    url(r'^discovery/.*', lambda request: redirect(
+        'https://www.mozilla.org/firefox/new/', permanent=True)),
 
     # Home.
     url(r'^$', addons_views.home, name='home'),
@@ -84,10 +85,7 @@ urlpatterns = [
     # API v3+.
     url(r'^api/', include('olympia.api.urls')),
 
-    # Site statistics that we are going to catch, the rest will fall through.
-    url(r'^statistics/', include('olympia.stats.urls')),
-
-    # Fall through for any URLs not matched above stats dashboard.
+    # Redirect for all global stats URLs.
     url(r'^statistics/', lambda r: redirect('/'), name='statistics.dashboard'),
 
     # Redirect patterns.
@@ -102,17 +100,6 @@ urlpatterns = [
 
     url(r'^pages/about$',
         lambda r: redirect('pages.about', permanent=True)),
-
-    # Redirect persona/xxx
-    url(r'^getpersonas$',
-        lambda r: redirect('http://www.getpersonas.com/gallery/All/Popular',
-                           permanent=True)),
-
-    url(r'^persona/(?P<persona_id>\d+)',
-        addons_views.persona_redirect, name='persona'),
-
-    url(r'^personas/film and tv/?$',
-        lambda r: redirect('browse.personas', 'film-and-tv', permanent=True)),
 
     url(r'^addons/versions/(\d+)/?$',
         lambda r, id: redirect('addons.versions', id, permanent=True)),
@@ -133,13 +120,6 @@ urlpatterns = [
 
     url(r'^addons/contribute/(\d+)/?$',
         lambda r, id: redirect('addons.contribute', id, permanent=True)),
-
-    url(r'^recommended$',
-        lambda r: redirect(reverse('browse.extensions') + '?sort=featured',
-                           permanent=True)),
-
-    url(r'^recommended/format:rss$',
-        lambda r: redirect('browse.featured.rss', permanent=True)),
 ]
 
 if settings.DEBUG:

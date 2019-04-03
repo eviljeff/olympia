@@ -2,10 +2,10 @@
 # Django settings for addons-server project.
 
 import environ
+import json
 import logging
 import os
 import socket
-import json
 
 import raven
 from kombu import Queue
@@ -99,7 +99,9 @@ DRF_API_REGEX = r'^/?api/(?:v3|v4|v4dev)/'
 # Add Access-Control-Allow-Origin: * header for the new API with
 # django-cors-headers.
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = DRF_API_REGEX
+# Exclude the `accounts/session` endpoint, see:
+# https://github.com/mozilla/addons-server/issues/11100
+CORS_URLS_REGEX = r'{}(?!accounts/session/)'.format(DRF_API_REGEX)
 
 
 def get_db_config(environ_var, atomic_requests=True):
@@ -209,6 +211,10 @@ SERVICES_DOMAIN = 'services.%s' % DOMAIN
 # Full URL to your API service. No trailing slash.
 #   Example: https://services.addons.mozilla.org
 SERVICES_URL = 'http://%s' % SERVICES_DOMAIN
+
+# URL of the code-manager site, see:
+# https://github.com/mozilla/addons-code-manager
+CODE_MANAGER_URL = 'https://code.{}'.format(DOMAIN)
 
 # Filter IP addresses of allowed clients that can post email through the API.
 ALLOWED_CLIENTS_EMAIL_API = env.list('ALLOWED_CLIENTS_EMAIL_API', default=[])
@@ -456,7 +462,6 @@ INSTALLED_APPS = (
     'olympia.devhub',
     'olympia.discovery',
     'olympia.files',
-    'olympia.legacy_discovery',
     'olympia.lib.es',
     'olympia.lib.akismet',
     'olympia.pages',
@@ -727,7 +732,6 @@ MINIFY_BUNDLES = {
             'js/zamboni/debouncer.js',
 
             # Homepage
-            'js/impala/promos.js',
             'js/zamboni/homepage.js',
 
             # Add-ons details page
@@ -818,7 +822,6 @@ MINIFY_BUNDLES = {
             'js/impala/forms.js',
 
             # Homepage
-            'js/impala/promos.js',
             'js/impala/homepage.js',
 
             # Add-ons details page
@@ -882,7 +885,6 @@ MINIFY_BUNDLES = {
             'js/lib/truncate.js',
             'js/zamboni/truncation.js',
 
-            'js/impala/promos.js',
             'js/zamboni/discovery_addons.js',
             'js/zamboni/discovery_pane.js',
         ),
@@ -1183,7 +1185,6 @@ CELERY_TASK_ROUTES = {
     'olympia.stats.tasks.index_download_counts': {'queue': 'stats'},
     'olympia.stats.tasks.index_theme_user_counts': {'queue': 'stats'},
     'olympia.stats.tasks.index_update_counts': {'queue': 'stats'},
-    'olympia.stats.tasks.update_global_totals': {'queue': 'stats'},
 
     # Tags
     'olympia.tags.tasks.update_all_tag_stats': {'queue': 'tags'},
@@ -1658,6 +1659,7 @@ DRF_API_GATES = {
         'del-accounts-fxa-edit-email-url',
         'del-version-license-is-custom',
         'del-ratings-flags',
+        'activity-user-shim',
     ),
     'v4': (
         'l10n_flat_input_output',
@@ -1781,7 +1783,6 @@ CRON_JOBS = {
     'cleanup_extracted_file': 'olympia.files.cron',
     'cleanup_validation_results': 'olympia.files.cron',
 
-    'update_global_totals': 'olympia.stats.cron',
     'index_latest_stats': 'olympia.stats.cron',
 
     'update_user_ratings': 'olympia.users.cron',

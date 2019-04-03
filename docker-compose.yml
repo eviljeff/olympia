@@ -8,6 +8,7 @@ x-env-mapping: &env
     - CELERY_BROKER_URL=amqp://olympia:olympia@rabbitmq/olympia
     - CELERY_RESULT_BACKEND=redis://redis:6379/1
     - DATABASES_DEFAULT_URL=mysql://root:@mysqld/olympia
+    - DJANGO_VERSION=django22
     - ELASTICSEARCH_LOCATION=elasticsearch:9200
     - MEMCACHE_LOCATION=memcached:11211
     - MYSQL_DATABASE=olympia
@@ -93,7 +94,7 @@ services:
       - WEBPACK_SERVER_HOST=olympia.test
       - CSP=false
       - FXA_CONFIG=default
-    image: addons/addons-frontend:latest
+    image: mozilla/addons-frontend:latest
     ports:
       - "3000:3000"
       - "3001:3001"
