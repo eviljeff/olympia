@@ -160,8 +160,11 @@ class TestModelBase(TestCase):
     def test_get_absolute_url_with_frontend_view(self):
         addon = Addon.objects.get(pk=3615)
         relative = reverse('addons.detail', args=[addon.slug], add_prefix=True)
-        assert addon.get_absolute_url() == settings.SITE_URL + relative
+        with override_settings(EXTERNAL_SITE_URL=settings.SITE_URL):
+            # The normal case
+            assert addon.get_absolute_url() == settings.SITE_URL + relative
         with override_settings(EXTERNAL_SITE_URL='https://example.com'):
+            # When an external site url has been set
             assert addon.get_absolute_url() == (
                 'https://example.com' + relative)
 
@@ -169,7 +172,12 @@ class TestModelBase(TestCase):
         file = Addon.objects.get(pk=3615).current_version.all_files[0]
         relative = os.path.join(
             reverse('downloads.file', args=[file.id]), file.filename)
-        assert file.get_absolute_url() == settings.SITE_URL + relative
+        with override_settings(EXTERNAL_SITE_URL=settings.SITE_URL):
+            # The normal case
+            assert file.get_absolute_url() == settings.SITE_URL + relative
+        with override_settings(EXTERNAL_SITE_URL='https://example.com'):
+            # downloads.file is a django served view so the same.
+            assert file.get_absolute_url() == settings.SITE_URL + relative
 
 
 class BasePreviewMixin(object):
