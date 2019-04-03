@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from django import test
 from django.conf import settings
-from django.core.exceptions import ViewDoesNotExist
 from django.test.utils import override_settings
 from django.utils.encoding import force_text
 
@@ -485,26 +484,3 @@ class TestVersion(TestCase):
         content = json.loads(force_text(res.content))
         assert content['python'] == '%s.%s' % (
             sys.version_info.major, sys.version_info.minor)
-
-
-class TestFrontendView(TestCase):
-    url = reverse('search.search')
-
-    def test_external_site_url(self):
-        # Doesn't redirect when the SITE_URL is the same.
-        with override_settings(EXTERNAL_SITE_URL=settings.SITE_URL):
-            with self.assertRaises(ViewDoesNotExist):
-                response = self.client.get(self.url)
-                self.assertRedirects(response, '')
-
-        # Or when blank
-        with override_settings(EXTERNAL_SITE_URL=''):
-            with self.assertRaises(ViewDoesNotExist):
-                response = self.client.get(self.url)
-                self.assertRedirects(response, '')
-
-        with override_settings(EXTERNAL_SITE_URL='https://example.com'):
-            response = self.client.get(self.url)
-            self.assertRedirects(
-                response, 'https://example.com/en-US/firefox/search/',
-                fetch_redirect_response=False)
