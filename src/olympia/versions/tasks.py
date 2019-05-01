@@ -2,6 +2,7 @@ from __future__ import division
 import operator
 import os
 
+from django.core.exceptions import ValidationError
 from django.template import loader
 
 import six
@@ -14,14 +15,15 @@ from olympia.amo.decorators import use_primary_db
 from olympia.amo.utils import extract_colors_from_image, pngcrush_image
 from olympia.devhub.tasks import resize_image
 from olympia.files.models import File
-from olympia.files.utils import get_background_images
+from olympia.files.utils import (
+    get_background_images, get_filepath, parse_addon)
 from olympia.versions.models import Version, VersionPreview
 from olympia.lib.git import AddonGitRepository
 from olympia.users.models import UserProfile
 
 from .utils import (
-    AdditionalBackground, process_color_value,
-    encode_header, write_svg_to_png)
+    AdditionalBackground, encode_header, new_69_theme_properties_from_old,
+    process_color_value, update_max_app_versions, write_svg_to_png)
 
 
 log = olympia.core.logger.getLogger('z.versions.task')
@@ -159,3 +161,28 @@ def extract_version_source_to_git(version_id, author_id=None):
     log.info(
         'Extracted source files from {version} into {git_path}'.format(
             version=version_id, git_path=repo.git_repository_path))
+
+
+@task
+@use_primary_db
+def set_max_version_for_themes(addon_ids, **kw):
+    log.info(
+        '[%s@%s] Setting max version for theme versions using deprecated '
+        'properties starting at id: %s...' % (
+            len(addon_ids), set_max_version_for_themes.rate_limit,
+            addon_ids[0]))
+    versions = Version.objects.filter(addon_id=addon_ids)
+
+    for version in versions:
+        log.info('[VERSION-CHK] deprecated properties check for version [%r] of '
+                 'theme id [%s]', version, version.addon_id)
+        try:
+            xpi = get_filepath(version.all_files[0])
+            old_data = parse_addon(xpi, minimal=True)
+            new_data = new_69_theme_properties_from_old(old_data)
+            if new_data != old_data:
+                # change max version
+                update_max_app_versions(version, "68.*")
+        except (IOError, ValidationError) as exc:
+            log.debug('[VERSION-EXC] version failed to load [%r] of theme id '
+                      '[%s]:', version, version.addon_id, exc_info=exc)

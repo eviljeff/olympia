@@ -20,6 +20,7 @@ from olympia.devhub.tasks import get_preview_sizes, recreate_previews
 from olympia.lib.crypto.tasks import sign_addons
 from olympia.reviewers.tasks import recalculate_post_review_weight
 from olympia.versions.compare import version_int
+from olympia.versions.tasks import set_max_version_for_themes
 
 
 firefox_56_star = version_int('56.*')
@@ -78,6 +79,12 @@ tasks = {
         'qs': [
             Q(type=amo.ADDON_STATICTHEME, status__in=[
                 amo.STATUS_APPROVED, amo.STATUS_AWAITING_REVIEW])
+        ],
+    },
+    'set_max_version_for_themes': {
+        'method': set_max_version_for_themes,
+        'qs': [
+            Q(type=amo.ADDON_STATICTHEME)
         ],
     },
     'add_dynamic_theme_tag_for_theme_api': {

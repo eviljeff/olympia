@@ -21,6 +21,7 @@ from PIL import Image
 from olympia import amo
 from olympia.amo.templatetags.jinja_helpers import user_media_path
 from olympia.amo.utils import StopWatch
+from olympia.applications.models import AppVersion
 from olympia.core import get_user, logger
 from olympia.files.models import FileUpload
 from olympia.files.utils import get_filepath, parse_addon
@@ -236,3 +237,11 @@ def new_theme_version_with_69_properties(old_version):
     timer.log_interval('4.sign_files')
 
     return version
+
+
+def update_max_app_versions(version, max_version_number):
+    for app in version.apps:
+        appver = AppVersion.objects.get(
+            application=app.application, version=max_version_number)
+        app.update(max=appver)
+    version.files.update(strict_compatibility=True)
