@@ -10,6 +10,7 @@ from rest_framework.filters import BaseFilterBackend
 from waffle import switch_is_active
 
 from olympia import amo
+from olympia.api.utils import is_gate_active
 from olympia.constants.categories import CATEGORIES, CATEGORIES_BY_ID
 from olympia.discovery.models import DiscoveryItem
 from olympia.versions.compare import version_int
@@ -922,3 +923,10 @@ class SortingFilter(BaseFilterBackend):
             raise serializers.ValidationError('Invalid "sort" parameter.')
 
         return qs.sort(*order_by)
+
+
+class AutoCompleteSortFilter(SortingFilter):
+    def filter_queryset(self, request, qs, view):
+        if not is_gate_active(request, 'autocomplete-sort-param'):
+            request.GET.pop('sort')
+        return super().filter_queryset(request, qs, view)
