@@ -7,8 +7,7 @@ python:
 jobs:
   fast_finish: true
   include:
-    - { env: TOXENV=codestyle }
-    - { env: TOXENV=docs }
+    - { env: TOXENV=codestyle-and-docs }
     - { env: TOXENV=assets }
     - { env: TOXENV=es }
     - { env: TOXENV=addons-versions-files-ratings }
