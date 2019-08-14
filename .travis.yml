@@ -8,8 +8,7 @@ jobs:
   fast_finish: true
   include:
     - { env: TOXENV=codestyle-and-docs }
-    - { env: TOXENV=assets }
-    - { env: TOXENV=es }
+    - { env: TOXENV=es-and-assets }
     - { env: TOXENV=addons-versions-files-ratings }
     - { env: TOXENV=devhub }
     - { env: TOXENV=reviewers-and-zadmin }
