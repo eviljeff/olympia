@@ -6,7 +6,7 @@ from pyquery import PyQuery as pq
 
 from olympia.amo.tests import TestCase
 from olympia.translations import fields, forms
-from olympia.translations.tests.testapp.models import TranslatedModel
+from olympia.translations.tests.testapp._models import TranslatedModel
 
 
 class DummyForm(forms.TranslationFormMixin, ModelForm):

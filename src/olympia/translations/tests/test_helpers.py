@@ -11,7 +11,7 @@ from olympia.amo.utils import from_string
 from olympia.translations.fields import save_signal
 from olympia.translations.models import PurifiedTranslation
 from olympia.translations.templatetags import jinja_helpers
-from olympia.translations.tests.testapp.models import TranslatedModel
+from olympia.translations.tests.testapp._models import TranslatedModel
 
 
 pytestmark = pytest.mark.django_db

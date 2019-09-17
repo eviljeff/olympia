@@ -23,7 +23,7 @@ from olympia.translations.models import (
     LinkifiedTranslation, NoLinksNoMarkupTranslation,
     PurifiedTranslation, Translation, TranslationSequence)
 from olympia.translations.query import order_by_translation
-from olympia.translations.tests.testapp.models import (
+from olympia.translations.tests.testapp._models import (
     ContainsManyToManyToTranslatedModel, ContainsTranslatedThrough,
     FancyModel, TranslatedModel, UntranslatedModel,
     TranslatedModelWithDefaultNull, TranslatedModelLinkedAsForeignKey)
