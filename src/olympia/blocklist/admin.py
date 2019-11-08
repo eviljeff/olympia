@@ -11,7 +11,9 @@ from olympia import amo
 from olympia.activity.models import ActivityLog
 from olympia.addons.models import Addon
 from olympia.amo.urlresolvers import reverse
+from olympia.amo.utils import HttpResponseTemporaryRedirect
 
+from .forms import MultiBlockForm
 from .models import Block
 
 
@@ -41,7 +43,7 @@ class BlockAdminAddMixin():
         errors = []
         if request.method == 'POST':
             guids_data = request.POST.get('guids')
-            guids = guids_data.split(',') if guids_data else []
+            guids = guids_data.splitlines() if guids_data else []
             if len(guids) == 1:
                 guid = guids[0]
                 # If the guid already has a Block go to the change view
@@ -62,8 +64,8 @@ class BlockAdminAddMixin():
                         f'?guid={guid}')
             elif len(guids) > 1:
                 # If there's > 1 guid go to multi view.
-                return redirect(
-                    'admin:blocklist_block_add_multiple')
+                return HttpResponseTemporaryRedirect(
+                    reverse('admin:blocklist_block_add_multiple'))
 
         context = {}
         context.update({
@@ -87,7 +89,54 @@ class BlockAdminAddMixin():
             request, form_url=form_url, extra_context=extra_context)
 
     def add_multiple_view(self, request, **kwargs):
-        raise NotImplementedError
+        bulk_submit = False
+        guids_data = request.POST.get('guids', request.GET.get('guids'))
+        context = {}
+        if guids_data:
+            # if we get a guids param it's a redirect from input_guids_view
+            form = MultiBlockForm(
+                initial={'input_guids': guids_data}, request=request)
+        elif request.method == 'POST':
+            # otherwise, if its a POST try to process the form
+            form = MultiBlockForm(request.POST, request=request)
+            if form.is_valid():
+                if bulk_submit:
+                    (guids_to_add, guids_to_update, common_args) = (
+                        form.save(commit=False))
+                    # something something celery task
+                else:
+                    added_blocks, updated_blocks = form.save(commit=True)
+                    for obj in added_blocks:
+                        self.log_addition(request, obj, [{'added': {}}])
+                        self.activity_log_save(obj, change=False)
+                    for obj in updated_blocks:
+                        self.log_change(
+                            request, obj, {'changed': {'fields': []}})
+                        self.activity_log_save(obj, change=True)
+                return redirect('admin:blocklist_block_changelist')
+            else:
+                guids_data = request.POST.get('input_guids')
+        else:
+            # if its not a POST and no ?guids there's nothing to do so go home
+            return redirect('admin:blocklist_block_changelist')
+        context.update({
+            'form': form,
+            'add': True,
+            'change': False,
+            'has_view_permission': self.has_view_permission(request, None),
+            'has_add_permission': self.has_add_permission(request),
+            'has_change_permission': self.has_change_permission(request, None),
+            'app_label': 'blocklist',
+            'opts': self.model._meta,
+            'title': 'Block Add-ons',
+            'save_as': False,
+            'bulk_submit': bulk_submit,
+        })
+        context.update(
+            form.process_input_guids(
+                guids_data, return_objects=(not bulk_submit)))
+        return TemplateResponse(
+            request, "blocklist/multiple_block.html", context)
 
 
 def format_block_history(logs):
@@ -240,6 +289,10 @@ class BlockAdmin(BlockAdminAddMixin, admin.ModelAdmin):
         obj.updated_by = request.user
         if not change:
             obj.guid = self.get_request_guid(request)
+        super().save_model(request, obj, form, change)
+        self.activity_log_save(obj, change)
+
+    def activity_log_save(self, obj, change):
         action = (
             amo.LOG.BLOCKLIST_BLOCK_EDITED if change else
             amo.LOG.BLOCKLIST_BLOCK_ADDED)
@@ -251,7 +304,6 @@ class BlockAdmin(BlockAdminAddMixin, admin.ModelAdmin):
             'reason': obj.reason,
             'include_in_legacy': obj.include_in_legacy,
         }
-        super().save_model(request, obj, form, change)
         ActivityLog.create(action, obj.addon, obj.guid, obj, details=details)
 
     def delete_model(self, request, obj):

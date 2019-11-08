@@ -30,6 +30,14 @@ class Block(ModelBase):
     def __str__(self):
         return f'Block: {self.guid}'
 
+    def __init__(self, *args, **kwargs):
+        # Optimized case of creating a Block from Addon so skipping the query.
+        addon = kwargs.pop('addon', None)
+        if addon:
+            kwargs['guid'] = addon.guid
+            self.addon = addon
+        super().__init__(*args, **kwargs)
+
     @cached_property
     def addon(self):
         return Addon.unfiltered.filter(
