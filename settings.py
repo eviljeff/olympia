@@ -48,6 +48,8 @@ DEBUG_TOOLBAR_CONFIG = {
 
 FILESYSTEM_CACHE_ROOT = os.path.join(TMP_PATH, 'cache')
 
+FOO = os.environ.get('FOO', 'default foo')
+
 # We are setting memcached here to make sure our local setup is as close
 # to our production system as possible.
 CACHES = {
