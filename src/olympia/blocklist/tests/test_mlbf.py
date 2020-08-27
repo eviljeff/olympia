@@ -1,5 +1,6 @@
 import json
 import os
+from random import randint
 import tempfile
 from unittest import mock
 
@@ -249,6 +250,30 @@ class TestMLBF(TestCase):
         with tempfile.NamedTemporaryFile() as out:
             bfilter.tofile(out)
             assert os.stat(out.name).st_size == 300
+
+    # @pytest.mark.skip(reason='super slow, so only enable locally')
+    def test_generate_mlbf_large(self):
+        key_format = MLBF.KEY_FORMAT
+        blocked = [
+            (f'guid{randint(1,999)}@', f'{randint(0, 99)}.{randint(0, 99)}')
+            for x in range(10000)]
+        not_blocked = (
+            (f'guid{randint(1,999)}@', f'{randint(0, 99)}.{randint(0, 99)}')
+            for x in range(50000))
+        not_blocked = [pair for pair in not_blocked if pair not in blocked]
+        bfilter = MLBF.generate_mlbf(
+            {},
+            blocked=MLBF.hash_filter_inputs(blocked),
+            not_blocked=MLBF.hash_filter_inputs(not_blocked))
+        for entry in blocked:
+            key = key_format.format(guid=entry[0], version=entry[1])
+            assert key in bfilter
+        for entry in not_blocked:
+            key = key_format.format(guid=entry[0], version=entry[1])
+            assert key not in bfilter
+        with tempfile.NamedTemporaryFile() as out:
+            bfilter.tofile(out)
+            assert os.stat(out.name).st_size == 10086
 
     def test_generate_mlbf_with_more_blocked_than_not_blocked(self):
         key_format = MLBF.KEY_FORMAT
