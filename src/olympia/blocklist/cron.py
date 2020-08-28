@@ -11,7 +11,9 @@ from olympia.constants.blocklist import (
     MLBF_BASE_ID_CONFIG_KEY, MLBF_TIME_CONFIG_KEY)
 from olympia.zadmin.models import get_config
 
-from .mlbf import MLBF
+from .mlbf import (
+    BloomFilterDBData, BloomFilterData, generate_and_write_mlbf,
+    generate_and_write_stash)
 from .models import Block
 from .tasks import upload_filter
 
@@ -54,8 +56,8 @@ def _upload_mlbf_to_remote_settings(*, force_base=False):
     # there may be false positives or false negatives.
     # https://github.com/mozilla/addons-server/issues/13695
     generation_time = int(time.time() * 1000)
-    mlbf = MLBF(generation_time)
-    previous_filter = MLBF(last_generation_time)
+    mlbf = BloomFilterDBData(generation_time)
+    previous_filter = BloomFilterData(last_generation_time)
 
     changes_count = mlbf.blocks_changed_since_previous(previous_filter)
     statsd.incr(
@@ -71,19 +73,19 @@ def _upload_mlbf_to_remote_settings(*, force_base=False):
             'skipping MLBF generation')
         return
 
-    mlbf.generate_and_write_mlbf()
+    generate_and_write_mlbf(mlbf)
     statsd.incr(
         'blocklist.cron.upload_mlbf_to_remote_settings.blocked_count',
-        len(mlbf.fetch_blocked_json()))
+        len(mlbf.blocked_json))
     statsd.incr(
         'blocklist.cron.upload_mlbf_to_remote_settings.not_blocked_count',
-        len(mlbf.fetch_not_blocked_json()))
+        len(mlbf.not_blocked_json))
 
     base_filter_id = get_config(MLBF_BASE_ID_CONFIG_KEY, 0, json_value=True)
     # optimize for when the base_filter was the previous generation so
     # we don't have to load the blocked JSON file twice.
     base_filter = (
-        MLBF(base_filter_id)
+        BloomFilterData(base_filter_id)
         if last_generation_time != base_filter_id else
         previous_filter)
 
@@ -94,7 +96,7 @@ def _upload_mlbf_to_remote_settings(*, force_base=False):
 
     if last_generation_time and not make_base_filter:
         try:
-            mlbf.write_stash(previous_filter)
+            generate_and_write_stash(mlbf, previous_filter)
         except FileNotFoundError:
             log.info('No previous blocked.json so we can\'t create a stash.')
             # fallback to creating a new base if stash fails

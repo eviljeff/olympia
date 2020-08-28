@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 
 import olympia.core.logger
 
-from olympia.blocklist.mlbf import MLBF
+from olympia.blocklist.mlbf import BloomFilterDBData, generate_and_write_mlbf
 
 
 log = olympia.core.logger.getLogger('z.amo.blocklist')
@@ -39,13 +39,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         log.debug('Exporting blocklist to file')
-        mlbf = MLBF(options.get('id'))
+        mlbf = BloomFilterDBData(options.get('id'))
 
         if options.get('block_guids_input'):
-            mlbf.blocked_json = list(MLBF.hash_filter_inputs(
+            mlbf.blocked_json = list(BloomFilterDBData.hash_filter_inputs(
                 self.load_json(options.get('block_guids_input'))))
         if options.get('addon_guids_input'):
-            mlbf.not_blocked_json = list(MLBF.hash_filter_inputs(
+            mlbf.not_blocked_json = list(BloomFilterDBData.hash_filter_inputs(
                 self.load_json(options.get('addon_guids_input'))))
 
-        mlbf.generate_and_write_mlbf()
+        generate_and_write_mlbf(mlbf)

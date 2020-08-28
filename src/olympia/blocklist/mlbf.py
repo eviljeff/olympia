@@ -17,12 +17,96 @@ from olympia.constants.blocklist import BASE_REPLACE_THRESHOLD
 log = olympia.core.logger.getLogger('z.amo.blocklist')
 
 
-class MLBF():
+def generate_diffs(previous, current):
+    previous = set(previous)
+    current = set(current)
+    extras = current - previous
+    deletes = previous - current
+    return extras, deletes
+
+
+class BloomFilterData():
     KEY_FORMAT = '{guid}:{version}'
 
     def __init__(self, id_):
         # simplify later code by assuming always a string
         self.id = str(id_)
+
+    @property
+    def _blocked_path(self):
+        return os.path.join(
+            settings.MLBF_STORAGE_PATH, self.id, 'blocked.json')
+
+    @cached_property
+    def blocked_json(self):
+        with storage.open(self._blocked_path, 'r') as json_file:
+            return json.load(json_file)
+
+    def write_blocked_json(self):
+        blocked_path = self._blocked_path
+        with storage.open(blocked_path, 'w') as json_file:
+            log.info("Writing to file {}".format(blocked_path))
+            json.dump(self.blocked_json, json_file)
+
+    @property
+    def _not_blocked_path(self):
+        return os.path.join(
+            settings.MLBF_STORAGE_PATH, self.id, 'notblocked.json')
+
+    @cached_property
+    def not_blocked_json(self):
+        with storage.open(self._not_blocked_path, 'r') as json_file:
+            return json.load(json_file)
+
+    def write_not_blocked_json(self):
+        not_blocked_path = self._not_blocked_path
+        with storage.open(not_blocked_path, 'w') as json_file:
+            log.info("Writing to file {}".format(not_blocked_path))
+            json.dump(self.not_blocked_json, json_file)
+
+    @property
+    def filter_path(self):
+        return os.path.join(
+            settings.MLBF_STORAGE_PATH, self.id, 'filter')
+
+    @property
+    def _stash_path(self):
+        return os.path.join(
+            settings.MLBF_STORAGE_PATH, self.id, 'stash.json')
+
+    @cached_property
+    def stash_json(self):
+        with storage.open(self._stash_path, 'r') as json_file:
+            return json.load(json_file)
+
+    def blocks_changed_since_previous(self, previous_bloom_filter):
+        try:
+            # compare base with current blocks
+            extras, deletes = generate_diffs(
+                previous_bloom_filter.blocked_json, self.blocked_json)
+            return len(extras) + len(deletes)
+        except FileNotFoundError:
+            # when previous_bloom_filter._blocked_path doesn't exist
+            return len(self.blocked_json)
+
+    def should_reset_base_filter(self, previous_bloom_filter):
+        try:
+            # compare base with current blocks
+            extras, deletes = generate_diffs(
+                previous_bloom_filter.blocked_json, self.blocked_json)
+            return (len(extras) + len(deletes)) > BASE_REPLACE_THRESHOLD
+        except FileNotFoundError:
+            # when previous_base_mlfb._blocked_path doesn't exist
+            return True
+
+
+class BloomFilterDBData(BloomFilterData):
+    @classmethod
+    def hash_filter_inputs(cls, input_list):
+        """Returns a set"""
+        return {
+            cls.KEY_FORMAT.format(guid=guid, version=version)
+            for (guid, version) in input_list}
 
     @classmethod
     def fetch_blocked_from_db(cls):
@@ -59,6 +143,14 @@ class MLBF():
             all_versions.update(versions)
         return all_versions
 
+    @cached_property
+    def blocked_json(self):
+        blocked_ids_to_versions = self.fetch_blocked_from_db()
+        blocked = blocked_ids_to_versions.values()
+        # cache version ids so query in not_blocked_json is efficient
+        self._version_excludes = blocked_ids_to_versions.keys()
+        return list(self.hash_filter_inputs(blocked))
+
     @classmethod
     def fetch_all_versions_from_db(cls, excluding_version_ids=None):
         from olympia.versions.models import Version
@@ -68,183 +160,79 @@ class MLBF():
                    .values_list('addon__addonguid__guid', 'version'))
         return list(qs)
 
-    @classmethod
-    def hash_filter_inputs(cls, input_list):
-        """Returns a set"""
-        return {
-            cls.KEY_FORMAT.format(guid=guid, version=version)
-            for (guid, version) in input_list}
-
-    @classmethod
-    def generate_mlbf(cls, stats, blocked, not_blocked):
-        log.info('Starting to generating bloomfilter')
-
-        cascade = FilterCascade(
-            defaultHashAlg=HashAlgorithm.SHA256,
-            salt=secrets.token_bytes(16),
-        )
-
-        error_rates = sorted((len(blocked), len(not_blocked)))
-        cascade.set_crlite_error_rates(
-            include_len=error_rates[0], exclude_len=error_rates[1])
-
-        stats['mlbf_blocked_count'] = len(blocked)
-        stats['mlbf_notblocked_count'] = len(not_blocked)
-
-        cascade.initialize(include=blocked, exclude=not_blocked)
-
-        stats['mlbf_version'] = cascade.version
-        stats['mlbf_layers'] = cascade.layerCount()
-        stats['mlbf_bits'] = cascade.bitCount()
-
-        log.info(
-            f'Filter cascade layers: {cascade.layerCount()}, '
-            f'bit: {cascade.bitCount()}')
-
-        cascade.verify(include=blocked, exclude=not_blocked)
-        return cascade
-
-    @property
-    def filter_path(self):
-        return os.path.join(
-            settings.MLBF_STORAGE_PATH, self.id, 'filter')
-
-    @property
-    def _blocked_path(self):
-        return os.path.join(
-            settings.MLBF_STORAGE_PATH, self.id, 'blocked.json')
-
-    @cached_property
-    def blocked_json(self):
-        with storage.open(self._blocked_path, 'r') as json_file:
-            return json.load(json_file)
-
-    def fetch_blocked_json(self):
-        """A safer version of .blocked_json that will generate from the db
-        if the cached_property isn't set."""
-        try:
-            return self.blocked_json
-        except FileNotFoundError:
-            # when self._blocked_path doesn't exist
-            pass
-        blocked_ids_to_versions = self.fetch_blocked_from_db()
-        blocked = blocked_ids_to_versions.values()
-        # cache version ids so query in fetch_not_blocked_json is efficient
-        self._version_excludes = blocked_ids_to_versions.keys()
-        self.blocked_json = list(self.hash_filter_inputs(blocked))
-        return self.blocked_json
-
-    @property
-    def _not_blocked_path(self):
-        return os.path.join(
-            settings.MLBF_STORAGE_PATH, self.id, 'notblocked.json')
-
     @cached_property
     def not_blocked_json(self):
-        with storage.open(self._not_blocked_path, 'r') as json_file:
-            return json.load(json_file)
-
-    def fetch_not_blocked_json(self):
-        """A safer version of .not_blocked_json that will generate from the db
-        if the cached_property isn't set."""
-        try:
-            return self.not_blocked_json
-        except FileNotFoundError:
-            # when self._not_blocked_path doesn't exist
-            pass
-        # see fetch_blocked_json
-        version_excludes = getattr(
-            self, '_version_excludes', self.fetch_blocked_from_db().keys())
+        # see fetch_blocked_json - we need self._version_excludes populated
+        self.blocked_json
         # even though we exclude all the version ids in the query there's an
         # edge case where the version string occurs twice for an addon so we
         # ensure not_blocked_json doesn't contain any blocked_json.
-        self.not_blocked_json = list(
+        return list(
             self.hash_filter_inputs(
-                self.fetch_all_versions_from_db(version_excludes)) -
+                self.fetch_all_versions_from_db(self._version_excludes)) -
             set(self.blocked_json))
 
-        return self.not_blocked_json
 
-    @property
-    def _stash_path(self):
-        return os.path.join(
-            settings.MLBF_STORAGE_PATH, self.id, 'stash.json')
+def generate_mlbf(stats, blocked, not_blocked):
+    log.info('Starting to generating bloomfilter')
 
-    @cached_property
-    def stash_json(self):
-        with storage.open(self._stash_path, 'r') as json_file:
-            return json.load(json_file)
+    cascade = FilterCascade(
+        defaultHashAlg=HashAlgorithm.SHA256,
+        salt=secrets.token_bytes(16),
+    )
 
-    def generate_and_write_mlbf(self):
-        stats = {}
+    error_rates = sorted((len(blocked), len(not_blocked)))
+    cascade.set_crlite_error_rates(
+        include_len=error_rates[0], exclude_len=error_rates[1])
 
-        blocked_json = self.fetch_blocked_json()
-        not_blocked_json = self.fetch_not_blocked_json()
+    stats['mlbf_blocked_count'] = len(blocked)
+    stats['mlbf_notblocked_count'] = len(not_blocked)
 
-        # write blocked json
-        blocked_path = self._blocked_path
-        with storage.open(blocked_path, 'w') as json_file:
-            log.info("Writing to file {}".format(blocked_path))
-            json.dump(blocked_json, json_file)
-        # and the not blocked json
-        not_blocked_path = self._not_blocked_path
-        with storage.open(not_blocked_path, 'w') as json_file:
-            log.info("Writing to file {}".format(not_blocked_path))
-            json.dump(not_blocked_json, json_file)
+    cascade.initialize(include=blocked, exclude=not_blocked)
 
-        bloomfilter = self.generate_mlbf(
-            stats=stats,
-            blocked=blocked_json,
-            not_blocked=not_blocked_json)
+    stats['mlbf_version'] = cascade.version
+    stats['mlbf_layers'] = cascade.layerCount()
+    stats['mlbf_bits'] = cascade.bitCount()
 
-        # write bloomfilter
-        mlbf_path = self.filter_path
-        with storage.open(mlbf_path, 'wb') as filter_file:
-            log.info("Writing to file {}".format(mlbf_path))
-            bloomfilter.tofile(filter_file)
-            stats['mlbf_filesize'] = os.stat(mlbf_path).st_size
+    log.info(
+        f'Filter cascade layers: {cascade.layerCount()}, '
+        f'bit: {cascade.bitCount()}')
 
-        log.info(json.dumps(stats))
+    cascade.verify(include=blocked, exclude=not_blocked)
+    return cascade
 
-    @classmethod
-    def generate_diffs(cls, previous, current):
-        previous = set(previous)
-        current = set(current)
-        extras = current - previous
-        deletes = previous - current
-        return extras, deletes
 
-    def write_stash(self, previous_mlbf):
-        # compare previous with current blocks
-        extras, deletes = self.generate_diffs(
-            previous_mlbf.blocked_json, self.blocked_json)
-        self.stash_json = {
-            'blocked': list(extras),
-            'unblocked': list(deletes),
-        }
-        # write stash
-        stash_path = self._stash_path
-        with storage.open(stash_path, 'w') as json_file:
-            log.info("Writing to file {}".format(stash_path))
-            json.dump(self.stash_json, json_file)
+def generate_and_write_mlbf(data):
+    stats = {}
 
-    def should_reset_base_filter(self, previous_base_mlbf):
-        try:
-            # compare base with current blocks
-            extras, deletes = self.generate_diffs(
-                previous_base_mlbf.blocked_json, self.fetch_blocked_json())
-            return (len(extras) + len(deletes)) > BASE_REPLACE_THRESHOLD
-        except FileNotFoundError:
-            # when previous_base_mlfb._blocked_path doesn't exist
-            return True
+    data.write_blocked_json()
+    data.write_not_blocked_json()
 
-    def blocks_changed_since_previous(self, previous_base_mlbf):
-        blocked_json = self.fetch_blocked_json()
-        try:
-            # compare base with current blocks
-            extras, deletes = self.generate_diffs(
-                previous_base_mlbf.blocked_json, blocked_json)
-            return len(extras) + len(deletes)
-        except FileNotFoundError:
-            # when previous_base_mlfb._blocked_path doesn't exist
-            return len(blocked_json)
+    bloomfilter = generate_mlbf(
+        stats=stats,
+        blocked=data.blocked_json,
+        not_blocked=data.not_blocked_json)
+
+    # write bloomfilter
+    mlbf_path = data.filter_path
+    with storage.open(mlbf_path, 'wb') as filter_file:
+        log.info("Writing to file {}".format(mlbf_path))
+        bloomfilter.tofile(filter_file)
+        stats['mlbf_filesize'] = os.stat(mlbf_path).st_size
+
+    log.info(json.dumps(stats))
+
+
+def generate_and_write_stash(data, previous_data):
+    # compare previous with current blocks
+    extras, deletes = generate_diffs(
+        previous_data.blocked_json, data.blocked_json)
+    data.stash_json = {
+        'blocked': list(extras),
+        'unblocked': list(deletes),
+    }
+    # write stash
+    stash_path = data._stash_path
+    with storage.open(stash_path, 'w') as json_file:
+        log.info("Writing to file {}".format(stash_path))
+        json.dump(data.stash_json, json_file)
