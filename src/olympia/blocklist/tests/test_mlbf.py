@@ -14,7 +14,8 @@ from olympia.amo.tests import (
 from olympia.blocklist.models import Block
 from olympia.blocklist.mlbf import (
     BloomFilterData, BloomFilterDBData, generate_diffs, generate_mlbf,
-    generate_and_write_mlbf, generate_and_write_stash)
+    generate_and_write_mlbf, generate_and_write_periodic_mlbf,
+    generate_and_write_stash, PeriodicBloomFilterData)
 from olympia.files.models import File
 
 
@@ -327,6 +328,52 @@ class TestMLBF(TestCase):
             blocked_guids, all_addons)
         assert bfilter.bitCount() == expected_bit_count, (
             blocked_guids, all_addons)
+
+    def test_generate_and_write_periodic_mlbf(self):
+        self.setup_data()
+        mlbfs = PeriodicBloomFilterData(123456)
+        generate_and_write_periodic_mlbf(mlbfs)
+
+        excluding_versions, blocked_guids = (
+            mlbfs.fetch_blocked_from_db_with_periods())
+        # print(blocked_guids)
+        all_addons = mlbfs.fetch_all_versions_from_db_periods(
+            excluding_versions)
+        # print(all_addons)
+        dupe_2_1_file = self.addon_deleted_before_unsigned_ver.all_files[0]
+        dupe_2_1_tuple = (
+            dupe_2_1_file.addon.guid,
+            dupe_2_1_file.version.version,
+            dupe_2_1_file.modified)
+        for period in mlbfs.blocked_periods_json:
+            with open(mlbfs.get_filter_path(period), 'rb') as filter_file:
+                buffer = filter_file.read()
+                bfilter = FilterCascade.from_buf(buffer)
+
+            for guid, version_str, timestamp in blocked_guids:
+                key = BloomFilterData.KEY_FORMAT.format(
+                    guid=guid, version=version_str)
+                assert key in bfilter
+
+            for guid, version_str, timestamp in all_addons:
+                # edge case where a version_str exists in both
+                if (guid, version_str, timestamp) == dupe_2_1_tuple:
+                    continue
+                key = BloomFilterData.KEY_FORMAT.format(
+                    guid=guid, version=version_str)
+                assert key not in bfilter
+
+            # Occasionally a combination of salt generated with
+            # secrets.token_bytes and the version str generated in
+            # version_factory results in a collision in layer 1 of the
+            # bloomfilter, leading to a second layer being generated.
+            # When this happens the bitCount and size is larger.
+            expected_size, expected_bit_count = (
+                (203, 1384) if bfilter.layerCount() == 1 else (393, 2824))
+            assert os.stat(mlbfs.get_filter_path(period)).st_size == (
+                expected_size), (blocked_guids, all_addons)
+            assert bfilter.bitCount() == expected_bit_count, (
+                blocked_guids, all_addons)
 
     def test_generate_diffs(self):
         old_versions = [

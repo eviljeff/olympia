@@ -9,6 +9,7 @@ from django.utils.functional import cached_property
 
 from filtercascade import FilterCascade
 from filtercascade.fileformats import HashAlgorithm
+from olympia.amo.utils import sorted_groupby
 
 import olympia.core.logger
 from olympia.constants.blocklist import BASE_REPLACE_THRESHOLD
@@ -221,6 +222,129 @@ def generate_and_write_mlbf(data):
         stats['mlbf_filesize'] = os.stat(mlbf_path).st_size
 
     log.info(json.dumps(stats))
+
+
+class PeriodicBloomFilterData(BloomFilterDBData):
+
+    @classmethod
+    def hash_filter_inputs(cls, input_list):
+        """Returns a set"""
+        return {
+            cls.KEY_FORMAT.format(guid=guid, version=version)
+            for (guid, version, _) in input_list}
+
+    @classmethod
+    def fetch_blocked_from_db_with_periods(cls):
+        from olympia.files.models import File
+        from olympia.blocklist.models import Block
+
+        blocks = Block.objects.all()
+        blocks_guids = [block.guid for block in blocks]
+
+        file_qs = File.objects.filter(
+            version__addon__addonguid__guid__in=blocks_guids,
+            is_signed=True,
+            is_webextension=True,
+        ).order_by('version_id').values(
+            'version__addon__addonguid__guid',
+            'version__version',
+            'version_id',
+            'modified')  # TODO: store&get the actual signing datetime
+        addons_versions = defaultdict(list)
+        for file_ in file_qs:
+            addon_key = file_['version__addon__addonguid__guid']
+            addons_versions[addon_key].append(
+                (file_['version__version'],
+                 file_['version_id'],
+                 file_['modified']))
+
+        version_ids = []
+        block_pairs = []
+
+        # collect all the blocked versions
+        for block in blocks:
+            is_all_versions = (
+                block.min_version == Block.MIN and
+                block.max_version == Block.MAX)
+            for version, version_id, ts in addons_versions[block.guid]:
+                if is_all_versions or block.is_version_blocked(version):
+                    version_ids.append(version_id)
+                    block_pairs.append((block.guid, version, ts))
+
+        return version_ids, block_pairs
+
+    def _group_into_periods(self, data):
+        return sorted_groupby(
+            data, lambda val: int(val[2].timestamp() // 90))
+
+    @cached_property
+    def blocked_periods_json(self):
+        _version_excludes, blocked = self.fetch_blocked_from_db_with_periods()
+        # cache version ids so query in not_blocked_json is efficient
+        self._version_excludes = _version_excludes
+
+        periods = self._group_into_periods(blocked)
+        # print([(x, y) for x, y in periods])
+        return {
+            start: list(self.hash_filter_inputs(inputs))
+            for start, inputs in periods}
+
+    @classmethod
+    def fetch_all_versions_from_db_periods(cls, excluding_version_ids=None):
+        from olympia.files.models import File
+
+        qs = (
+            File.objects.exclude(version_id__in=excluding_version_ids or ())
+                .values_list(
+                    'version__addon__addonguid__guid',
+                    'version__version',
+                    'modified'))  # TODO: store&get the actual signing datetime
+        return list(qs)
+
+    @cached_property
+    def not_blocked_periods_json(self):
+        # see blocked_json - we need self._version_excludes populated
+        self.blocked_periods_json
+        not_blocked = self.fetch_all_versions_from_db_periods(
+            self._version_excludes)
+        # even though we exclude all the version ids in the query there's an
+        # edge case where the version string occurs twice for an addon so we
+        # ensure not_blocked_json doesn't contain any blocked_json.
+        return {
+            start: list(
+                self.hash_filter_inputs(inputs) -
+                set(self.blocked_periods_json.get(start, ())))
+            for start, inputs in self._group_into_periods(not_blocked)}
+
+    def get_filter_path(self, period):
+        return os.path.join(
+            settings.MLBF_STORAGE_PATH, self.id, f'{period}.filter')
+
+
+def generate_and_write_periodic_mlbf(periodic_data):
+    total_stats = []
+
+    # periodic_data.write_blocked_json()
+    # periodic_data.write_not_blocked_json()
+
+    for from_ts, blocked in periodic_data.blocked_periods_json.items():
+        stats = {}
+        not_blocked = periodic_data.not_blocked_periods_json.get(from_ts) or ()
+        print(blocked, not_blocked)
+        bloomfilter = generate_mlbf(
+            stats=stats,
+            blocked=blocked,
+            not_blocked=not_blocked)
+
+        # write bloomfilter
+        mlbf_path = periodic_data.get_filter_path(from_ts)
+        with storage.open(mlbf_path, 'wb') as filter_file:
+            log.info("Writing to file {}".format(mlbf_path))
+            bloomfilter.tofile(filter_file)
+            stats['mlbf_filesize'] = os.stat(mlbf_path).st_size
+        total_stats.append(stats)
+
+    log.info(json.dumps(total_stats))
 
 
 def generate_and_write_stash(data, previous_data):
