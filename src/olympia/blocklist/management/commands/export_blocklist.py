@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 
 import olympia.core.logger
 
-from olympia.blocklist.mlbf import BloomFilterDBData, generate_and_write_mlbf
+from olympia.blocklist.mlbf import DatabaseMLBF, generate_and_write_mlbf
 
 
 log = olympia.core.logger.getLogger('z.amo.blocklist')
@@ -35,17 +35,17 @@ class Command(BaseCommand):
     def load_json(self, json_path):
         with open(json_path) as json_file:
             data = json.load(json_file)
-        return [tuple(record) for record in data]
+        return [(record[0], record[1]) for record in data]
 
     def handle(self, *args, **options):
         log.debug('Exporting blocklist to file')
-        mlbf = BloomFilterDBData(options.get('id'))
+        mlbf = DatabaseMLBF(options.get('id'))
 
         if options.get('block_guids_input'):
-            mlbf.blocked_json = list(BloomFilterDBData.hash_filter_inputs(
+            mlbf.blocked_items = list(DatabaseMLBF.hash_filter_inputs(
                 self.load_json(options.get('block_guids_input'))))
         if options.get('addon_guids_input'):
-            mlbf.not_blocked_json = list(BloomFilterDBData.hash_filter_inputs(
+            mlbf.not_blocked_items = list(DatabaseMLBF.hash_filter_inputs(
                 self.load_json(options.get('addon_guids_input'))))
 
         generate_and_write_mlbf(mlbf)

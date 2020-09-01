@@ -23,7 +23,7 @@ from olympia.lib.remote_settings import RemoteSettings
 from olympia.users.utils import get_task_user
 from olympia.zadmin.models import set_config
 
-from .mlbf import BloomFilterData
+from .mlbf import StoredMLBF
 from .models import Block, BlocklistSubmission, LegacyImport
 from .utils import (
     block_activity_log_delete, block_activity_log_save, split_regex_to_list)
@@ -203,7 +203,7 @@ def upload_filter(generation_time, is_base=True, upload_stash=False):
     bucket = settings.REMOTE_SETTINGS_WRITER_BUCKET
     server = RemoteSettings(
         bucket, REMOTE_SETTINGS_COLLECTION_MLBF, sign_off_needed=False)
-    mlbf = BloomFilterData(generation_time)
+    mlbf = StoredMLBF(generation_time)
     if is_base:
         # clear the collection for the base - we want to be the only filter
         server.delete_all_records()
@@ -212,7 +212,7 @@ def upload_filter(generation_time, is_base=True, upload_stash=False):
     if upload_stash:
         # If we have a stash, write that
         stash_data = {
-            'key_format': BloomFilterData.KEY_FORMAT,
+            'key_format': MLBF.KEY_FORMAT,
             'stash_time': generation_time,
             'stash': mlbf.stash_json,
         }
@@ -221,7 +221,7 @@ def upload_filter(generation_time, is_base=True, upload_stash=False):
 
     # Then the bloomfilter
     data = {
-        'key_format': BloomFilterData.KEY_FORMAT,
+        'key_format': MLBF.KEY_FORMAT,
         'generation_time': generation_time,
         'attachment_type':
             BLOCKLIST_RECORD_MLBF_BASE if is_base else

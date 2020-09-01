@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 from random import randint
@@ -13,9 +14,9 @@ from olympia.amo.tests import (
     addon_factory, TestCase, user_factory, version_factory)
 from olympia.blocklist.models import Block
 from olympia.blocklist.mlbf import (
-    BloomFilterData, BloomFilterDBData, generate_diffs, generate_mlbf,
+    DatabaseMLBF, generate_diffs, generate_mlbf,
     generate_and_write_mlbf, generate_and_write_periodic_mlbf,
-    generate_and_write_stash, PeriodicBloomFilterData)
+    generate_and_write_stash, MLBF, PeriodicDatabaseMLBF, StoredMLBF)
 from olympia.files.models import File
 
 
@@ -25,11 +26,16 @@ class TestMLBF(TestCase):
         user = user_factory()
         for idx in range(0, 5):
             addon_factory()
+        addon = addon_factory()
+        addon.current_version.all_files[0].update(
+            modified=datetime(2019, 1, 1))
         # one version, 0 - *
-        Block.objects.create(
+        block = Block.objects.create(
             addon=addon_factory(
                 file_kw={'is_signed': True, 'is_webextension': True}),
             updated_by=user)
+        block.addon.current_version.all_files[0].update(
+            modified=datetime(2019, 1, 1))
         # one version, 0 - 9999
         Block.objects.create(
             addon=addon_factory(
@@ -110,7 +116,7 @@ class TestMLBF(TestCase):
 
     def test_fetch_all_versions_from_db(self):
         self.setup_data()
-        all_versions = BloomFilterDBData.fetch_all_versions_from_db()
+        all_versions = DatabaseMLBF.fetch_all_versions_from_db()
         assert len(all_versions) == File.objects.count() == 5 + 10 + 5
         assert (self.five_ver_block.guid, '123.40') in all_versions
         assert (self.five_ver_block.guid, '123.5') in all_versions
@@ -132,7 +138,7 @@ class TestMLBF(TestCase):
 
         # repeat, but with excluded version ids
         excludes = [self.five_ver_123_40.id, self.five_ver_123_5.id]
-        all_versions = BloomFilterDBData.fetch_all_versions_from_db(excludes)
+        all_versions = DatabaseMLBF.fetch_all_versions_from_db(excludes)
         assert len(all_versions) == 18
         assert (self.five_ver_block.guid, '123.40') not in all_versions
         assert (self.five_ver_block.guid, '123.5') not in all_versions
@@ -147,7 +153,7 @@ class TestMLBF(TestCase):
 
     def test_fetch_blocked_from_db(self):
         self.setup_data()
-        blocked_versions = BloomFilterDBData.fetch_blocked_from_db()
+        blocked_versions = DatabaseMLBF.fetch_blocked_from_db()
 
         # check the values - the tuples used to generate the mlbf
         blocked_guids = blocked_versions.values()
@@ -191,14 +197,14 @@ class TestMLBF(TestCase):
         # doublecheck if the versions were signed & webextensions they'd be in.
         self.not_signed_version.all_files[0].update(is_signed=True)
         self.not_webext_version.all_files[0].update(is_webextension=True)
-        assert len(BloomFilterDBData.fetch_blocked_from_db()) == 10
+        assert len(DatabaseMLBF.fetch_blocked_from_db()) == 10
 
     def test_fetch_blocked_with_duplicate_version_strings(self):
         """Handling the edge case where an addon (erroronously) has more than
         one version with the same version identififer."""
         self.setup_data()
-        blocked_guids = BloomFilterDBData.fetch_blocked_from_db().values()
-        assert len(BloomFilterDBData.hash_filter_inputs(blocked_guids)) == 8
+        blocked_guids = DatabaseMLBF.fetch_blocked_from_db().values()
+        assert len(DatabaseMLBF.hash_filter_inputs(blocked_guids)) == 8
 
         version_factory(
             addon=self.five_ver_block.addon,
@@ -207,28 +213,28 @@ class TestMLBF(TestCase):
         self.five_ver_block.addon.reload()
         assert self.five_ver_block.addon.versions.filter(
             version='123.40').count() == 2
-        blocked_guids = BloomFilterDBData.fetch_blocked_from_db().values()
-        assert len(BloomFilterDBData.hash_filter_inputs(blocked_guids)) == 8
+        blocked_guids = DatabaseMLBF.fetch_blocked_from_db().values()
+        assert len(DatabaseMLBF.hash_filter_inputs(blocked_guids)) == 8
 
     def test_hash_filter_inputs(self):
         data = [
             ('guid@', '1.0'),
             ('foo@baa', '999.223a'),
         ]
-        assert sorted(BloomFilterDBData.hash_filter_inputs(data)) == [
+        assert sorted(DatabaseMLBF.hash_filter_inputs(data)) == [
             'foo@baa:999.223a',
             'guid@:1.0',
         ]
         # check dupes are stripped out too
         data.append(('guid@', '1.0'))
-        assert sorted(BloomFilterDBData.hash_filter_inputs(data)) == [
+        assert sorted(DatabaseMLBF.hash_filter_inputs(data)) == [
             'foo@baa:999.223a',
             'guid@:1.0',
         ]
 
     def test_generate_mlbf(self):
         stats = {}
-        key_format = BloomFilterData.KEY_FORMAT
+        key_format = MLBF.KEY_FORMAT
         blocked = [
             ('guid1@', '1.0'), ('@guid2', '1.0'), ('@guid2', '1.1'),
             ('guid3@', '0.01b1'),
@@ -240,8 +246,8 @@ class TestMLBF(TestCase):
             ('@guid200', '1.1'), ('guid300@', '0.01b1')]
         bfilter = generate_mlbf(
             stats,
-            blocked=BloomFilterDBData.hash_filter_inputs(blocked),
-            not_blocked=BloomFilterDBData.hash_filter_inputs(not_blocked))
+            blocked=DatabaseMLBF.hash_filter_inputs(blocked),
+            not_blocked=DatabaseMLBF.hash_filter_inputs(not_blocked))
         for entry in blocked:
             key = key_format.format(guid=entry[0], version=entry[1])
             assert key in bfilter
@@ -257,7 +263,7 @@ class TestMLBF(TestCase):
 
     @pytest.mark.skip(reason='super slow, so only enable locally')
     def test_generate_mlbf_large(self):
-        key_format = BloomFilterData.KEY_FORMAT
+        key_format = MLBF.KEY_FORMAT
         blocked = [
             (f'guid{randint(1,999)}@', f'{randint(0, 99)}.{randint(0, 99)}')
             for x in range(10000)]
@@ -267,8 +273,8 @@ class TestMLBF(TestCase):
         not_blocked = [pair for pair in not_blocked if pair not in blocked]
         bfilter = generate_mlbf(
             {},
-            blocked=BloomFilterDBData.hash_filter_inputs(blocked),
-            not_blocked=BloomFilterDBData.hash_filter_inputs(not_blocked))
+            blocked=DatabaseMLBF.hash_filter_inputs(blocked),
+            not_blocked=DatabaseMLBF.hash_filter_inputs(not_blocked))
         for entry in blocked:
             key = key_format.format(guid=entry[0], version=entry[1])
             assert key in bfilter
@@ -280,13 +286,13 @@ class TestMLBF(TestCase):
             assert os.stat(out.name).st_size == 10086
 
     def test_generate_mlbf_with_more_blocked_than_not_blocked(self):
-        key_format = BloomFilterData.KEY_FORMAT
+        key_format = MLBF.KEY_FORMAT
         blocked = [('guid1@', '1.0'), ('@guid2', '1.0')]
         not_blocked = [('guid10@', '1.0')]
         bfilter = generate_mlbf(
             {},
-            blocked=BloomFilterDBData.hash_filter_inputs(blocked),
-            not_blocked=BloomFilterDBData.hash_filter_inputs(not_blocked))
+            blocked=DatabaseMLBF.hash_filter_inputs(blocked),
+            not_blocked=DatabaseMLBF.hash_filter_inputs(not_blocked))
         for entry in blocked:
             key = key_format.format(guid=entry[0], version=entry[1])
             assert key in bfilter
@@ -296,7 +302,7 @@ class TestMLBF(TestCase):
 
     def test_generate_and_write_mlbf(self):
         self.setup_data()
-        mlbf = BloomFilterDBData(123456)
+        mlbf = DatabaseMLBF(123456)
         generate_and_write_mlbf(mlbf)
 
         with open(mlbf.filter_path, 'rb') as filter_file:
@@ -306,7 +312,7 @@ class TestMLBF(TestCase):
         blocked_versions = mlbf.fetch_blocked_from_db()
         blocked_guids = blocked_versions.values()
         for guid, version_str in blocked_guids:
-            key = BloomFilterData.KEY_FORMAT.format(
+            key = MLBF.KEY_FORMAT.format(
                 guid=guid, version=version_str)
             assert key in bfilter
 
@@ -331,49 +337,57 @@ class TestMLBF(TestCase):
 
     def test_generate_and_write_periodic_mlbf(self):
         self.setup_data()
-        mlbfs = PeriodicBloomFilterData(123456)
+        mlbfs = PeriodicDatabaseMLBF(123456)
         generate_and_write_periodic_mlbf(mlbfs)
 
         excluding_versions, blocked_guids = (
             mlbfs.fetch_blocked_from_db_with_periods())
-        # print(blocked_guids)
+        blocked_guids = dict(
+            PeriodicDatabaseMLBF.group_into_periods(blocked_guids))
         all_addons = mlbfs.fetch_all_versions_from_db_periods(
             excluding_versions)
-        # print(all_addons)
+        all_addons = dict(
+            PeriodicDatabaseMLBF.group_into_periods(all_addons))
         dupe_2_1_file = self.addon_deleted_before_unsigned_ver.all_files[0]
         dupe_2_1_tuple = (
             dupe_2_1_file.addon.guid,
             dupe_2_1_file.version.version,
             dupe_2_1_file.modified)
-        for period in mlbfs.blocked_periods_json:
+
+        assert len(mlbfs.blocked_items) == 2
+        bfilters = []
+        filter_paths = []
+        for period in mlbfs.blocked_items:
             with open(mlbfs.get_filter_path(period), 'rb') as filter_file:
                 buffer = filter_file.read()
                 bfilter = FilterCascade.from_buf(buffer)
+            filter_paths.append(mlbfs.get_filter_path(period))
 
-            for guid, version_str, timestamp in blocked_guids:
-                key = BloomFilterData.KEY_FORMAT.format(
+            for (guid, version_str, timestamp) in blocked_guids[period]:
+                key = MLBF.KEY_FORMAT.format(
                     guid=guid, version=version_str)
                 assert key in bfilter
 
-            for guid, version_str, timestamp in all_addons:
+            for (guid, version_str, timestamp) in all_addons[period]:
                 # edge case where a version_str exists in both
                 if (guid, version_str, timestamp) == dupe_2_1_tuple:
                     continue
-                key = BloomFilterData.KEY_FORMAT.format(
+                key = MLBF.KEY_FORMAT.format(
                     guid=guid, version=version_str)
                 assert key not in bfilter
+            bfilters.append(bfilter)
 
-            # Occasionally a combination of salt generated with
-            # secrets.token_bytes and the version str generated in
-            # version_factory results in a collision in layer 1 of the
-            # bloomfilter, leading to a second layer being generated.
-            # When this happens the bitCount and size is larger.
-            expected_size, expected_bit_count = (
-                (203, 1384) if bfilter.layerCount() == 1 else (393, 2824))
-            assert os.stat(mlbfs.get_filter_path(period)).st_size == (
-                expected_size), (blocked_guids, all_addons)
-            assert bfilter.bitCount() == expected_bit_count, (
-                blocked_guids, all_addons)
+        expected_size, expected_bit_count = 120, 720
+        assert os.stat(filter_paths[0]).st_size == (
+            expected_size), (blocked_guids, all_addons)
+        assert bfilters[0].bitCount() == expected_bit_count, (
+            blocked_guids, all_addons)
+
+        expected_size, expected_bit_count = 238, 1664
+        assert os.stat(filter_paths[1]).st_size == expected_size, (
+            blocked_guids, all_addons)
+        assert bfilters[1].bitCount() == expected_bit_count, (
+            blocked_guids, all_addons)
 
     def test_generate_diffs(self):
         old_versions = [
@@ -388,9 +402,9 @@ class TestMLBF(TestCase):
 
     def test_write_stash(self):
         self.setup_data()
-        old_mlbf = BloomFilterDBData('old')
+        old_mlbf = DatabaseMLBF('old')
         generate_and_write_mlbf(old_mlbf)
-        new_mlbf = BloomFilterDBData('new_no_change')
+        new_mlbf = DatabaseMLBF('new_no_change')
         generate_and_write_mlbf(new_mlbf)
         generate_and_write_stash(new_mlbf, old_mlbf)
         empty_stash = {'blocked': [], 'unblocked': []}
@@ -405,7 +419,7 @@ class TestMLBF(TestCase):
                 file_kw={'is_signed': True, 'is_webextension': True}),
             updated_by=user_factory())
         self.five_ver_123_5.delete(hard=True)
-        newer_mlbf = BloomFilterDBData('new_one_change')
+        newer_mlbf = DatabaseMLBF('new_one_change')
         generate_and_write_mlbf(newer_mlbf)
         generate_and_write_stash(newer_mlbf, new_mlbf)
         full_stash = {
@@ -417,15 +431,15 @@ class TestMLBF(TestCase):
 
     def test_should_reset_base_filter_and_blocks_changed_since_previous(self):
         self.setup_data()
-        base_mlbf = BloomFilterDBData('base')
+        base_mlbf = DatabaseMLBF('base')
         # should handle the files not existing
         assert base_mlbf.should_reset_base_filter(
-            BloomFilterData('no_files'))
+            StoredMLBF('no_files'))
         assert base_mlbf.blocks_changed_since_previous(
-            BloomFilterData('no_files'))
+            StoredMLBF('no_files'))
         generate_and_write_mlbf(base_mlbf)
 
-        no_change_mlbf = BloomFilterDBData('no_change')
+        no_change_mlbf = DatabaseMLBF('no_change')
         generate_and_write_mlbf(no_change_mlbf)
         assert not no_change_mlbf.should_reset_base_filter(base_mlbf)
         assert not no_change_mlbf.blocks_changed_since_previous(base_mlbf)
@@ -438,7 +452,7 @@ class TestMLBF(TestCase):
                 file_kw={'is_signed': True, 'is_webextension': True}),
             updated_by=user_factory())
         self.five_ver_123_5.delete(hard=True)
-        small_change_mlbf = BloomFilterDBData('small_change')
+        small_change_mlbf = DatabaseMLBF('small_change')
         generate_and_write_mlbf(small_change_mlbf)
         # but the changes were small (less than threshold) so no need for new
         # base filter
@@ -447,8 +461,8 @@ class TestMLBF(TestCase):
         assert small_change_mlbf.blocks_changed_since_previous(base_mlbf)
         # double check what the differences were
         diffs = generate_diffs(
-            previous=base_mlbf.blocked_json,
-            current=small_change_mlbf.blocked_json)
+            previous=base_mlbf.blocked_items,
+            current=small_change_mlbf.blocked_items)
         assert diffs == (
             {'fooo@baaaa:999'}, {f'{self.five_ver_block.guid}:123.5'})
 

@@ -26,7 +26,7 @@ def generate_diffs(previous, current):
     return extras, deletes
 
 
-class BloomFilterData():
+class MLBF():
     KEY_FORMAT = '{guid}:{version}'
 
     def __init__(self, id_):
@@ -39,15 +39,14 @@ class BloomFilterData():
             settings.MLBF_STORAGE_PATH, self.id, 'blocked.json')
 
     @cached_property
-    def blocked_json(self):
-        with storage.open(self._blocked_path, 'r') as json_file:
-            return json.load(json_file)
+    def blocked_items(self):
+        raise NotImplementedError
 
-    def write_blocked_json(self):
+    def write_blocked_items(self):
         blocked_path = self._blocked_path
         with storage.open(blocked_path, 'w') as json_file:
             log.info("Writing to file {}".format(blocked_path))
-            json.dump(self.blocked_json, json_file)
+            json.dump(self.blocked_items, json_file)
 
     @property
     def _not_blocked_path(self):
@@ -55,15 +54,14 @@ class BloomFilterData():
             settings.MLBF_STORAGE_PATH, self.id, 'notblocked.json')
 
     @cached_property
-    def not_blocked_json(self):
-        with storage.open(self._not_blocked_path, 'r') as json_file:
-            return json.load(json_file)
+    def not_blocked_items(self):
+        raise NotImplementedError
 
-    def write_not_blocked_json(self):
+    def write_not_blocked_items(self):
         not_blocked_path = self._not_blocked_path
         with storage.open(not_blocked_path, 'w') as json_file:
             log.info("Writing to file {}".format(not_blocked_path))
-            json.dump(self.not_blocked_json, json_file)
+            json.dump(self.not_blocked_items, json_file)
 
     @property
     def filter_path(self):
@@ -84,24 +82,37 @@ class BloomFilterData():
         try:
             # compare base with current blocks
             extras, deletes = generate_diffs(
-                previous_bloom_filter.blocked_json, self.blocked_json)
+                previous_bloom_filter.blocked_items, self.blocked_items)
             return len(extras) + len(deletes)
         except FileNotFoundError:
             # when previous_bloom_filter._blocked_path doesn't exist
-            return len(self.blocked_json)
+            return len(self.blocked_items)
 
     def should_reset_base_filter(self, previous_bloom_filter):
         try:
             # compare base with current blocks
             extras, deletes = generate_diffs(
-                previous_bloom_filter.blocked_json, self.blocked_json)
+                previous_bloom_filter.blocked_items, self.blocked_items)
             return (len(extras) + len(deletes)) > BASE_REPLACE_THRESHOLD
         except FileNotFoundError:
             # when previous_base_mlfb._blocked_path doesn't exist
             return True
 
 
-class BloomFilterDBData(BloomFilterData):
+class StoredMLBF(MLBF):
+
+    @cached_property
+    def blocked_items(self):
+        with storage.open(self._blocked_path, 'r') as json_file:
+            return json.load(json_file)
+
+    @cached_property
+    def not_blocked_items(self):
+        with storage.open(self._not_blocked_path, 'r') as json_file:
+            return json.load(json_file)
+
+
+class DatabaseMLBF(MLBF):
     @classmethod
     def hash_filter_inputs(cls, input_list):
         """Returns a set"""
@@ -145,10 +156,10 @@ class BloomFilterDBData(BloomFilterData):
         return all_versions
 
     @cached_property
-    def blocked_json(self):
+    def blocked_items(self):
         blocked_ids_to_versions = self.fetch_blocked_from_db()
         blocked = blocked_ids_to_versions.values()
-        # cache version ids so query in not_blocked_json is efficient
+        # cache version ids so query in not_blocked_items is efficient
         self._version_excludes = blocked_ids_to_versions.keys()
         return list(self.hash_filter_inputs(blocked))
 
@@ -162,16 +173,16 @@ class BloomFilterDBData(BloomFilterData):
         return list(qs)
 
     @cached_property
-    def not_blocked_json(self):
-        # see fetch_blocked_json - we need self._version_excludes populated
-        self.blocked_json
+    def not_blocked_items(self):
+        # see fetch_blocked_items - we need self._version_excludes populated
+        self.blocked_items
         # even though we exclude all the version ids in the query there's an
         # edge case where the version string occurs twice for an addon so we
-        # ensure not_blocked_json doesn't contain any blocked_json.
+        # ensure not_blocked_items doesn't contain any blocked_items.
         return list(
             self.hash_filter_inputs(
                 self.fetch_all_versions_from_db(self._version_excludes)) -
-            set(self.blocked_json))
+            set(self.blocked_items))
 
 
 def generate_mlbf(stats, blocked, not_blocked):
@@ -206,13 +217,13 @@ def generate_mlbf(stats, blocked, not_blocked):
 def generate_and_write_mlbf(data):
     stats = {}
 
-    data.write_blocked_json()
-    data.write_not_blocked_json()
+    data.write_blocked_items()
+    data.write_not_blocked_items()
 
     bloomfilter = generate_mlbf(
         stats=stats,
-        blocked=data.blocked_json,
-        not_blocked=data.not_blocked_json)
+        blocked=data.blocked_items,
+        not_blocked=data.not_blocked_items)
 
     # write bloomfilter
     mlbf_path = data.filter_path
@@ -224,7 +235,8 @@ def generate_and_write_mlbf(data):
     log.info(json.dumps(stats))
 
 
-class PeriodicBloomFilterData(BloomFilterDBData):
+class PeriodicDatabaseMLBF(MLBF):
+    DAYS_PER_PERIOD = 90
 
     @classmethod
     def hash_filter_inputs(cls, input_list):
@@ -273,17 +285,20 @@ class PeriodicBloomFilterData(BloomFilterDBData):
 
         return version_ids, block_pairs
 
-    def _group_into_periods(self, data):
+    @classmethod
+    def group_into_periods(cls, data):
+        seconds = cls.DAYS_PER_PERIOD * 24 * 60 * 60
         return sorted_groupby(
-            data, lambda val: int(val[2].timestamp() // 90))
+            data,
+            lambda val: int(val[2].timestamp() // seconds) * seconds)
 
     @cached_property
-    def blocked_periods_json(self):
+    def blocked_items(self):
         _version_excludes, blocked = self.fetch_blocked_from_db_with_periods()
-        # cache version ids so query in not_blocked_json is efficient
+        # cache version ids so query in not_blocked_items is efficient
         self._version_excludes = _version_excludes
 
-        periods = self._group_into_periods(blocked)
+        periods = self.group_into_periods(blocked)
         # print([(x, y) for x, y in periods])
         return {
             start: list(self.hash_filter_inputs(inputs))
@@ -302,19 +317,19 @@ class PeriodicBloomFilterData(BloomFilterDBData):
         return list(qs)
 
     @cached_property
-    def not_blocked_periods_json(self):
-        # see blocked_json - we need self._version_excludes populated
-        self.blocked_periods_json
+    def not_blocked_items(self):
+        # see blocked_items - we need self._version_excludes populated
+        self.blocked_items
         not_blocked = self.fetch_all_versions_from_db_periods(
             self._version_excludes)
         # even though we exclude all the version ids in the query there's an
         # edge case where the version string occurs twice for an addon so we
-        # ensure not_blocked_json doesn't contain any blocked_json.
+        # ensure not_blocked_items doesn't contain any blocked_items.
         return {
             start: list(
                 self.hash_filter_inputs(inputs) -
-                set(self.blocked_periods_json.get(start, ())))
-            for start, inputs in self._group_into_periods(not_blocked)}
+                set(self.blocked_items.get(start, ())))
+            for start, inputs in self.group_into_periods(not_blocked)}
 
     def get_filter_path(self, period):
         return os.path.join(
@@ -324,13 +339,12 @@ class PeriodicBloomFilterData(BloomFilterDBData):
 def generate_and_write_periodic_mlbf(periodic_data):
     total_stats = []
 
-    # periodic_data.write_blocked_json()
-    # periodic_data.write_not_blocked_json()
+    periodic_data.write_blocked_items()
+    periodic_data.write_not_blocked_items()
 
-    for from_ts, blocked in periodic_data.blocked_periods_json.items():
+    for from_ts, blocked in periodic_data.blocked_items.items():
         stats = {}
-        not_blocked = periodic_data.not_blocked_periods_json.get(from_ts) or ()
-        print(blocked, not_blocked)
+        not_blocked = periodic_data.not_blocked_items.get(from_ts) or ()
         bloomfilter = generate_mlbf(
             stats=stats,
             blocked=blocked,
@@ -350,7 +364,7 @@ def generate_and_write_periodic_mlbf(periodic_data):
 def generate_and_write_stash(data, previous_data):
     # compare previous with current blocks
     extras, deletes = generate_diffs(
-        previous_data.blocked_json, data.blocked_json)
+        previous_data.blocked_items, data.blocked_items)
     data.stash_json = {
         'blocked': list(extras),
         'unblocked': list(deletes),

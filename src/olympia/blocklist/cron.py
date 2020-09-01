@@ -12,7 +12,7 @@ from olympia.constants.blocklist import (
 from olympia.zadmin.models import get_config
 
 from .mlbf import (
-    BloomFilterDBData, BloomFilterData, generate_and_write_mlbf,
+    DatabaseMLBF, StoredMLBF, generate_and_write_mlbf,
     generate_and_write_stash)
 from .models import Block
 from .tasks import upload_filter
@@ -56,8 +56,8 @@ def _upload_mlbf_to_remote_settings(*, force_base=False):
     # there may be false positives or false negatives.
     # https://github.com/mozilla/addons-server/issues/13695
     generation_time = int(time.time() * 1000)
-    mlbf = BloomFilterDBData(generation_time)
-    previous_filter = BloomFilterData(last_generation_time)
+    mlbf = DatabaseMLBF(generation_time)
+    previous_filter = StoredMLBF(last_generation_time)
 
     changes_count = mlbf.blocks_changed_since_previous(previous_filter)
     statsd.incr(
@@ -76,16 +76,16 @@ def _upload_mlbf_to_remote_settings(*, force_base=False):
     generate_and_write_mlbf(mlbf)
     statsd.incr(
         'blocklist.cron.upload_mlbf_to_remote_settings.blocked_count',
-        len(mlbf.blocked_json))
+        len(mlbf.blocked_items))
     statsd.incr(
         'blocklist.cron.upload_mlbf_to_remote_settings.not_blocked_count',
-        len(mlbf.not_blocked_json))
+        len(mlbf.not_blocked_items))
 
     base_filter_id = get_config(MLBF_BASE_ID_CONFIG_KEY, 0, json_value=True)
     # optimize for when the base_filter was the previous generation so
     # we don't have to load the blocked JSON file twice.
     base_filter = (
-        BloomFilterData(base_filter_id)
+        StoredMLBF(base_filter_id)
         if last_generation_time != base_filter_id else
         previous_filter)
 

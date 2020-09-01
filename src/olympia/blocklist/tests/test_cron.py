@@ -17,7 +17,7 @@ from olympia.amo.tests import (
 from olympia.blocklist.cron import (
     auto_import_blocklist, get_blocklist_last_modified_time,
     upload_mlbf_to_remote_settings)
-from olympia.blocklist.mlbf import BloomFilterData
+from olympia.blocklist.mlbf import MLBF, StoredMLBF
 from olympia.blocklist.models import Block
 from olympia.constants.blocklist import (
     MLBF_TIME_CONFIG_KEY, MLBF_BASE_ID_CONFIG_KEY)
@@ -62,7 +62,7 @@ class TestUploadToRemoteSettings(TestCase):
         generation_time = int(
             datetime.datetime(2020, 1, 1, 12, 34, 56).timestamp() * 1000)
         self.publish_attachment_mock.assert_called_with(
-            {'key_format': BloomFilterData.KEY_FORMAT,
+            {'key_format': MLBF.KEY_FORMAT,
              'generation_time': generation_time,
              'attachment_type': 'bloomfilter-base'},
             ('filter.bin', mock.ANY, 'application/octet-stream'))
@@ -107,12 +107,12 @@ class TestUploadToRemoteSettings(TestCase):
             datetime.datetime(2020, 1, 1, 12, 34, 56).timestamp() * 1000)
 
         self.publish_attachment_mock.assert_called_with(
-            {'key_format': BloomFilterData.KEY_FORMAT,
+            {'key_format': MLBF.KEY_FORMAT,
              'generation_time': generation_time,
              'attachment_type': 'bloomfilter-full'},
             ('filter.bin', mock.ANY, 'application/octet-stream'))
         self.publish_record_mock.assert_called_with({
-            'key_format': BloomFilterData.KEY_FORMAT,
+            'key_format': MLBF.KEY_FORMAT,
             'stash_time': generation_time,
             'stash': {
                 'blocked': [
@@ -156,12 +156,12 @@ class TestUploadToRemoteSettings(TestCase):
             datetime.datetime(2020, 1, 1, 12, 34, 56).timestamp() * 1000)
 
         self.publish_attachment_mock.assert_called_with(
-            {'key_format': BloomFilterData.KEY_FORMAT,
+            {'key_format': MLBF.KEY_FORMAT,
              'generation_time': generation_time,
              'attachment_type': 'bloomfilter-full'},
             ('filter.bin', mock.ANY, 'application/octet-stream'))
         self.publish_record_mock.assert_called_with({
-            'key_format': BloomFilterData.KEY_FORMAT,
+            'key_format': MLBF.KEY_FORMAT,
             'stash_time': generation_time,
             'stash': {
                 'blocked': [
@@ -187,7 +187,7 @@ class TestUploadToRemoteSettings(TestCase):
             mock.call(f'{STATSD_PREFIX}success'),
         ])
 
-    @mock.patch.object(BloomFilterData, 'should_reset_base_filter')
+    @mock.patch.object(StoredMLBF, 'should_reset_base_filter')
     def test_reset_base_because_over_reset_threshold(self, should_reset_mock):
         should_reset_mock.return_value = True
         set_config(MLBF_TIME_CONFIG_KEY, 123456, json_value=True)
@@ -207,7 +207,7 @@ class TestUploadToRemoteSettings(TestCase):
             datetime.datetime(2020, 1, 1, 12, 34, 56).timestamp() * 1000)
 
         self.publish_attachment_mock.assert_called_with(
-            {'key_format': BloomFilterData.KEY_FORMAT,
+            {'key_format': MLBF.KEY_FORMAT,
              'generation_time': generation_time,
              'attachment_type': 'bloomfilter-base'},
             ('filter.bin', mock.ANY, 'application/octet-stream'))
@@ -236,7 +236,7 @@ class TestUploadToRemoteSettings(TestCase):
         ])
 
     @override_switch('blocklist_mlbf_submit', active=True)
-    @mock.patch.object(BloomFilterData, 'should_reset_base_filter')
+    @mock.patch.object(StoredMLBF, 'should_reset_base_filter')
     def test_force_base_option(self, should_reset_mock):
         should_reset_mock.return_value = False
 
