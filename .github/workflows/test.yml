@@ -5,6 +5,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-18.04
+    container: ubuntu
     strategy:
       max-parallel: 4
       fail-fast: false
@@ -21,6 +22,7 @@ jobs:
         image: memcached
       redis:
         image: redis
+      
 
     steps:
     - uses: actions/checkout@v2
