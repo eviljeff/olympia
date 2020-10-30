@@ -1,0 +1,70 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        tox: [codestyle, docs, assets, addons-versions-files-ratings, devhub, es, reviewers-and-zadmin, amo-lib-locales-and-signing, main]
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+            MYSQL_DATABASE: olympia
+        ports:
+            - 3306
+      memcached:
+        image: memcached
+      redis:
+        image: redis
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2.1.2
+      with:
+        node-version: 10
+    - name: before install es
+      if:
+        matrix.tox == 'es'
+      run: |
+        curl -s -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.8.deb
+        sudo dpkg -i --force-confnew elasticsearch-6.8.8.deb
+        sudo sed -i.old 's/-Xms1g/-Xms128m/' /etc/elasticsearch/jvm.options
+        sudo sed -i.old 's/-Xmx1g/-Xmx128m/' /etc/elasticsearch/jvm.options
+        echo -e '-XX:+DisableExplicitGC\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dlog4j.skipJansi=true\n-server\n' | sudo tee -a /etc/elasticsearch/jvm.options
+        sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
+        sudo systemctl start elasticsearch
+    - name: before install
+      run: |
+        export GOPATH=$HOME/go
+        export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
+    - name: Install Base Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --no-deps -r requirements/travis_base.txt
+    - name: before run
+      run: |
+          mysql --version
+          node --version
+          java -version
+          sudo touch /addons-server-docker-container
+    - name: wait for es
+      if: matrix.tox == 'es'
+      run: curl --retry 3 --retry-delay 10 --retry-connrefused http://localhost:9200/;
+    - name: start autograph
+      run: docker run --name autograph -d -p 5500:5500 -v $(pwd)/scripts/:/scripts/ mozilla/autograph:3.3.2 /go/bin/autograph -c /scripts/autograph_travis_test_config.yaml
+    - name: run
+      env:
+        TOXENV: ${{ matrix.tox }}
+      run: RUNNING_IN_CI=True tox
+    - name: stop autograph
+      run: docker stop autograph
