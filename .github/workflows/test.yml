@@ -66,6 +66,10 @@ jobs:
           # libgdbm-dev \
           # libc6-dev \ 
           # libbz2-dev \
+          default-mysql-client \
+          default-libmysqlclient-dev \
+          swig \
+          gettext \
           mysql \
         && rm -rf /var/lib/apt/lists/*
         python -m pip install --upgrade pip
