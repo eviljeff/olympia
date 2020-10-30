@@ -12,12 +12,10 @@ jobs:
       matrix:
         tox: [codestyle, docs, assets, addons-versions-files-ratings, devhub, es, reviewers-and-zadmin, amo-lib-locales-and-signing, main]
     services:
-      mysql:
+      mysqld:
         image: mysql:5.7
         env:
             MYSQL_DATABASE: olympia
-        ports:
-            - 3306
       memcached:
         image: memcached
       redis:
@@ -47,6 +45,7 @@ jobs:
         sudo systemctl start elasticsearch
     - name: before install
       run: |
+        mysql --host mysqld -uroot -e 'create database olympia;'
         export GOPATH=$HOME/go
         export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
     - name: Install Base Dependencies
