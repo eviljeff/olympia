@@ -53,9 +53,7 @@ jobs:
       run: |
         apt-get update && apt-get install -y \
             # General (dev-) dependencies
-            bash-completion \
             build-essential \
-            curl \
             libjpeg-dev \
             libsasl2-dev \
             libxml2-dev \
