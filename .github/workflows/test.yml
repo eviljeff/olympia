@@ -45,7 +45,6 @@ jobs:
         sudo systemctl start elasticsearch
     - name: before install
       run: |
-        mysql --host mysqld -uroot -e 'create database olympia;'
         export GOPATH=$HOME/go
         export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
     - name: Install Base Dependencies
