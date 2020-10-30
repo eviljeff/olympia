@@ -51,7 +51,7 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql --host mydb -uroot -e 'create database olympia;'
+        mysql --host mysqld -uroot -e 'create database olympia;'
     - name: Install Base Dependencies
       run: |
         python -m pip install --upgrade pip
