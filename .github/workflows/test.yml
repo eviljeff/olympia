@@ -51,7 +51,7 @@ jobs:
         export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
     - name: Install Base Dependencies
       run: |
-        RUN apt-get update && apt-get install -y \
+        apt-get update && apt-get install -y \
             # General (dev-) dependencies
             bash-completion \
             build-essential \
