@@ -52,32 +52,15 @@ jobs:
     - name: Install Base Dependencies
       run: |
         apt-get update && apt-get install -y \
-            # General (dev-) dependencies
-            build-essential \
-            libjpeg-dev \
-            libsasl2-dev \
-            libxml2-dev \
-            libxslt-dev \
-            locales \
-            zlib1g-dev \
-            libffi-dev \
             libssl-dev \
-            libpcre3-dev \
-            nodejs \
-            # Git, because we're using git-checkout dependencies
             git \
-            # Dependencies for mysql-python
-            default-mysql-client \
-            default-libmysqlclient-dev \
             swig \
             gettext \
             # Use rsvg-convert to render our static theme previews
             librsvg2-bin \
             # Use pngcrush to optimize the PNGs uploaded by developers
             pngcrush \
-            # Use libmaxmind for speedy geoip lookups
-            libmaxminddb0                    \
-            libmaxminddb-dev                 \
+            libgit2-dev \
         && rm -rf /var/lib/apt/lists/*
         python -m pip install --upgrade pip
         pip install --no-deps -r requirements/travis_base.txt
