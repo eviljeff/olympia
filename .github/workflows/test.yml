@@ -34,7 +34,7 @@ jobs:
       uses: actions/setup-node@v2.1.2
       with:
         node-version: 10
-    - name: before install es
+    - name: install es
       if: 
         matrix.tox == 'es'
       run: |
@@ -45,34 +45,38 @@ jobs:
         echo -e '-XX:+DisableExplicitGC\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dlog4j.skipJansi=true\n-server\n' | sudo tee -a /etc/elasticsearch/jvm.options
         sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
         sudo systemctl start elasticsearch
-    - name: before install
-      run: |
-        export GOPATH=$HOME/go
-        export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
-    - name: Install Base Dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install --no-deps -r requirements/travis_base.txt
-    - name: before run
+    - name: print versions
       run: |
           mysql --version
           node --version
           java -version
           sudo touch /addons-server-docker-container
     - name: wait for es
-      if: matrix.tox == 'es'
+      if: 
+        matrix.tox == 'es'
       run: curl --retry 3 --retry-delay 10 --retry-connrefused http://localhost:9200/;
     - name: start autograph
-      run: docker run --name autograph -d -p 5500:5500 -v $(pwd)/scripts/:/scripts/ mozilla/autograph:3.3.2 /go/bin/autograph -c /scripts/autograph_travis_test_config.yaml
-    - name: run
+      if:
+        matrix.tox == 'amo-lib-locales-and-signing'
+      run: |
+        export GOPATH=$HOME/go
+        export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
+        docker run --name autograph -d -p 5500:5500 -v $(pwd)/scripts/:/scripts/ mozilla/autograph:3.3.2 /go/bin/autograph -c /scripts/autograph_travis_test_config.yaml
+    - name: run tests in tox
       env: 
         TOXENV: ${{ matrix.tox }}
         CELERY_BROKER_URL: amqp://olympia:olympia@rabbitmq/olympia
         CELERY_RESULT_BACKEND: redis://redis:6379/1
-        DATABASES_DEFAULT_URL: mysql://root:@mysql/olympia
+        DATABASES_DEFAULT_URL: mysql://root:@localhost/olympia
         ELASTICSEARCH_LOCATION: elasticsearch:9200
         MEMCACHE_LOCATION: memcached:11211
         OLYMPIA_SITE_URL: http://olympia.test
       run: RUNNING_IN_CI=True tox
     - name: stop autograph
+      if:
+        matrix.tox == 'amo-lib-locales-and-signing'
       run: docker stop autograph
