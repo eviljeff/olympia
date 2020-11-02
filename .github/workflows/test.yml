@@ -48,6 +48,7 @@ jobs:
       run: |
         apt-get update && apt-get install -y \
           libssl-dev \
+          libffi-dev \
           libreadline-gplv2-dev \
           mysql-client \
           default-libmysqlclient-dev \
