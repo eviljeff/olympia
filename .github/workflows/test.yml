@@ -63,18 +63,18 @@ jobs:
         matrix.tox == 'es'
       run: |
         curl -s -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.8.deb
-        sudo dpkg -i --force-confnew elasticsearch-6.8.8.deb
-        sudo sed -i.old 's/-Xms1g/-Xms128m/' /etc/elasticsearch/jvm.options
-        sudo sed -i.old 's/-Xmx1g/-Xmx128m/' /etc/elasticsearch/jvm.options
+        dpkg -i --force-confnew elasticsearch-6.8.8.deb
+        sed -i.old 's/-Xms1g/-Xms128m/' /etc/elasticsearch/jvm.options
+        sed -i.old 's/-Xmx1g/-Xmx128m/' /etc/elasticsearch/jvm.options
         echo -e '-XX:+DisableExplicitGC\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dlog4j.skipJansi=true\n-server\n' | sudo tee -a /etc/elasticsearch/jvm.options
-        sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
-        sudo systemctl start elasticsearch
+        chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
+        systemctl start elasticsearch
     - name: before run
       run: |
           mysql --version
           node --version
           java -version
-          sudo touch /addons-server-docker-container
+          touch /addons-server-docker-container
     - name: wait for es
       if: matrix.tox == 'es'
       run: curl --retry 3 --retry-delay 10 --retry-connrefused http://localhost:9200/;
