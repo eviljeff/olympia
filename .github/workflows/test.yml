@@ -5,25 +5,25 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-18.04
-    container: ubuntu
     strategy:
       max-parallel: 4
       fail-fast: false
       matrix:
         tox: [codestyle, docs, assets, addons-versions-files-ratings, devhub, es, reviewers-and-zadmin, amo-lib-locales-and-signing, main]
     services:
-      mysqld:
+      mysql:
         image: mysql:5.7
         env:
             MYSQL_DATABASE: olympia
             MYSQL_ALLOW_EMPTY_PASSWORD: yes
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        ports:
+            - 3306
       memcached:
         image: memcached
       redis:
         image: redis
-      
-
+        
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -34,63 +34,39 @@ jobs:
       uses: actions/setup-node@v2.1.2
       with:
         node-version: 10
-    - uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements/**') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+    - name: before install es
+      if: 
+        matrix.tox == 'es'
+      run: |
+        curl -s -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.8.deb
+        sudo dpkg -i --force-confnew elasticsearch-6.8.8.deb
+        sudo sed -i.old 's/-Xms1g/-Xms128m/' /etc/elasticsearch/jvm.options
+        sudo sed -i.old 's/-Xmx1g/-Xmx128m/' /etc/elasticsearch/jvm.options
+        echo -e '-XX:+DisableExplicitGC\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dlog4j.skipJansi=true\n-server\n' | sudo tee -a /etc/elasticsearch/jvm.options
+        sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
+        sudo systemctl start elasticsearch
     - name: before install
       run: |
         export GOPATH=$HOME/go
         export PATH=$HOME/usr/local/go/bin:$GOPATH/bin:$PATH
     - name: Install Base Dependencies
       run: |
-        apt-get update && apt-get install -y \
-          libssl-dev \
-          libreadline-gplv2-dev \
-          mysql-client \
-          default-libmysqlclient-dev \
-          swig \
-          gettext \
-          curl \
-          default-jre \
-          docker \
-        && rm -rf /var/lib/apt/lists/*
         python -m pip install --upgrade pip
-        python -m pip install --no-deps -r requirements/travis_base.txt
-    - name: Install ES
-      if:
-        matrix.tox == 'es'
-      run: |
-        curl -s -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.8.deb
-        dpkg -i --force-confnew elasticsearch-6.8.8.deb
-        sed -i.old 's/-Xms1g/-Xms128m/' /etc/elasticsearch/jvm.options
-        sed -i.old 's/-Xmx1g/-Xmx128m/' /etc/elasticsearch/jvm.options
-        echo -e '-XX:+DisableExplicitGC\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dlog4j.skipJansi=true\n-server\n' | tee -a /etc/elasticsearch/jvm.options
-        chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
-        systemctl start elasticsearch
+        pip install --no-deps -r requirements/travis_base.txt
     - name: before run
       run: |
           mysql --version
           node --version
           java -version
-          touch /addons-server-docker-container
+          sudo touch /addons-server-docker-container
     - name: wait for es
-      if: 
-        matrix.tox == 'es'
+      if: matrix.tox == 'es'
       run: curl --retry 3 --retry-delay 10 --retry-connrefused http://localhost:9200/;
     - name: start autograph
-      if: 
-        matrix.tox == 'amo-lib-locales-and-signing'
-      env:
-        AUTOGRAPH_SERVER_URL: http://localhost:5500
       run: docker run --name autograph -d -p 5500:5500 -v $(pwd)/scripts/:/scripts/ mozilla/autograph:3.3.2 /go/bin/autograph -c /scripts/autograph_travis_test_config.yaml
-    - name: run tests in tox
-      env:
+    - name: run
+      env: 
         TOXENV: ${{ matrix.tox }}
       run: RUNNING_IN_CI=True tox
     - name: stop autograph
-      if:
-        matrix.tox == 'amo-lib-locales-and-signing'
       run: docker stop autograph
