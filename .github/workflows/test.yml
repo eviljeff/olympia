@@ -21,6 +21,8 @@ jobs:
             - 3306:3306
       memcached:
         image: memcached
+        ports:
+            - 11211:11211
       redis:
         image: redis
         
@@ -76,7 +78,6 @@ jobs:
         CELERY_RESULT_BACKEND: redis://redis:6379/1
         DATABASES_DEFAULT_URL: mysql://root:@127.0.0.1:3306/olympia
         ELASTICSEARCH_LOCATION: elasticsearch:9200
-        MEMCACHE_LOCATION: memcached:11211
         OLYMPIA_SITE_URL: http://olympia.test
       run: RUNNING_IN_CI=True tox
     - name: stop autograph
