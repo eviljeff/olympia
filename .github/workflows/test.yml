@@ -88,6 +88,7 @@ jobs:
         TOXENV: ${{ matrix.tox }}
         CELERY_BROKER_URL: amqp://olympia:olympia@rabbitmq/olympia
         DATABASES_DEFAULT_URL: mysql://root:@127.0.0.1:3306/olympia
+        AUTOGRAPH_SERVER_URL: http://localhost:5500
       run: RUNNING_IN_CI=True tox
     - name: stop autograph
       if:
