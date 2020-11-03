@@ -51,7 +51,7 @@ jobs:
         sudo systemctl start elasticsearch
     - name: Install Dependencies
       run: |
-        apt-get update && apt-get install -y \
+        sudo apt-get update && sudo apt-get install -y \
           librsvg2-bin \
           pngcrush
         python -m pip install --upgrade pip
