@@ -71,7 +71,7 @@ jobs:
         TOXENV: ${{ matrix.tox }}
         CELERY_BROKER_URL: amqp://olympia:olympia@rabbitmq/olympia
         CELERY_RESULT_BACKEND: redis://redis:6379/1
-        DATABASES_DEFAULT_URL: mysql://root:@localhost:3306/olympia
+        DATABASES_DEFAULT_URL: mysql://root:@127.0.0.1:3306/olympia
         ELASTICSEARCH_LOCATION: elasticsearch:9200
         MEMCACHE_LOCATION: memcached:11211
         OLYMPIA_SITE_URL: http://olympia.test
