@@ -90,7 +90,8 @@ def test_temporary_worktree(settings):
     repo = AddonGitRepository(1)
 
     output = _run_process('git worktree list', repo)
-    assert output.startswith(repo.git_repository.path)
+    repo_path = str(repo.git_repository.path)
+    assert output.startswith(repo_path)
 
     with TemporaryWorktree(repo.git_repository) as worktree:
         assert worktree.temp_directory.startswith(settings.TMP_PATH)
