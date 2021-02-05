@@ -977,6 +977,15 @@ class ESTestCase(TestCase):
             conflicts='proceed',
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        try:
+            assert not Addon.objects.exists(), Addon.objects.values('id', 'slug')
+        except AssertionError as ae:
+            Addon.objects.all().delete()
+            raise ae
+
 
 class ESTestCaseWithAddons(ESTestCase):
     @classmethod
