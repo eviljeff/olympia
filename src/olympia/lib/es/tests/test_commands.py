@@ -12,10 +12,21 @@ from django.test.testcases import TransactionTestCase
 from celery import group, task
 from celery.canvas import _chain
 
-from olympia.amo.tests import addon_factory, ESTestCase, reverse_ns
+import olympia.core.logger
+from olympia.addons.models import Addon
+from olympia.amo.tests import addon_factory as afactory, ESTestCase, reverse_ns
 from olympia.amo.utils import urlparams
 from olympia.lib.es.management.commands import reindex
 from olympia.lib.es.utils import is_reindexing_amo, unflag_reindexing_amo
+
+
+log = olympia.core.logger.getLogger('z.elasticsearch.tests')
+
+
+def addon_factory(*args, **kwargs):
+    addon = afactory()
+    log.info(f"'id': {addon.id}, 'slug': {addon.slug}")
+    return addon
 
 
 @task
@@ -58,6 +69,15 @@ class TestIndexCommand(ESTestCase):
             if index not in self.indices:
                 self.es.indices.delete(index, ignore=404)
         super(TestIndexCommand, self).tearDown()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        try:
+            assert not Addon.objects.exists(), Addon.objects.values('id', 'slug')
+        except AssertionError as ae:
+            Addon.objects.all().delete()
+            raise ae
 
     def check_settings(self, new_indices):
         """Make sure the indices settings are properly set."""
