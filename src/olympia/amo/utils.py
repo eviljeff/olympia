@@ -682,6 +682,7 @@ def resize_image(source, destination, size=None, *, format='png', quality=80):
         im = Image.open(fp)
         im = im.convert('RGBA')
         original_size = im.size
+        original_colors = im.getcolors() or []
         if size:
             im = processors.scale_and_crop(im, size)
     if format == 'png':
@@ -695,7 +696,7 @@ def resize_image(source, destination, size=None, *, format='png', quality=80):
         with storage.open(destination, 'wb') as fp:
             im = im.convert('RGB')
             im.save(fp, 'JPEG', quality=quality)
-    return (im.size, original_size)
+    return (im.size, original_size, len(original_colors))
 
 
 def remove_icons(destination):
