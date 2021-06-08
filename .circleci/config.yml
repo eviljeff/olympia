@@ -654,50 +654,50 @@ workflows:
   version: 2
   default-workflow:
     jobs:
-      - addons-versions-files-ratings:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
-      - amo-lib-locales-and-signing:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
-      - assets:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
-      - codestyle
-      - devhub:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
-      - docs
-      - main:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
-      - reviewers-and-zadmin:
-          matrix:
-            parameters:
-              djangoversion:
-                - django22
-                - django32
+      # - addons-versions-files-ratings:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #           - django32
+      # - amo-lib-locales-and-signing:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #           - django32
+      # - assets:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #           - django32
+      # - codestyle
+      # - devhub:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #           - django32
+      # - docs
+      # - main:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #           - django32
+      # - reviewers-and-zadmin:
+      #     matrix:
+      #       parameters:
+      #         djangoversion:
+      #           - django22
+      #          - django32
       - es-tests:
           matrix:
             parameters:
               djangoversion:
                 - django22
-#                - django32 # django3.2 tests still failing
+                - django32
       - release-master:
           filters:
             branches:
