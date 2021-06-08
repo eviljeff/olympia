@@ -1,1 +1,1 @@
--e git+https://github.com/django/django@513f137cfd289ed598448e6d23e4e555ff056945#egg=Django
+-e git+https://github.com/django/django@6789ded0a6ab797f0dcdfa6ad5d1cfa46e23abcd#egg=Django
