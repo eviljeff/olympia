@@ -128,10 +128,10 @@ class TestScannerResultAdmin(TestCase):
             )
             in formatted_addon
         )
-        assert 'Name:</td><td>{}'.format(addon.name) in formatted_addon
-        assert 'Version:</td><td>{}'.format(version.version) in formatted_addon
+        assert f'Name:</td><td>{addon.name}' in formatted_addon
+        assert f'Version:</td><td>{version.version}' in formatted_addon
         assert (
-            'Channel:</td><td>{}'.format(version.get_channel_display())
+            f'Channel:</td><td>{version.get_channel_display()}'
             in formatted_addon
         )
 
@@ -150,10 +150,10 @@ class TestScannerResultAdmin(TestCase):
             )
             in formatted_addon
         )
-        assert 'Name:</td><td>{}'.format(addon.name) in formatted_addon
-        assert 'Version:</td><td>{}'.format(version.version) in formatted_addon
+        assert f'Name:</td><td>{addon.name}' in formatted_addon
+        assert f'Version:</td><td>{version.version}' in formatted_addon
         assert (
-            'Channel:</td><td>{}'.format(version.get_channel_display())
+            f'Channel:</td><td>{version.get_channel_display()}'
             in formatted_addon
         )
 
@@ -555,7 +555,7 @@ class TestScannerResultAdmin(TestCase):
         result.save()
         assert result.state == UNKNOWN
 
-        referer = '{}/en-US/firefox/previous/page'.format(settings.SITE_URL)
+        referer = f'{settings.SITE_URL}/en-US/firefox/previous/page'
         response = self.client.post(
             reverse(
                 'admin:scanners_scannerresult_handletruepositive',
@@ -626,7 +626,7 @@ class TestScannerResultAdmin(TestCase):
         result.save()
         assert result.state == UNKNOWN
 
-        referer = '{}/en-US/firefox/previous/page'.format(settings.SITE_URL)
+        referer = f'{settings.SITE_URL}/en-US/firefox/previous/page'
         response = self.client.post(
             reverse(
                 'admin:scanners_scannerresult_handlefalsepositive',
@@ -734,7 +734,7 @@ class TestScannerResultAdmin(TestCase):
         result.save()
         assert result.state == TRUE_POSITIVE
 
-        referer = '{}/en-US/firefox/previous/page'.format(settings.SITE_URL)
+        referer = f'{settings.SITE_URL}/en-US/firefox/previous/page'
         response = self.client.post(
             reverse('admin:scanners_scannerresult_handlerevert', args=[result.pk]),
             follow=True,
@@ -844,7 +844,7 @@ class TestScannerResultAdmin(TestCase):
         result.add_yara_result(rule=rule.name)
         result.save()
 
-        referer = '{}/en-US/firefox/previous/page'.format(settings.SITE_URL)
+        referer = f'{settings.SITE_URL}/en-US/firefox/previous/page'
         response = self.client.post(
             reverse(
                 'admin:scanners_scannerresult_handleinconclusive',
@@ -984,13 +984,11 @@ class TestScannerQueryRuleAdmin(AMOPaths, TestCase):
         assert response.status_code == 200
         doc = pq(response.content)
         classes = set(doc('body')[0].attrib['class'].split())
-        expected_classes = set(
-            [
+        expected_classes = {
                 'app-scanners',
                 'model-scannerqueryrule',
                 'change-list',
-            ]
-        )
+        }
         assert classes == expected_classes
 
     def test_list_view_viewer(self):
@@ -1001,14 +999,12 @@ class TestScannerQueryRuleAdmin(AMOPaths, TestCase):
         assert response.status_code == 200
         doc = pq(response.content)
         classes = set(doc('body')[0].attrib['class'].split())
-        expected_classes = set(
-            [
+        expected_classes = {
                 'app-scanners',
                 'model-scannerqueryrule',
                 'change-list',
                 'hide-action-buttons',
-            ]
-        )
+        }
         assert classes == expected_classes
 
     def test_list_view_is_restricted(self):
@@ -1040,13 +1036,11 @@ class TestScannerQueryRuleAdmin(AMOPaths, TestCase):
         assert response.status_code == 200
         doc = pq(response.content)
         classes = set(doc('body')[0].attrib['class'].split())
-        expected_classes = set(
-            [
+        expected_classes = {
                 'app-scanners',
                 'model-scannerqueryrule',
                 'change-form',
-            ]
-        )
+        }
         assert classes == expected_classes
         link = doc('.field-matched_results_link a')
         assert link
@@ -1067,14 +1061,12 @@ class TestScannerQueryRuleAdmin(AMOPaths, TestCase):
         assert response.status_code == 200
         doc = pq(response.content)
         classes = set(doc('body')[0].attrib['class'].split())
-        expected_classes = set(
-            [
+        expected_classes = {
                 'app-scanners',
                 'model-scannerqueryrule',
                 'change-form',
                 'hide-action-buttons',
-            ]
-        )
+        }
         assert classes == expected_classes
 
     def test_create_view_doesnt_contain_link_to_results(self):
@@ -1783,20 +1775,20 @@ class TestScannerQueryResultAdmin(TestCase):
 class TestIsSafeUrl(TestCase):
     def test_enforces_https_when_request_is_secure(self):
         request = RequestFactory().get('/', secure=True)
-        assert _is_safe_url('https://{}'.format(settings.DOMAIN), request)
-        assert not _is_safe_url('http://{}'.format(settings.DOMAIN), request)
+        assert _is_safe_url(f'https://{settings.DOMAIN}', request)
+        assert not _is_safe_url(f'http://{settings.DOMAIN}', request)
 
     def test_does_not_require_https_when_request_is_not_secure(self):
         request = RequestFactory().get('/', secure=False)
-        assert _is_safe_url('https://{}'.format(settings.DOMAIN), request)
-        assert _is_safe_url('http://{}'.format(settings.DOMAIN), request)
+        assert _is_safe_url(f'https://{settings.DOMAIN}', request)
+        assert _is_safe_url(f'http://{settings.DOMAIN}', request)
 
     def test_allows_domain(self):
         request = RequestFactory().get('/', secure=True)
-        assert _is_safe_url('https://{}/foo'.format(settings.DOMAIN), request)
+        assert _is_safe_url(f'https://{settings.DOMAIN}/foo', request)
         assert not _is_safe_url('https://not-olympia.dev', request)
 
     def test_allows_external_site_url(self):
         request = RequestFactory().get('/', secure=True)
         external_domain = urlparse(settings.EXTERNAL_SITE_URL).netloc
-        assert _is_safe_url('https://{}/foo'.format(external_domain), request)
+        assert _is_safe_url(f'https://{external_domain}/foo', request)

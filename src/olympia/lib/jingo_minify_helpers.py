@@ -13,7 +13,7 @@ def _build_html(items, wrapping):
     """
     Wrap `items` in wrapping.
     """
-    return jinja2.Markup('\n'.join((wrapping % item for item in items)))
+    return jinja2.Markup('\n'.join(wrapping % item for item in items))
 
 
 def ensure_path_exists(path):

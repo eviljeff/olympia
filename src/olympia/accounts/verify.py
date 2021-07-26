@@ -36,7 +36,7 @@ def get_fxa_token(code, config):
     (https://git.io/JJZww). Should at least contain `access_token` and
     `id_token` keys.
     """
-    log.info('Getting token [{code}]'.format(code=code))
+    log.info(f'Getting token [{code}]')
     with statsd.timer('accounts.fxa.identify.token'):
         response = requests.post(
             settings.FXA_OAUTH_HOST + '/token',
@@ -49,12 +49,12 @@ def get_fxa_token(code, config):
     if response.status_code == 200:
         data = response.json()
         if data.get('access_token'):
-            log.info('Got token [{code}]'.format(code=code))
+            log.info(f'Got token [{code}]')
             return data
         else:
-            log.info('No token returned [{code}]'.format(code=code))
+            log.info(f'No token returned [{code}]')
             raise IdentificationError(
-                'No access token returned for {code}'.format(code=code)
+                f'No access token returned for {code}'
             )
     else:
         log.info(
@@ -63,7 +63,7 @@ def get_fxa_token(code, config):
             )
         )
         raise IdentificationError(
-            'Could not get access token for {code}'.format(code=code)
+            f'Could not get access token for {code}'
         )
 
 
@@ -74,7 +74,7 @@ def get_fxa_profile(token, config):
         response = requests.get(
             settings.FXA_PROFILE_HOST + '/profile',
             headers={
-                'Authorization': 'Bearer {token}'.format(token=token),
+                'Authorization': f'Bearer {token}',
             },
         )
     if response.status_code == 200:
@@ -82,9 +82,9 @@ def get_fxa_profile(token, config):
         if profile.get('email'):
             return profile
         else:
-            log.info('Incomplete profile {profile}'.format(profile=profile))
+            log.info(f'Incomplete profile {profile}')
             raise IdentificationError(
-                'Profile incomplete for {token}'.format(token=token)
+                f'Profile incomplete for {token}'
             )
     else:
         log.info(
@@ -93,5 +93,5 @@ def get_fxa_profile(token, config):
             )
         )
         raise IdentificationError(
-            'Could not find profile for {token}'.format(token=token)
+            f'Could not find profile for {token}'
         )

@@ -1071,7 +1071,7 @@ def review_viewing(request):
     current_name = ''
     is_user = 0
     key = get_reviewing_cache_key(addon_id)
-    user_key = 'review_viewing_user:{user_id}'.format(user_id=user_id)
+    user_key = f'review_viewing_user:{user_id}'
     interval = amo.REVIEWER_VIEWING_INTERVAL
 
     # Check who is viewing.
@@ -1373,11 +1373,11 @@ def download_git_stored_file(request, version_id, filename):
     selected_filename = selected_file['filename']
     try:
         selected_filename.encode('ascii')
-        file_expr = 'filename="{}"'.format(selected_filename)
+        file_expr = f'filename="{selected_filename}"'
     except UnicodeEncodeError:
-        file_expr = "filename*=utf-8''{}".format(urlquote(selected_filename))
+        file_expr = f"filename*=utf-8''{urlquote(selected_filename)}"
 
-    response['Content-Disposition'] = 'attachment; {}'.format(file_expr)
+    response['Content-Disposition'] = f'attachment; {file_expr}'
     response['Content-Length'] = actual_blob.size
 
     return response
@@ -1543,7 +1543,7 @@ class AddonReviewerViewSet(GenericViewSet):
         )
 
 
-class ReviewAddonVersionMixin(object):
+class ReviewAddonVersionMixin:
     permission_classes = [
         AnyOf(AllowListedViewerOrReviewer, AllowUnlistedViewerOrReviewer)
     ]
@@ -1595,11 +1595,11 @@ class ReviewAddonVersionMixin(object):
             # but here we need to do that against the parent add-on.
             # So we're calling check_object_permission() ourselves,
             # which will pass down the addon object directly.
-            return super(ReviewAddonVersionMixin, self).check_object_permissions(
+            return super().check_object_permissions(
                 request, self.get_addon_object()
             )
 
-        super(ReviewAddonVersionMixin, self).check_permissions(request)
+        super().check_permissions(request)
 
     def check_object_permissions(self, request, obj):
         """
@@ -1769,7 +1769,7 @@ class ReviewAddonVersionCompareViewSet(
         object and the one to compare to, respectively."""
         pk = int(self.kwargs['pk'])
         parent_version_pk = int(self.kwargs['version_pk'])
-        all_pks = set([pk, parent_version_pk])
+        all_pks = {pk, parent_version_pk}
         qs = self.filter_queryset(self.get_queryset())
         objs = qs.in_bulk(all_pks)
         if len(objs) != len(all_pks):
@@ -1824,5 +1824,5 @@ class CannedResponseViewSet(ListAPIView):
     def as_view(cls, **initkwargs):
         """The API is read-only so we can turn off atomic requests."""
         return non_atomic_requests(
-            super(CannedResponseViewSet, cls).as_view(**initkwargs)
+            super().as_view(**initkwargs)
         )

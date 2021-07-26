@@ -201,7 +201,7 @@ def paginate(request, queryset, per_page=20, count=None):
     except (EmptyPage, InvalidPage):
         paginated = paginator.page(1)
 
-    paginated.url = '%s?%s' % (request.path, request.GET.urlencode())
+    paginated.url = f'{request.path}?{request.GET.urlencode()}'
     return paginated
 
 
@@ -655,14 +655,14 @@ def pngcrush_image(src, **kw):
         stdout, stderr = process.communicate()
 
         if process.returncode != 0:
-            log.error('Error optimizing image: %s; %s' % (src, stderr.strip()))
+            log.error(f'Error optimizing image: {src}; {stderr.strip()}')
             return False
 
         log.info('Image optimization completed for: %s' % src)
         return True
 
     except Exception as e:
-        log.error('Error optimizing image: %s; %s' % (src, e))
+        log.error(f'Error optimizing image: {src}; {e}')
     return False
 
 
@@ -677,7 +677,7 @@ def convert_svg_to_png(svg_file, png_file):
             svg_file,
         ]
         subprocess.check_call(command)
-    except IOError as io_error:
+    except OSError as io_error:
         log.info(io_error)
         return False
     except subprocess.CalledProcessError as process_error:
@@ -739,12 +739,12 @@ def resize_image(source, destination, size=None, *, format='png', quality=80):
 
 def remove_icons(destination):
     for size in ADDON_ICON_SIZES:
-        filename = '%s-%s.png' % (destination, size)
+        filename = f'{destination}-{size}.png'
         if storage.exists(filename):
             storage.delete(filename)
 
 
-class ImageCheck(object):
+class ImageCheck:
     def __init__(self, image):
         self._img = image
 
@@ -878,7 +878,7 @@ def cache_ns_key(namespace, increment=False):
         if ns_val is None:
             ns_val = utc_millesecs_from_epoch(datetime.datetime.now())
             cache.set(ns_key, ns_val, None)
-    return '%s:%s' % (ns_val, ns_key)
+    return f'{ns_val}:{ns_key}'
 
 
 def get_email_backend(real_email=False):
@@ -926,7 +926,7 @@ class LocalFileStorage(FileSystemStorage):
     """
 
     def __init__(self, base_url=None):
-        super(LocalFileStorage, self).__init__(base_url=base_url)
+        super().__init__(base_url=base_url)
 
     def delete(self, name):
         """Delete a file or empty directory path.
@@ -939,7 +939,7 @@ class LocalFileStorage(FileSystemStorage):
         if os.path.isdir(full_path):
             os.rmdir(full_path)
         else:
-            return super(LocalFileStorage, self).delete(name)
+            return super().delete(name)
 
     def _open(self, name, mode='rb'):
         if mode.startswith('w'):
@@ -952,7 +952,7 @@ class LocalFileStorage(FileSystemStorage):
                     pass
                 else:
                     raise
-        return super(LocalFileStorage, self)._open(name, mode=mode)
+        return super()._open(name, mode=mode)
 
     def path(self, name):
         """Actual file system path to name without any safety checks."""
@@ -1047,7 +1047,7 @@ def timer(*func, **kwargs):
             if test_only and not settings.IN_TEST_SUITE:
                 return func(*args, **kw)
             else:
-                name = key if key else '%s.%s' % (func.__module__, func.__name__)
+                name = key if key else f'{func.__module__}.{func.__name__}'
                 with statsd.timer('timer.%s' % name):
                     return func(*args, **kw)
 
@@ -1138,7 +1138,7 @@ def extract_colors_from_image(path):
             }
             for color in image_colors
         ]
-    except IOError:
+    except OSError:
         colors = None
     return colors
 
@@ -1153,7 +1153,7 @@ class AMOJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Translation):
             return force_str(obj)
-        return super(AMOJSONEncoder, self).default(obj)
+        return super().default(obj)
 
 
 class StopWatch:

@@ -30,7 +30,7 @@ def locale_html(translatedfield):
         rtl_locales = map(translation.to_locale, settings.LANGUAGES_BIDI)
         textdir = 'rtl' if locale in rtl_locales else 'ltr'
         return jinja2.Markup(
-            ' lang="%s" dir="%s"' % (jinja2.escape(translatedfield.locale), textdir)
+            f' lang="{jinja2.escape(translatedfield.locale)}" dir="{textdir}"'
         )
 
 

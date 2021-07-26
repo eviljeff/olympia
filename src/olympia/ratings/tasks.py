@@ -23,7 +23,7 @@ def update_denorm(*pairs, **kw):
     all reviews matching that pair.
     """
     log.info(
-        '[%s@%s] Updating review denorms.' % (len(pairs), update_denorm.rate_limit)
+        f'[{len(pairs)}@{update_denorm.rate_limit}] Updating review denorms.'
     )
     for addon, user in pairs:
         reviews = list(

@@ -17,7 +17,7 @@ log = olympia.core.logger.getLogger('z.task')
 @use_primary_db
 def collection_meta(*ids, **kw):
     log.info(
-        '[%s@%s] Updating collection metadata.' % (len(ids), collection_meta.rate_limit)
+        f'[{len(ids)}@{collection_meta.rate_limit}] Updating collection metadata.'
     )
     qs = CollectionAddon.objects.filter(collection__in=ids).values_list('collection')
     counts = dict(qs.annotate(Count('id')))

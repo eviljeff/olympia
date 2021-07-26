@@ -101,6 +101,6 @@ def transfield_changed(field, initial, data):
         if '%s_' % field in k and v is not None
     ]
     data = [
-        ('%s_%s' % (field, k), v) for k, v in iter(data[field].items()) if k != 'init'
+        (f'{field}_{k}', v) for k, v in iter(data[field].items()) if k != 'init'
     ]
     return set(initial) != set(data)

@@ -541,7 +541,7 @@ def ownership(request, addon_id, addon):
         if extra_context:
             context_data.update(extra_context)
         template = loader.get_template(
-            'users/emails/{part}.ltxt'.format(part=template_part)
+            f'users/emails/{template_part}.ltxt'
         )
         send_mail(
             title, template.render(context_data), None, recipients, use_deny_list=False
@@ -722,7 +722,7 @@ def upload_detail_for_version(request, addon_id, addon, uuid):
         return response
     except Exception as exc:
         statsd.incr('devhub.upload_detail_for_addon.error')
-        log.error('Error checking upload status: {} {}'.format(type(exc), exc))
+        log.error(f'Error checking upload status: {type(exc)} {exc}')
         raise
 
 
@@ -844,7 +844,7 @@ def upload_detail(request, uuid, format='html'):
             return response
         except Exception as exc:
             statsd.incr('devhub.upload_detail.error')
-            log.error('Error checking upload status: {} {}'.format(type(exc), exc))
+            log.error(f'Error checking upload status: {type(exc)} {exc}')
             raise
 
     validate_url = reverse('devhub.standalone_upload_detail', args=[upload.uuid.hex])
@@ -1894,7 +1894,7 @@ def api_key(request):
         if credentials and request.POST.get('action') in ('revoke', 'generate'):
             credentials.update(is_active=None)
             log.info(
-                'revoking JWT key for user: {}, {}'.format(request.user.id, credentials)
+                f'revoking JWT key for user: {request.user.id}, {credentials}'
             )
             send_key_revoked_email(request.user.email, credentials.key)
             msg = gettext('Your old credentials were revoked and are no longer valid.')
@@ -1918,7 +1918,7 @@ def api_key(request):
         ):
             confirmation.update(confirmed_once=True)
             new_credentials = APIKey.new_jwt_credentials(request.user)
-            log.info('new JWT key created: {}'.format(new_credentials))
+            log.info(f'new JWT key created: {new_credentials}')
             send_key_change_email(request.user.email, new_credentials.key)
         else:
             # If we land here, either confirmation token is invalid, or action

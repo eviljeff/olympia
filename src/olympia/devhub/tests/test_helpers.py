@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from urllib.parse import quote
 
 from django.utils import translation
@@ -39,7 +38,7 @@ def test_dev_page_title():
     assert s1 == s2
 
     s1 = render('{{ dev_page_title("%s", addon) }}' % title, ctx)
-    s2 = render('{{ page_title("%s :: %s") }}' % (title, addon.name), ctx)
+    s2 = render(f'{{{{ page_title("{title} :: {addon.name}") }}}}', ctx)
     assert s1 == s2
 
 
@@ -72,7 +71,7 @@ def test_log_action_class():
 
 class TestDisplayUrl(amo.tests.TestCase):
     def setUp(self):
-        super(TestDisplayUrl, self).setUp()
+        super().setUp()
         self.raw_url = 'http://host/%s' % 'フォクすけといっしょ'
 
     def test_utf8(self):
@@ -87,7 +86,7 @@ class TestDisplayUrl(amo.tests.TestCase):
 
 class TestDevFilesStatus(TestCase):
     def setUp(self):
-        super(TestDevFilesStatus, self).setUp()
+        super().setUp()
         self.addon = Addon.objects.create(type=1, status=amo.STATUS_NOMINATED)
         self.version = Version.objects.create(addon=self.addon)
         self.file = File.objects.create(

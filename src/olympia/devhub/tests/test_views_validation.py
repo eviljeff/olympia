@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 
 from django.core.files.storage import default_storage as storage
@@ -24,7 +23,7 @@ class TestUploadValidation(ValidatorTestCase, BaseUploadTest):
     fixtures = ['base/users', 'devhub/invalid-id-uploaded-xpi.json']
 
     def setUp(self):
-        super(TestUploadValidation, self).setUp()
+        super().setUp()
         assert self.client.login(email='regular@mozilla.com')
 
     def test_only_safe_html_in_messages(self):
@@ -87,7 +86,7 @@ class TestUploadErrors(BaseUploadTest):
     fixtures = ('base/addon_3615', 'base/users')
 
     def setUp(self):
-        super(TestUploadErrors, self).setUp()
+        super().setUp()
         self.user = UserProfile.objects.get(email='regular@mozilla.com')
         self.client.login(email=self.user.email)
 
@@ -130,7 +129,7 @@ class TestFileValidation(TestCase):
     fixtures = ['base/users', 'devhub/addon-validation-1']
 
     def setUp(self):
-        super(TestFileValidation, self).setUp()
+        super().setUp()
         assert self.client.login(email='del@icio.us')
         self.user = UserProfile.objects.get(email='del@icio.us')
         self.file_validation = FileValidation.objects.get(pk=1)
@@ -330,7 +329,7 @@ class TestValidateAddon(TestCase):
     fixtures = ['base/users']
 
     def setUp(self):
-        super(TestValidateAddon, self).setUp()
+        super().setUp()
         assert self.client.login(email='regular@mozilla.com')
 
     def test_login_required(self):
@@ -406,7 +405,7 @@ class TestUploadURLs(TestCase):
     fixtures = ('base/users',)
 
     def setUp(self):
-        super(TestUploadURLs, self).setUp()
+        super().setUp()
         user = UserProfile.objects.get(email='regular@mozilla.com')
         self.client.login(email='regular@mozilla.com')
 

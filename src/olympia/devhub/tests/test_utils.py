@@ -117,11 +117,11 @@ class TestAddonsLinterListed(UploadTest, TestCase):
 
         assert utils.Validator(
             self.file
-        ).cache_key == 'validation-task:files.File:{0}:None'.format(self.file.pk)
+        ).cache_key == f'validation-task:files.File:{self.file.pk}:None'
 
         assert utils.Validator(
             self.file_upload, listed=False
-        ).cache_key == 'validation-task:files.FileUpload:{0}:False'.format(
+        ).cache_key == 'validation-task:files.FileUpload:{}:False'.format(
             self.file_upload.pk
         )
 
