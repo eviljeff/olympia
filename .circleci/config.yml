@@ -586,7 +586,7 @@ jobs:
           install_node_dependencies: true
       - run:
           command: |
-            pytest -n 2 -m 'not es_tests and not needs_locales_compilation and not static_assets and not internal_routes_allowed' \
+            pytest -m 'not es_tests and not needs_locales_compilation and not static_assets and not internal_routes_allowed' \
               -v src/olympia/ \
               --ignore src/olympia/addons/ \
               --ignore src/olympia/devhub/ \
