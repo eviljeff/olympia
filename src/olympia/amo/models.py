@@ -366,16 +366,7 @@ class SearchMixin:
 
 class SaveUpdateMixin:
     def reload(self):
-        """Reloads the instance from the database."""
-        from_db = self.__class__.get_unfiltered_manager().get(pk=self.pk)
-        for field in self.__class__._meta.fields:
-            try:
-                setattr(self, field.name, getattr(from_db, field.name))
-            except models.ObjectDoesNotExist:
-                # reload() can be called before cleaning up an object of stale
-                # related fields, when we do soft-deletion for instance. Avoid
-                # failing because of that.
-                pass
+        self.refresh_from_db()
         return self
 
     @classmethod
