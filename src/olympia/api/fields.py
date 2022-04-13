@@ -51,6 +51,12 @@ class ReverseChoiceField(fields.ChoiceField):
         return super().to_internal_value(value)
 
 
+def should_have_multiple_locales_in_output(request):
+    lang_param = request and request.GET.get('lang')
+    flat = is_gate_active(request, 'l10n_flat_input_output')
+    return (flat and lang_param is None) or lang_param == 'all'
+
+
 class TranslationSerializerField(fields.CharField):
     """
     Django-rest-framework custom serializer field for our TranslatedFields.
@@ -93,15 +99,20 @@ class TranslationSerializerField(fields.CharField):
 
     @property
     def flat(self):
-        request = self.context.get('request', None)
-        return is_gate_active(request, 'l10n_flat_input_output')
+        return is_gate_active(self.context.get('request'), 'l10n_flat_input_output')
+
+    @property
+    def has_multiple_locales(self):
+        return should_have_multiple_locales_in_output(self.context.get('request'))
 
     def get_requested_language(self):
-        request = self.context.get('request', None)
-        if request and request.method == 'GET' and 'lang' in request.GET:
-            return request.GET['lang']
+        if self.flat:
+            if (request := self.context.get('request')) and request.method == 'GET':
+                return request.GET.get('lang')
+            else:
+                return None
         else:
-            return None
+            return to_language(get_language()) or settings.LANGUAGE_CODE
 
     def fetch_all_translations(self, obj, source, field):
         # this property is set by amo.utils.attach_trans_dict
@@ -141,7 +152,7 @@ class TranslationSerializerField(fields.CharField):
 
         requested_language = self.get_requested_language()
 
-        if requested_language:
+        if requested_language and not self.has_multiple_locales:
             single = self.fetch_single_translation(
                 obj, source, field, requested_language
             )

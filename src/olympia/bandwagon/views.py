@@ -10,6 +10,7 @@ from olympia import amo
 from olympia.accounts.views import AccountViewSet
 from olympia.addons.models import Addon, attach_tags
 from olympia.amo.utils import attach_trans_dict
+from olympia.api.fields import should_have_multiple_locales_in_output
 from olympia.api.filters import OrderingAliasFilter
 from olympia.api.permissions import (
     AllOf,
@@ -225,7 +226,7 @@ class CollectionAddonViewSet(ModelViewSet):
             .transform(self._transformer)
         )
 
-        if 'lang' not in self.request.GET:
+        if should_have_multiple_locales_in_output(self.request):
             qs = qs.transform(self._locales_transformer)
 
         filter_param = self.request.GET.get('filter')

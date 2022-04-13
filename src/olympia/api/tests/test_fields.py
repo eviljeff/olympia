@@ -72,39 +72,58 @@ class TestTranslationSerializerField(TestCase):
         Translation.objects.create(
             id=self.addon.name.id, locale='es', localized_string='Name in Español'
         )
-
-    def _test_expected_dict(self, field, serializer=None):
-        field.bind('name', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = {
+        Translation.objects.create(
+            id=self.addon.description.id,
+            locale='fr',
+            localized_string='Frençh Description',
+        )
+        self.addon_name_translations = {
             'en-US': str(
                 Translation.objects.get(id=self.addon.name.id, locale='en-US')
             ),
-            'es': str(Translation.objects.get(id=self.addon.name.id, locale='es')),
-        }
-        assert result == expected
-
-        field.source = None
-        field.bind('description', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = {
-            'en-US': Translation.objects.get(
-                id=self.addon.description.id, locale='en-US'
+            'es': str(
+                Translation.objects.get(id=self.addon.name.id, locale='es')
             ),
         }
-        assert result == expected
+        self.addon_description_translations = {
+            'en-US': str(
+                Translation.objects.get(id=self.addon.description.id, locale='en-US')
+            ),
+            'fr': str(
+                Translation.objects.get(id=self.addon.description.id, locale='fr')
+            ),
+        }
 
-    def _test_expected_single_locale(self, field, serializer=None):
+    def _test_expected_all_lang_requested(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
-        expected = {'es': 'Name in Español'}
-        assert result == expected
+        assert result == self.addon_name_translations
+
+        field.source = None
+        field.bind('description', serializer)
+        result = field.to_representation(field.get_attribute(self.addon))
+        assert result == self.addon_description_translations
+
+    def _test_expected_no_lang_requested(self, field, serializer=None):
+        field.bind('name', serializer)
+        result = field.to_representation(field.get_attribute(self.addon))
+        assert result == {'en-US': self.addon_name_translations['en-US']}
+
+        field.source = None
+        field.bind('description', serializer)
+        result = field.to_representation(field.get_attribute(self.addon))
+        assert result == {'en-US': self.addon_description_translations['en-US']}
+
+    def _test_expected_single_lang_requested(self, field, serializer=None):
+        field.bind('name', serializer)
+        result = field.to_representation(field.get_attribute(self.addon))
+        assert result == {'es': self.addon_name_translations['es']}
 
         field.source = None
         field.bind('description', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
         expected = {
-            'en-US': str(self.addon.description),
+            'en-US': self.addon_description_translations['en-US'],
             'es': None,
             '_default': 'en-US',
         }
@@ -186,20 +205,14 @@ class TestTranslationSerializerField(TestCase):
 
     def test_get_attribute(self):
         field = self.field_class()
-        self._test_expected_dict(field)
+        self._test_expected_no_lang_requested(field)
 
     def test_get_attribute_source(self):
         self.addon.mymock = Mock()
         self.addon.mymock.mymocked_field = self.addon.name
-        field = self.field_class(source='mymock.mymocked_field')
+        field = self.field_class(source='name')
         result = field.get_attribute(self.addon)
-        expected = {
-            'en-US': str(
-                Translation.objects.get(id=self.addon.name.id, locale='en-US')
-            ),
-            'es': str(Translation.objects.get(id=self.addon.name.id, locale='es')),
-        }
-        assert result == expected
+        assert result == {'en-US': self.addon_name_translations['en-US']}
 
     def test_get_attribute_source_missing_parent_object(self):
         self.addon.mymock = None
@@ -210,24 +223,23 @@ class TestTranslationSerializerField(TestCase):
     def test_get_attribute_empty_context(self):
         mock_serializer = serializers.Serializer(context={})
         field = self.field_class()
-        self._test_expected_dict(field, mock_serializer)
+        self._test_expected_no_lang_requested(field, mock_serializer)
 
     def test_field_get_attribute_request_POST(self):
         request = Request(self.factory.post('/'))
         mock_serializer = serializers.Serializer(context={'request': request})
         field = self.field_class()
-        self._test_expected_dict(field, mock_serializer)
+        self._test_expected_no_lang_requested(field, mock_serializer)
 
     def test_get_attribute_request_GET(self):
         request = Request(self.factory.get('/'))
         mock_serializer = serializers.Serializer(context={'request': request})
         field = self.field_class()
-        self._test_expected_dict(field, mock_serializer)
+        self._test_expected_no_lang_requested(field, mock_serializer)
 
     def test_get_attribute_request_GET_lang(self):
         """
-        Pass a lang in the query string, expect to have a single string
-        returned instead of an object.
+        Pass a lang in the query string, expect to have a single translation returned.
         """
         # We don't go through the middlewares etc where the language for the
         # process would be set, so we have to manually activate the correct
@@ -242,7 +254,17 @@ class TestTranslationSerializerField(TestCase):
                 # (But only if it's in the database - the ES test doesn't save)
                 self.addon = self.addon.reload()
             field = self.field_class()
-            self._test_expected_single_locale(field, mock_serializer)
+            self._test_expected_single_lang_requested(field, mock_serializer)
+
+    def test_get_attribute_request_GET_all_lang(self):
+        """
+        Pass 'lang=all' in the query string, expect to have all translations returned.
+        """
+        request = Request(self.factory.get('/', {'lang': 'all'}))
+        assert request.GET['lang'] == 'all'
+        mock_serializer = serializers.Serializer(context={'request': request})
+        field = self.field_class()
+        self._test_expected_all_lang_requested(field, mock_serializer)
 
     def test_field_null(self):
         field = self.field_class()
@@ -275,7 +297,10 @@ class TestTranslationSerializerField(TestCase):
 
 @override_settings(DRF_API_GATES={None: ('l10n_flat_input_output',)})
 class TestTranslationSerializerFieldFlat(TestTranslationSerializerField):
-    def _test_expected_single_locale(self, field, serializer=None):
+    def _test_expected_no_lang_requested(self, field, serializer=None):
+        self._test_expected_all_lang_requested(field, serializer=serializer)
+
+    def _test_expected_single_lang_requested(self, field, serializer=None):
         field.bind('name', serializer)
         result = field.to_representation(field.get_attribute(self.addon))
         expected = str(self.addon.name)
@@ -297,6 +322,13 @@ class TestTranslationSerializerFieldFlat(TestTranslationSerializerField):
         result = field.run_validation(data['fr'])
         assert result == data['fr']
 
+    def test_get_attribute_source(self):
+        self.addon.mymock = Mock()
+        self.addon.mymock.mymocked_field = self.addon.name
+        field = self.field_class(source='name')
+        result = field.get_attribute(self.addon)
+        assert result == self.addon_name_translations
+
 
 class TestESTranslationSerializerField(TestTranslationSerializerField):
     field_class = ESTranslationSerializerField
@@ -305,11 +337,11 @@ class TestESTranslationSerializerField(TestTranslationSerializerField):
         self.factory = APIRequestFactory()
         self.addon = Addon()
         self.addon.default_locale = 'en-US'
-        self.addon.name_translations = {
+        self.addon_name_translations = self.addon.name_translations = {
             'en-US': 'English Name',
             'es': 'Name in Español',
         }
-        self.addon.description_translations = {
+        self.addon_description_translations = self.addon.description_translations = {
             'en-US': 'English Description',
             'fr': 'Frençh Description',
         }
@@ -353,46 +385,6 @@ class TestESTranslationSerializerField(TestTranslationSerializerField):
         self.field_class().attach_translations(self.addon, data, 'foo')
         assert self.addon.foo_translations == {}
 
-    def _test_expected_dict(self, field, serializer=None):
-        field.bind('name', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = self.addon.name_translations
-        assert result == expected
-
-        field.source = None
-        field.bind('description', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = self.addon.description_translations
-        assert result == expected
-
-    def _test_expected_single_locale(self, field, serializer=None):
-        field.bind('name', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = {
-            'es': str(self.addon.name_translations['es']),
-        }
-        assert result == expected
-
-        field.source = None
-        field.bind('description', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = {
-            'en-US': str(self.addon.description_translations['en-US']),
-            'es': None,
-            '_default': 'en-US',
-        }
-        # We need the order to be exactly the same
-        assert list(result.items()) == list(expected.items())
-        assert list(result)[0] == 'en-US'
-
-    def test_get_attribute_source(self):
-        self.addon.mymock = Mock()
-        self.addon.mymock.mymocked_field = self.addon.name
-        field = self.field_class(source='name')
-        result = field.get_attribute(self.addon)
-        expected = self.addon.name_translations
-        assert result == expected
-
     def test_field_null(self):
         field = self.field_class()
         self.addon.name_translations = {}
@@ -420,17 +412,7 @@ class TestESTranslationSerializerField(TestTranslationSerializerField):
 class TestESTranslationSerializerFieldFlat(
     TestTranslationSerializerFieldFlat, TestESTranslationSerializerField
 ):
-    def _test_expected_single_locale(self, field, serializer=None):
-        field.bind('name', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = str(self.addon.name_translations['es'])
-        assert result == expected
-
-        field.source = None
-        field.bind('description', serializer)
-        result = field.to_representation(field.get_attribute(self.addon))
-        expected = str(self.addon.description_translations['en-US'])
-        assert result == expected
+    pass
 
 
 class TestSlugOrPrimaryKeyRelatedField(TestCase):
@@ -552,26 +534,18 @@ class TestGetTextTranslationSerializerField(TestCase):
             item
         )
 
-    def test_no_lang(self):
+    def test_no_lang_specified(self):
         thing = Thing()
         thing.desc = self.desc_en
         thing.default_locale = 'de'
 
-        # No lang specified, so we're returning the default + the one currently
-        # activated in the thread + the base system one.
+        # No lang specified, so we're returning the one currently activated in the
+        # thread.
         with self.activate('fr'):
-            assert self.serialize(thing)['desc'] == {
-                'en-US': self.desc_en,
-                'fr': self.desc_fr,
-                'de': self.desc_de,
-            }
+            assert self.serialize(thing)['desc'] == {'fr': self.desc_fr}
 
-        # No lang specified but the one currently activated should be en-US,
-        # and it's only returned once.
-        assert self.serialize(thing)['desc'] == {
-            'en-US': self.desc_en,
-            'de': self.desc_de,
-        }
+        # No lang specified so the currently activated should be en-US.
+        assert self.serialize(thing)['desc'] == {'en-US': self.desc_en}
 
     def test_lang_specified(self):
         thing = Thing()
@@ -599,6 +573,27 @@ class TestGetTextTranslationSerializerField(TestCase):
                 'az': None,
                 '_default': 'en-US',
             }
+
+    def test_all_lang(self):
+        thing = Thing()
+        thing.desc = self.desc_en
+        thing.default_locale = 'de'
+
+        # All locales specified, so we're returning the default + the one currently
+        # activated in the thread + the base system one.
+        with self.activate('fr'):
+            assert self.serialize(thing, 'all')['desc'] == {
+                'en-US': self.desc_en,
+                'fr': self.desc_fr,
+                'de': self.desc_de,
+            }
+
+        # All locales specified but the one currently activated should be en-US,
+        # and it's only returned once.
+        assert self.serialize(thing, 'all')['desc'] == {
+            'en-US': self.desc_en,
+            'de': self.desc_de,
+        }
 
 
 class SampleFlatTranslationSerializer(serializers.ModelSerializer):
@@ -637,9 +632,22 @@ class TestFlatTranslationSerializerFields(TestCase):
             approval_notes=self.desc_en,
             release_notes={'en-US': 'release!', 'fr': 'lé release!'},
         )
-        assert self.serialize(version) == {
+
+        # when all locales are specified
+        assert self.serialize(version, 'all') == {
             'gettext': {'en-US': self.desc_en},
             'db': {'en-US': 'release!', 'fr': 'lé release!'},
+        }
+        with override_settings(DRF_API_GATES={'v5': ('l10n_flat_input_output',)}):
+            assert self.serialize(version, 'all') == {
+                'gettext': self.desc_en,
+                'db': 'release!',
+            }
+
+        # when no lang is specified
+        assert self.serialize(version) == {
+            'gettext': {'en-US': self.desc_en},
+            'db': {'en-US': 'release!'},
         }
         with override_settings(DRF_API_GATES={'v5': ('l10n_flat_input_output',)}):
             assert self.serialize(version) == {
