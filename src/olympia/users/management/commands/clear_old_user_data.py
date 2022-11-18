@@ -22,11 +22,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        profile_clear = {
-            'last_login_ip': '',
-            'email': None,
-            'fxa_id': None,
-        }
+        profile_clear = {'email': None, 'fxa_id': None}
         one_day_ago = datetime.now() - timedelta(days=1)
         seven_years_ago = datetime.now() - timedelta(days=365 * 7)
 

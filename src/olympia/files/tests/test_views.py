@@ -67,7 +67,9 @@ class TestFileUploadViewSet(TestCase):
     def setUp(self):
         super().setUp()
         self.list_url = reverse_ns('addon-upload-list', api_version='v5')
-        self.user = user_factory(read_dev_agreement=self.days_ago(0))
+        self.user = user_factory(
+            read_dev_agreement=self.days_ago(0), last_login_ip='127.0.0.1'
+        )
         # Add a file upload
         self.upload = FileUpload.objects.create(
             user=self.user,

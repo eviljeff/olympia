@@ -1424,7 +1424,8 @@ class TestExtensionVersionFromUpload(TestVersionFromUpload):
 
     def _test_logging(self, source):
         user = UserProfile.objects.get(email='regular@mozilla.com')
-        user.update(last_login_ip='1.2.3.4')
+        with core.override_remote_addr('1.2.3.4'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         self.upload.update(
             user=user,
             ip_address='5.6.7.8',
@@ -1805,7 +1806,8 @@ class TestExtensionVersionFromUpload(TestVersionFromUpload):
         assert scanners_result.version is None
 
     def test_auto_approval_not_disabled_if_not_restricted(self):
-        self.upload.user.update(last_login_ip='10.0.0.42')
+        with core.override_remote_addr('10.0.0.42'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.upload.user)
         # Set a submission time restriction: it shouldn't matter.
         IPNetworkUserRestriction.objects.create(network='10.0.0.0/24')
         assert not AddonReviewerFlags.objects.filter(addon=self.addon).exists()
@@ -1834,7 +1836,8 @@ class TestExtensionVersionFromUpload(TestVersionFromUpload):
         assert self.addon.auto_approval_disabled
 
     def test_auto_approval_disabled_if_restricted_by_ip(self):
-        self.upload.user.update(last_login_ip='10.0.0.42')
+        with core.override_remote_addr('10.0.0.42'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.upload.user)
         IPNetworkUserRestriction.objects.create(
             network='10.0.0.0/24', restriction_type=RESTRICTION_TYPES.APPROVAL
         )
@@ -1850,7 +1853,8 @@ class TestExtensionVersionFromUpload(TestVersionFromUpload):
         assert not self.addon.auto_approval_disabled_unlisted
 
     def test_auto_approval_disabled_for_unlisted_if_restricted_by_ip(self):
-        self.upload.user.update(last_login_ip='10.0.0.42')
+        with core.override_remote_addr('10.0.0.42'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.upload.user)
         IPNetworkUserRestriction.objects.create(
             network='10.0.0.0/24', restriction_type=RESTRICTION_TYPES.APPROVAL
         )

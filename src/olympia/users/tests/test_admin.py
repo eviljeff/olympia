@@ -84,10 +84,11 @@ class TestUserAdmin(TestCase):
         assert str(another_user.pk) in doc('#result_list').text()
 
     def test_search_ip_as_int_isnt_considered_an_ip(self):
-        user = user_factory(email='someone@mozilla.com')
+        user = user_factory(email='someone@mozilla.com', last_login_ip='127.0.0.1')
         self.grant_permission(user, 'Users:Edit')
         self.client.force_login(user)
-        self.user.update(last_login_ip='127.0.0.1')
+        with core.override_remote_addr('127.0.0.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         response = self.client.get(self.list_url, {'q': '2130706433'}, follow=True)
         assert response.status_code == 200
         doc = pq(response.content)
@@ -378,7 +379,9 @@ class TestUserAdmin(TestCase):
         self.grant_permission(user, 'Users:Edit')
         self.client.force_login(user)
         user_factory(last_login_ip='127.0.0.2')
-        self.user.update(email='foo@bar.com', last_login_ip='127.0.0.2')
+        with core.override_remote_addr('127.0.0.2'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
+        self.user.update(email='foo@bar.com')
         response = self.client.get(self.list_url, {'q': 'blah,127.0.0.2'}, follow=True)
         assert response.status_code == 200
         doc = pq(response.content)
@@ -791,7 +794,8 @@ class TestUserAdmin(TestCase):
         )
 
     def test_known_ip_adresses(self):
-        self.user.update(last_login_ip='127.1.2.3')
+        with core.override_remote_addr('127.1.2.3'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         Rating.objects.create(
             addon=addon_factory(), user=self.user, ip_address='127.1.2.3'
         )

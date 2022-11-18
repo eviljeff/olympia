@@ -138,20 +138,27 @@ class TestClearOldUserData(TestCase):
         assert recent_not_deleted.email
         assert recent_not_deleted.fxa_id
         assert recent_not_deleted.modified == recent_date
-        assert recent_not_deleted.activitylog_set.count() == 1
-        assert IPLog.objects.filter(
-            activity_log__user=recent_not_deleted
-        ).get().ip_address_binary == IPv4Address('127.0.0.56')
+        assert recent_not_deleted.activitylog_set.count() == 2
+        assert list(
+            IPLog.objects.filter(activity_log__user=recent_not_deleted).values_list(
+                'ip_address_binary', flat=True
+            )
+        ) == [IPv4Address('127.0.0.56'), IPv4Address('127.0.0.1')]
 
         new_user.reload()
         assert new_user.last_login_ip == '127.0.0.1'
         assert new_user.deleted is True
         assert new_user.email
         assert new_user.fxa_id
-        assert new_user.activitylog_set.count() == 1
-        assert IPLog.objects.filter(
-            activity_log__user=new_user
-        ).get().ip_address_binary == IPv4Address('127.0.0.56')
+        assert new_user.activitylog_set.count() == 2
+        assert list(
+            IPLog.objects.filter(activity_log__user=new_user).values_list(
+                'ip_address_binary', flat=True
+            )
+        ) == [
+            IPv4Address('127.0.0.56'),
+            IPv4Address('127.0.0.1'),
+        ]
 
         recent_deleted_user.reload()
         assert recent_deleted_user.last_login_ip == ''
@@ -159,7 +166,7 @@ class TestClearOldUserData(TestCase):
         assert not recent_deleted_user.email
         assert not recent_deleted_user.fxa_id
         assert recent_deleted_user.modified == recent_date
-        assert recent_deleted_user.activitylog_set.count() == 1
+        assert recent_deleted_user.activitylog_set.count() == 2
         assert not IPLog.objects.filter(activity_log__user=recent_deleted_user).exists()
 
         recent_deleted_user_part.reload()
@@ -168,7 +175,7 @@ class TestClearOldUserData(TestCase):
         assert not recent_deleted_user_part.email
         assert not recent_deleted_user_part.fxa_id
         assert recent_deleted_user_part.modified == recent_date
-        assert recent_deleted_user_part.activitylog_set.count() == 1
+        assert recent_deleted_user_part.activitylog_set.count() == 2
         assert not IPLog.objects.filter(
             activity_log__user=recent_deleted_user_part
         ).exists()
@@ -179,10 +186,12 @@ class TestClearOldUserData(TestCase):
         assert recent_banned_user.email
         assert recent_banned_user.fxa_id
         assert recent_banned_user.banned
-        assert recent_banned_user.activitylog_set.count() == 1
-        assert IPLog.objects.filter(
-            activity_log__user=recent_banned_user
-        ).get().ip_address_binary == IPv4Address('127.0.0.56')
+        assert recent_banned_user.activitylog_set.count() == 2
+        assert list(
+            IPLog.objects.filter(activity_log__user=recent_banned_user).values_list(
+                'ip_address_binary', flat=True
+            )
+        ) == [IPv4Address('127.0.0.56'), IPv4Address('127.0.0.1')]
 
         old_banned_user.reload()
         assert old_banned_user.last_login_ip == ''
@@ -191,7 +200,7 @@ class TestClearOldUserData(TestCase):
         assert not old_banned_user.fxa_id
         assert old_banned_user.modified == old_date
         assert old_banned_user.banned
-        assert old_banned_user.activitylog_set.count() == 1
+        assert old_banned_user.activitylog_set.count() == 2
         assert not IPLog.objects.filter(activity_log__user=old_banned_user).exists()
 
     def test_user_restriction_history_cleared_too(self):
@@ -330,9 +339,11 @@ class TestClearOldUserData(TestCase):
         assert old_not_deleted.fxa_id
         assert old_not_deleted.modified == old_date
         assert old_not_deleted_addon.reload()
-        assert IPLog.objects.filter(
-            activity_log__user=old_not_deleted
-        ).get().ip_address_binary == IPv4Address('127.0.0.56')
+        assert list(
+            IPLog.objects.filter(activity_log__user=old_not_deleted).values_list(
+                'ip_address_binary', flat=True
+            )
+        ) == [IPv4Address('127.0.0.56'), IPv4Address('127.0.0.1')]
 
         recent_user.reload()
         assert recent_user.last_login_ip == '127.0.0.1'
@@ -340,9 +351,11 @@ class TestClearOldUserData(TestCase):
         assert recent_user.email
         assert recent_user.fxa_id
         assert recent_user_addon.reload()
-        assert IPLog.objects.filter(
-            activity_log__user=recent_user
-        ).get().ip_address_binary == IPv4Address('127.0.0.56')
+        assert list(
+            IPLog.objects.filter(activity_log__user=recent_user).values_list(
+                'ip_address_binary', flat=True
+            )
+        ) == [IPv4Address('127.0.0.56'), IPv4Address('127.0.0.1')]
 
         old_user.reload()
         assert old_user.last_login_ip == ''

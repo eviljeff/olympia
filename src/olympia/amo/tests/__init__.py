@@ -36,9 +36,10 @@ from rest_framework.settings import api_settings
 from rest_framework.test import APIClient, APIRequestFactory
 from waffle.models import Flag, Sample, Switch
 
-from olympia import amo
+from olympia import amo, core
 from olympia.access.models import Group, GroupUser
 from olympia.accounts.utils import fxa_login_url
+from olympia.activity.models import ActivityLog
 from olympia.addons.indexers import AddonIndexer
 from olympia.addons.models import (
     Addon,
@@ -845,9 +846,11 @@ def user_factory(**kw):
     identifier = str(uuid.uuid4())
     username = kw.pop('username', 'factoryûser-%s' % identifier)
     email = kw.pop('email', '%s@mozîlla.com' % identifier)
-    if 'last_login_ip' not in kw:
-        kw['last_login_ip'] = '127.0.0.1'
+    last_login_ip = kw.pop('last_login_ip', '')
     user = UserProfile.objects.create(username=username, email=email, **kw)
+    if last_login_ip is not None:
+        with core.override_remote_addr(last_login_ip or '127.0.0.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=user)
     return user
 
 

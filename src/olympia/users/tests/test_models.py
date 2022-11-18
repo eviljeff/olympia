@@ -127,7 +127,6 @@ class TestUserProfile(TestCase):
         assert user.display_name
         assert user.homepage
         assert user.picture_type
-        assert user.last_login_ip
         assert not user.has_anonymous_username
         name = user.display_name
         user.update(
@@ -149,9 +148,6 @@ class TestUserProfile(TestCase):
         assert user.display_name == ''
         assert user.homepage == ''
         assert user.picture_type is None
-        # last_login_ip is kept during deletion and later via
-        # clear_old_user_data command
-        assert user.last_login_ip
         assert user.has_anonymous_username
         assert user.averagerating is None
         assert user.biography is None
@@ -660,6 +656,13 @@ class TestUserProfile(TestCase):
         assert lookup_field_random_digit == 'pk'
         lookup_field_random_string = UserProfile.get_lookup_field('my@mail.co')
         assert lookup_field_random_string == 'email'
+
+    def test_last_login_ip(self):
+        user = UserProfile.objects.get(id=55021)
+        assert user.last_login_ip == ''
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=user)
+        assert user.last_login_ip == '192.168.1.1'
 
 
 class TestDeniedName(TestCase):

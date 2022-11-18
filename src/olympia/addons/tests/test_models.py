@@ -2277,7 +2277,8 @@ class TestAddonFromUpload(UploadMixin, TestCase):
         super().setUp()
         self.selected_app = amo.FIREFOX.id
         self.user = UserProfile.objects.get(pk=999)
-        self.user.update(last_login_ip='127.0.0.10')
+        with core.override_remote_addr('127.0.0.10'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         self.addCleanup(translation.deactivate)
 
         def _app(application):

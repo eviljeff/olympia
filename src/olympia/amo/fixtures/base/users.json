@@ -97,7 +97,6 @@
             "deleted": false,
             "created": "2010-10-19 13:02:25",
             "modified": "2010-11-16 10:51:34",
-            "last_login_ip": "127.0.0.1",
             "read_dev_agreement": "2021-12-02 00:00:00",
             "last_login": "2012-05-22 14:59:28"
         }
@@ -112,7 +111,6 @@
             "deleted": false,
             "created": "2010-10-19 13:02:25",
             "modified": "2010-11-16 10:51:34",
-            "last_login_ip": "127.0.0.1",
             "read_dev_agreement": "2021-12-02 00:00:00",
             "last_login": "2012-05-22 14:59:28"
         }
@@ -135,7 +133,6 @@
             "created": "2011-12-01 16:20:55",
             "notes": null,
             "modified": "2011-12-01 16:20:56",
-            "last_login_ip": "",
             "read_dev_agreement": "2021-12-02 00:00:00",
             "last_login": "2012-05-22 14:59:28"
         }

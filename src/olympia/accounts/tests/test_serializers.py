@@ -187,16 +187,16 @@ class PermissionsTestMixin:
 class TestUserProfileSerializer(TestPublicUserProfileSerializer, PermissionsTestMixin):
     serializer = UserProfileSerializer
 
+    user_email = 'a@m.o'
+    user_kwargs = {
+        **TestPublicUserProfileSerializer.user_kwargs,
+        'email': user_email,
+        'display_name': 'This is my náme',
+        'last_login_ip': '123.45.67.89',
+    }
+
     def setUp(self):
         self.now = days_ago(0)
-        self.user_email = 'a@m.o'
-        self.user_kwargs.update(
-            {
-                'email': self.user_email,
-                'display_name': 'This is my náme',
-                'last_login_ip': '123.45.67.89',
-            }
-        )
         super().setUp()
 
     def test_basic(self):

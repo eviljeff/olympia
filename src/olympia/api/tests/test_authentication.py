@@ -17,8 +17,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from olympia import core
+from olympia import amo, core
 from olympia.accounts.verify import IdentificationError
+from olympia.activity.models import ActivityLog
 from olympia.amo.templatetags.jinja_helpers import absolutify
 from olympia.amo.tests import (
     APITestClientSessionID,
@@ -110,9 +111,9 @@ class TestJWTKeyAuthentication(JWTAuthKeyTester, TestCase):
 
     def test_deleted_user(self):
         in_the_past = self.days_ago(42)
-        self.user.update(
-            last_login_ip='48.15.16.23', last_login=in_the_past, deleted=True
-        )
+        with core.override_remote_addr('48.15.16.23'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
+        self.user.update(last_login=in_the_past, deleted=True)
 
         with self.assertRaises(AuthenticationFailed) as ctx:
             self.auth.authenticate(self.request(self._create_token()))

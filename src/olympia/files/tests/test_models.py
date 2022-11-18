@@ -70,7 +70,7 @@ class UploadMixin(amo.tests.AMOPaths):
         channel=amo.CHANNEL_LISTED,
     ):
         if user is None:
-            user = user_factory()
+            user = user_factory(last_login_ip='127.0.0.1')
         with open(abspath if abspath else self.file_path(filename), 'rb') as f:
             xpi = f.read()
         with core.override_remote_addr('127.0.0.62'):

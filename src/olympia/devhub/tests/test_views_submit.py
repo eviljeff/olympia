@@ -21,7 +21,7 @@ import responses
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
-from olympia import amo
+from olympia import amo, core
 from olympia.activity.models import ActivityLog
 from olympia.addons.models import Addon, AddonCategory
 from olympia.amo.tests import (
@@ -65,7 +65,8 @@ class TestSubmitBase(TestCase):
         super().setUp()
         self.user = UserProfile.objects.get(email='del@icio.us')
         self.client.force_login(self.user)
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         self.addon = self.get_addon()
 
     def get_addon(self):
@@ -364,7 +365,8 @@ class TestAddonSubmitDistribution(TestCase):
         super().setUp()
         self.client.force_login(UserProfile.objects.get(email='regular@mozilla.com'))
         self.user = UserProfile.objects.get(email='regular@mozilla.com')
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
 
     def test_check_agreement_okay(self):
         response = self.client.post(reverse('devhub.submit.agreement'))
@@ -442,7 +444,8 @@ class TestAddonSubmitUpload(UploadMixin, TestCase):
         super().setUp()
         self.client.force_login(UserProfile.objects.get(email='regular@mozilla.com'))
         self.user = UserProfile.objects.get(email='regular@mozilla.com')
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         self.client.post(reverse('devhub.submit.agreement'))
         self.upload = self.get_upload('webextension_no_id.xpi', user=self.user)
         self.statsd_incr_mock = self.patch('olympia.devhub.views.statsd.incr')
@@ -1980,7 +1983,8 @@ class VersionSubmitUploadMixin:
         self.addon.update(guid='@webextension-guid')
         self.user = UserProfile.objects.get(email='del@icio.us')
         self.client.force_login(self.user)
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
         self.addon.versions.update(channel=self.channel, version='0.0.0.99')
         channel = 'listed' if self.channel == amo.CHANNEL_LISTED else 'unlisted'
         self.url = reverse(

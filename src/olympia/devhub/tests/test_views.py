@@ -755,7 +755,8 @@ class TestDeveloperAgreement(TestCase):
         super().setUp()
         self.client.force_login(UserProfile.objects.get(email='del@icio.us'))
         self.user = UserProfile.objects.get(email='del@icio.us')
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
 
     def test_agreement_read(self):
         self.user.update(read_dev_agreement=self.days_ago(0))
@@ -925,7 +926,8 @@ class TestAPIKeyPage(TestCase):
         self.url = reverse('devhub.api_key')
         self.client.force_login(UserProfile.objects.get(email='del@icio.us'))
         self.user = UserProfile.objects.get(email='del@icio.us')
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
 
     def test_key_redirect(self):
         self.user.update(read_dev_agreement=None)
@@ -1750,7 +1752,8 @@ class TestRedirects(TestCase):
         self.base = reverse('devhub.index')
         self.client.force_login(UserProfile.objects.get(email='admin@mozilla.com'))
         self.user = UserProfile.objects.get(email='admin@mozilla.com')
-        self.user.update(last_login_ip='192.168.1.1')
+        with core.override_remote_addr('192.168.1.1'):
+            ActivityLog.create(amo.LOG.LOG_IN, user=self.user)
 
     def test_edit(self):
         url = self.base + 'addon/edit/3615'

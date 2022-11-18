@@ -173,8 +173,9 @@ class TestRestrictionChecker(TestCase):
     def setUp(self):
         self.request = RequestFactory(REMOTE_ADDR='10.0.0.1').get('/')
         self.request.is_api = False
-        self.request.user = user_factory(read_dev_agreement=self.days_ago(0))
-        self.request.user.update(last_login_ip='192.168.1.1')
+        self.request.user = user_factory(
+            read_dev_agreement=self.days_ago(0), last_login_ip='192.168.1.1'
+        )
         core.set_remote_addr(self.request.META.get('REMOTE_ADDR'))
 
     def test_is_submission_allowed_pass(self, incr_mock):

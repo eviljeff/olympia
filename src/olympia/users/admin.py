@@ -498,7 +498,6 @@ class UserAdmin(CommaSearchInAdminMixin, admin.ModelAdmin):
                     .distinct()
                 )
             )
-            ip_addresses.add(obj.last_login_ip)
             # In the glorious future all these ip addresses will be IPv[4|6]Address
             # objects but for now some of them are strings so we have to convert.
             ip_addresses = {to_ipaddress(ip) for ip in ip_addresses if ip}

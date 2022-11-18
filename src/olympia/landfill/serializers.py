@@ -14,8 +14,9 @@ from rest_framework import serializers
 
 import olympia.core.logger
 
-from olympia import amo
+from olympia import amo, core
 from olympia.access.models import Group, GroupUser
+from olympia.activity import log_create
 from olympia.addons.models import AddonUser, Preview, Addon
 from olympia.addons.utils import generate_addon_guid
 from olympia.amo.tests import user_factory, addon_factory, copy_file_to_temp
@@ -72,13 +73,15 @@ class GenerateAddonsSerializer(serializers.Serializer):
     def _create_addon_user(self):
         """Create addon user with fxa information assigned."""
         try:
-            return UserProfile.objects.create_user(
+            user = UserProfile.objects.create_user(
                 username='uitest',
                 email=self.fxa_email,
                 fxa_id=self.fxa_id,
                 display_name='uitest',
-                last_login_ip='127.0.0.1',
             )
+            with core.override_remote_addr('127.0.0.1'):
+                log_create(amo.LOG.LOG_IN, user=user)
+            return user
         except Exception as e:
             log.info(
                 'There was a problem creating the user: {}.'
@@ -357,7 +360,8 @@ class GenerateAddonsSerializer(serializers.Serializer):
             defaults={'email': 'admin@mozilla.com', 'username': 'admin'},
         )
         if not user.last_login_ip:
-            user.update(last_login_ip='127.0.0.1')
+            with core.override_remote_addr('127.0.0.1'):
+                log_create(amo.LOG.LOG_IN, user=user)
         # Groups should have been created by loaddata initial.json at this
         # point, we need our user to be part of a group allowed to submit
         # extensions signed by Mozilla. Let's use Admins (pk=1) as a shortcut.

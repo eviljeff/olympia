@@ -24,7 +24,7 @@
       {
         "category": "query",
         "data": {},
-        "message": "SELECT `users`.`id`, `users`.`created`, `users`.`modified`, `users`.`password`, `users`.`last_login`, `users`.`username`, `users`.`display_name`, `users`.`email`, `users`.`averagerating`, `users`.`biography`, `users`.`deleted`, `users`.`display_collections`, `users`.`homepage`, `users`.`location`, `users`.`notes`, `users`.`occupation`, `users`.`picture_type`, `users`.`read_dev_agreement`, `users`.`last_login_ip`, `users`.`email_changed`, `users`.`banned`, `users`.`public`, `users`.`fxa_id`, `users`.`auth...",
+        "message": "SELECT `users`.`id`, `users`.`created`, `users`.`modified`, `users`.`password`, `users`.`last_login`, `users`.`username`, `users`.`display_name`, `users`.`email`, `users`.`averagerating`, `users`.`biography`, `users`.`deleted`, `users`.`display_collections`, `users`.`homepage`, `users`.`location`, `users`.`notes`, `users`.`occupation`, `users`.`picture_type`, `users`.`read_dev_agreement`, `users`.`email_changed`, `users`.`banned`, `users`.`public`, `users`.`fxa_id`, `users`.`auth...",
         "timestamp": "2022-03-29T14:30:06.371581Z",
         "type": "default"
       },

@@ -1339,7 +1339,7 @@ class TestAccountViewSetUpdate(TestCase):
     }
 
     def setUp(self):
-        self.user = user_factory()
+        self.user = user_factory(last_login_ip='127.0.0.1')
         self.url = reverse_ns('account-detail', kwargs={'pk': self.user.pk})
         super().setUp()
 

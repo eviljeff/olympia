@@ -123,8 +123,6 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
     # These are the fields that will be cleared on UserProfile.delete()
-    # last_login_ip is kept, to be deleted later, in line with our data
-    # retention policies: https://github.com/mozilla/addons-server/issues/14494
     ANONYMIZED_FIELDS = (
         'auth_id',
         'averagerating',
@@ -170,7 +168,6 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
     picture_type = models.CharField(max_length=75, default=None, null=True, blank=True)
     read_dev_agreement = models.DateTimeField(null=True, blank=True)
 
-    last_login_ip = models.CharField(default='', max_length=45, editable=False)
     email_changed = models.DateTimeField(null=True, editable=False)
     banned = models.DateTimeField(null=True, editable=False)
 
@@ -197,9 +194,6 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
         indexes = [
             models.Index(fields=('created',), name='created'),
             models.Index(fields=('fxa_id',), name='users_fxa_id_index'),
-            LongNameIndex(
-                fields=('last_login_ip',), name='users_last_login_ip_2cfbbfbd'
-            ),
         ]
 
     def __init__(self, *args, **kw):
@@ -218,6 +212,15 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
             # it's an email.
             lookup_field = 'email'
         return lookup_field
+
+    @property
+    def last_login_ip(self):
+        from olympia.activity.models import IPLog
+
+        log = IPLog.objects.filter(
+            activity_log__action=amo.LOG.LOG_IN.id, activity_log__user=self
+        ).first()
+        return str(log.ip_address_binary) if log and log.ip_address_binary else ''
 
     @property
     def is_superuser(self):
@@ -578,7 +581,6 @@ class UserProfile(OnChangeMixin, ModelBase, AbstractBaseUser):
         """Log when a user logs in and records its IP address."""
         # The following log statement is used by foxsec-pipeline.
         log.info('User (%s) logged in successfully', user, extra={'email': user.email})
-        user.update(last_login_ip=core.get_remote_addr() or '')
         activity.log_create(amo.LOG.LOG_IN, user=user)
 
 
