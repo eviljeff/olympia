@@ -41,7 +41,6 @@ from olympia.promoted.models import PromotedAddon, PromotedApproval
 from olympia.reviewers.models import (
     AutoApprovalSummary,
     ReviewActionReason,
-    ReviewerScore,
     ReviewerSubscription,
 )
 from olympia.reviewers.utils import (
@@ -79,12 +78,6 @@ class TestReviewHelperBase(TestCase):
         self.file = self.review_version.file
 
         self.create_paths()
-
-    def _check_score(self, reviewed_type, bonus=0):
-        scores = ReviewerScore.objects.all()
-        assert len(scores) > 0
-        assert scores[0].score == amo.REVIEWED_SCORES[reviewed_type] + bonus
-        assert scores[0].note_key == reviewed_type
 
     def remove_paths(self):
         if self.file.file and not storage.exists(self.file.file.path):
@@ -986,8 +979,6 @@ class TestReviewHelper(TestReviewHelperBase):
 
         assert self.check_log_count(amo.LOG.APPROVE_VERSION.id) == 1
 
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
     def test_nomination_to_public_need_human_review(self):
         self.setup_data(amo.STATUS_NOMINATED)
         self.review_version.update(needs_human_review=True)
@@ -1103,36 +1094,6 @@ class TestReviewHelper(TestReviewHelperBase):
 
         assert self.check_log_count(amo.LOG.APPROVE_VERSION.id) == 1
 
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
-    def test_old_nomination_to_public_bonus_score(self):
-        self.sign_file_mock.reset()
-        self.setup_data(amo.STATUS_NOMINATED, type=amo.ADDON_STATICTHEME)
-        self.review_version.update(nomination=self.days_ago(9))
-
-        self.helper.handler.approve_latest_version()
-
-        assert self.addon.status == amo.STATUS_APPROVED
-        assert self.addon.versions.all()[0].file.status == (amo.STATUS_APPROVED)
-
-        assert len(mail.outbox) == 1
-        message = mail.outbox[0]
-        assert message.subject == ('%s Approved' % self.preamble)
-        assert 'has been approved' in message.body
-
-        # AddonApprovalsCounter counter is now at 1 for this addon.
-        approval_counter = AddonApprovalsCounter.objects.get(addon=self.addon)
-        assert approval_counter.counter == 1
-
-        self.sign_file_mock.assert_called_with(self.file)
-        assert storage.exists(self.file.file.path)
-
-        assert self.check_log_count(amo.LOG.APPROVE_VERSION.id) == 1
-
-        # Score has bonus points added for reviewing an old add-on.
-        # 2 days over the limit = 4 points
-        self._check_score(amo.REVIEWED_STATICTHEME, bonus=4)
-
     def test_nomination_to_public_not_human(self):
         self.sign_file_mock.reset()
         self.setup_data(amo.STATUS_NOMINATED, human_review=False)
@@ -1159,9 +1120,6 @@ class TestReviewHelper(TestReviewHelperBase):
         assert storage.exists(self.file.file.path)
 
         assert self.check_log_count(amo.LOG.APPROVE_VERSION.id) == 1
-
-        # No request, no user, therefore no score.
-        assert ReviewerScore.objects.count() == 0
 
     def test_public_addon_with_version_awaiting_review_to_public(self):
         self.sign_file_mock.reset()
@@ -1216,7 +1174,6 @@ class TestReviewHelper(TestReviewHelperBase):
 
         assert self.check_log_count(amo.LOG.APPROVE_VERSION.id) == 1
 
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
         self.addon.reviewerflags.reload()
         assert not self.addon.reviewerflags.auto_approval_disabled_until_next_approval
 
@@ -1309,8 +1266,6 @@ class TestReviewHelper(TestReviewHelperBase):
         assert storage.exists(self.file.file.path)
         assert self.check_log_count(amo.LOG.REJECT_VERSION.id) == 1
 
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
     def test_public_addon_with_version_need_human_review_to_sandbox(self):
         self.old_version = self.addon.current_version
         self.old_version.update(created=self.days_ago(1), needs_human_review=True)
@@ -1371,9 +1326,6 @@ class TestReviewHelper(TestReviewHelperBase):
         assert activity.arguments == [self.addon, self.review_version]
         assert activity.details['comments'] == ''
 
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
     def test_public_with_unreviewed_version_addon_confirm_auto_approval(self):
         self.grant_permission(self.user, 'Addons:Review')
         self.setup_data(amo.STATUS_APPROVED, file_status=amo.STATUS_APPROVED)
@@ -1410,9 +1362,6 @@ class TestReviewHelper(TestReviewHelperBase):
         assert activity.arguments == [self.addon, self.current_version]
         assert activity.details['comments'] == ''
 
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
     def test_public_with_disabled_version_addon_confirm_auto_approval(self):
         self.grant_permission(self.user, 'Addons:Review')
         self.setup_data(amo.STATUS_APPROVED, file_status=amo.STATUS_APPROVED)
@@ -1446,9 +1395,6 @@ class TestReviewHelper(TestReviewHelperBase):
         )
         assert activity.arguments == [self.addon, self.current_version]
         assert activity.details['comments'] == ''
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
 
     def test_addon_with_versions_pending_rejection_confirm_auto_approval(self):
         self.grant_permission(self.user, 'Addons:Review')
@@ -1504,9 +1450,6 @@ class TestReviewHelper(TestReviewHelperBase):
         assert not VersionReviewerFlags.objects.filter(
             version__addon=self.addon, pending_content_rejection__isnull=False
         ).exists()
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
 
     def test_confirm_auto_approved_approves_for_promoted(self):
         self.grant_permission(self.user, 'Addons:Review')
@@ -1894,9 +1837,6 @@ class TestReviewHelper(TestReviewHelperBase):
         )
         assert logs[0].created == logs[1].created
 
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
         # listed auto approvals should be disabled until the next manual approval.
         flags = self.addon.reviewerflags
         flags.reload()
@@ -1972,9 +1912,6 @@ class TestReviewHelper(TestReviewHelperBase):
         )
         assert logs[0].created == logs[1].created
 
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
         # The flag to prevent the authors from being notified several times
         # about pending rejections should have been reset, and auto approvals
         # should have been disabled until the next manual approval.
@@ -2034,9 +1971,6 @@ class TestReviewHelper(TestReviewHelperBase):
 
         assert self.check_log_count(amo.LOG.REJECT_VERSION.id) == 2
         assert self.check_log_count(amo.LOG.REJECT_CONTENT.id) == 0
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
 
     def test_reject_multiple_versions_need_human_review(self):
         old_version = self.review_version
@@ -2099,9 +2033,6 @@ class TestReviewHelper(TestReviewHelperBase):
 
         assert self.check_log_count(amo.LOG.REJECT_VERSION.id) == 0
         assert self.check_log_count(amo.LOG.REJECT_CONTENT.id) == 2
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_CONTENT_REVIEW)
 
     def test_reject_multiple_versions_content_review_with_delay(self):
         self.grant_permission(self.user, 'Addons:ContentReview')
@@ -2169,9 +2100,6 @@ class TestReviewHelper(TestReviewHelperBase):
             action=amo.LOG.REJECT_CONTENT_DELAYED.id
         )
         assert logs[0].created == logs[1].created
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_CONTENT_REVIEW)
 
         # The reviewer was already subscribed to new listed versions for this
         # addon, nothing has changed.
@@ -2393,9 +2321,6 @@ class TestReviewHelper(TestReviewHelperBase):
         )
         assert logs[0].created == logs[1].created
 
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_EXTENSION_MEDIUM_RISK)
-
     def _test_reject_multiple_versions_delayed(self, content_review):
         # Do a rejection with delay.
         original_user = self.user
@@ -2506,9 +2431,6 @@ class TestReviewHelper(TestReviewHelperBase):
         )
         assert activity.arguments == [self.addon, self.review_version]
         assert activity.details['comments'] == ''
-
-        # Check points awarded.
-        self._check_score(amo.REVIEWED_CONTENT_REVIEW)
 
     def test_dev_versions_url_in_context(self):
         self.helper.set_data(self.get_data())

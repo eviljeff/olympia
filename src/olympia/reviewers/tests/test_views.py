@@ -66,7 +66,6 @@ from olympia.reviewers.models import (
     AutoApprovalSummary,
     CannedResponse,
     ReviewActionReason,
-    ReviewerScore,
     ReviewerSubscription,
     Whiteboard,
 )
@@ -1884,13 +1883,6 @@ class TestModeratedQueue(QueueTest):
         rows = doc('#reviews-flagged .review-flagged:not(.review-saved)')
         assert rows.length == 1
 
-    def test_skip_score(self):
-        self.setup_actions(ratings.REVIEW_MODERATE_SKIP)
-        assert (
-            ReviewerScore.objects.filter(note_key=amo.REVIEWED_ADDON_REVIEW).count()
-            == 0
-        )
-
     def get_logs(self, action):
         return ActivityLog.objects.filter(action=action.id)
 
@@ -1939,13 +1931,6 @@ class TestModeratedQueue(QueueTest):
         # Make sure it was not actually deleted.
         assert Rating.objects.filter(addon=1865).count() == 2
 
-    def test_remove_score(self):
-        self.setup_actions(ratings.REVIEW_MODERATE_DELETE)
-        assert (
-            ReviewerScore.objects.filter(note_key=amo.REVIEWED_ADDON_REVIEW).count()
-            == 1
-        )
-
     def test_keep(self):
         """Make sure the reviewer tools can remove flags and keep a review."""
         self.setup_actions(ratings.REVIEW_MODERATE_KEEP)
@@ -1964,13 +1949,6 @@ class TestModeratedQueue(QueueTest):
 
         # ...but it's no longer flagged.
         assert rating.filter(editorreview=1).count() == 0
-
-    def test_keep_score(self):
-        self.setup_actions(ratings.REVIEW_MODERATE_KEEP)
-        assert (
-            ReviewerScore.objects.filter(note_key=amo.REVIEWED_ADDON_REVIEW).count()
-            == 1
-        )
 
     def test_queue_layout(self):
         # From the fixtures we already have 2 reviews, one is flagged. We add
@@ -6289,91 +6267,6 @@ class TestWhiteboardDeleted(TestWhiteboard):
     def setUp(self):
         super().setUp()
         self.addon.delete()
-
-
-class TestLeaderboard(ReviewerTest):
-    fixtures = ['base/users']
-
-    def setUp(self):
-        super().setUp()
-        self.url = reverse('reviewers.leaderboard')
-
-        self.user = UserProfile.objects.get(email='reviewer@mozilla.com')
-        self.login_as_reviewer()
-        core.set_user(self.user)
-
-    def _award_points(self, user, score):
-        ReviewerScore.objects.create(
-            user=user, note_key=amo.REVIEWED_MANUAL, score=score, note='Thing.'
-        )
-
-    def test_leaderboard_ranks(self):
-        other_reviewer = UserProfile.objects.create(
-            username='other_reviewer',
-            display_name='',  # No display_name, will fall back on name.
-            email='other_reviewer@mozilla.com',
-        )
-        self.grant_permission(
-            other_reviewer,
-            'Addons:Review',
-            name='Reviewers: Add-ons',  # The name of the group matters here.
-        )
-
-        users = (
-            self.user,
-            UserProfile.objects.get(email='theme_reviewer@mozilla.com'),
-            other_reviewer,
-        )
-
-        self._award_points(users[0], amo.REVIEWED_LEVELS[0]['points'] - 1)
-        self._award_points(users[1], amo.REVIEWED_LEVELS[0]['points'] + 1)
-        self._award_points(users[2], amo.REVIEWED_LEVELS[0]['points'] + 2)
-
-        def get_cells():
-            doc = pq(self.client.get(self.url).content.decode('utf-8'))
-
-            cells = doc(
-                '#leaderboard > tbody > tr > .name, '
-                '#leaderboard > tbody > tr > .level'
-            )
-
-            return [cells.eq(i).text() for i in range(0, cells.length)]
-
-        assert get_cells() == (
-            [
-                users[2].name,
-                users[1].name,
-                str(amo.REVIEWED_LEVELS[0]['name']),
-                users[0].name,
-            ]
-        )
-
-        self._award_points(users[0], 1)
-
-        assert get_cells() == (
-            [
-                users[2].name,
-                users[1].name,
-                users[0].name,
-                str(amo.REVIEWED_LEVELS[0]['name']),
-            ]
-        )
-
-        self._award_points(users[0], -1)
-        self._award_points(
-            users[2],
-            (amo.REVIEWED_LEVELS[1]['points'] - amo.REVIEWED_LEVELS[0]['points']),
-        )
-
-        assert get_cells() == (
-            [
-                users[2].name,
-                str(amo.REVIEWED_LEVELS[1]['name']),
-                users[1].name,
-                str(amo.REVIEWED_LEVELS[0]['name']),
-                users[0].name,
-            ]
-        )
 
 
 class TestXssOnAddonName(amo.tests.TestXss):

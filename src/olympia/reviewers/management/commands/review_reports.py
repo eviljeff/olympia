@@ -10,11 +10,6 @@ from django.utils.encoding import force_str
 import olympia.core.logger
 
 from olympia.amo.utils import send_mail
-from olympia.constants.reviewers import (
-    POST_REVIEW_WEIGHT_HIGHEST_RISK,
-    POST_REVIEW_WEIGHT_HIGH_RISK,
-    POST_REVIEW_WEIGHT_MEDIUM_RISK,
-)
 
 
 SQL_DIR = os.path.join(
@@ -94,17 +89,12 @@ class Command(BaseCommand):
                 SET @WEEK_BEGIN=%s;
                 SET @WEEK_END=%s;
                 SET @QUARTER_BEGIN=%s;
-                SET @RISK_HIGHEST=%s;
-                SET @RISK_HIGH=%s;
-                SET @RISK_MEDIUM=%s;
                 """,
                 [
                     today - timedelta(days=today.weekday() + 7),
                     today - timedelta(days=today.weekday() + 1),
                     date(today.year, (today.month - 1) // 3 * 3 + 1, 1),
-                    POST_REVIEW_WEIGHT_HIGHEST_RISK,
-                    POST_REVIEW_WEIGHT_HIGH_RISK,
-                    POST_REVIEW_WEIGHT_MEDIUM_RISK,
+
                 ],
             )
 

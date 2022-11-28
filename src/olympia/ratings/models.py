@@ -173,8 +173,6 @@ class Rating(ModelBase):
         return jinja_helpers.url('addons.ratings.detail', self.addon.slug, self.id)
 
     def approve(self, user):
-        from olympia.reviewers.models import ReviewerScore
-
         activity.log_create(
             amo.LOG.APPROVE_RATING,
             self.addon,
@@ -193,20 +191,14 @@ class Rating(ModelBase):
         # We've already logged what we want to log, no need to pass
         # user_responsible=user.
         self.save()
-        ReviewerScore.award_moderation_points(user, self.addon, self.pk)
 
     def delete(self, user_responsible=None, send_post_save_signal=True):
         if user_responsible is None:
             user_responsible = self.user
 
-        rating_was_moderated = False
         # Log deleting ratings to moderation log,
         # except if the author deletes it
         if user_responsible != self.user:
-            # Remember moderation state
-            rating_was_moderated = True
-            from olympia.reviewers.models import ReviewerScore
-
             activity.log_create(
                 amo.LOG.DELETE_RATING,
                 self.addon,
@@ -233,9 +225,6 @@ class Rating(ModelBase):
         # Force refreshing of denormalized data (it wouldn't happen otherwise
         # because we're not dealing with a creation).
         self.update_denormalized_fields()
-
-        if rating_was_moderated:
-            ReviewerScore.award_moderation_points(user_responsible, self.addon, self.pk)
 
     def undelete(self):
         self.update(deleted=False)

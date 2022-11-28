@@ -8,7 +8,7 @@ from django.core import mail
 from olympia import amo
 from olympia.amo.tests import addon_factory, grant_permission, user_factory
 from olympia.reviewers.management.commands.review_reports import Command
-from olympia.reviewers.models import AutoApprovalSummary, ReviewerScore
+from olympia.reviewers.models import AutoApprovalSummary
 
 
 @pytest.mark.django_db
@@ -36,14 +36,6 @@ class TestReviewReports:
         addon = addon_factory()
         AutoApprovalSummary.objects.create(
             version=addon.current_version, verdict=verdict, weight=weight
-        )
-        ReviewerScore.award_points(
-            user,
-            addon,
-            addon.status,
-            version=addon.versions.all()[0],
-            post_review=True,
-            content_review=content_review,
         )
 
     def generate_review_data(self):
@@ -118,26 +110,10 @@ class TestReviewReports:
             mail.outbox = []
 
             # Search plugin (submitted before auto-approval was implemented)
-            search_plugin = addon_factory(type=4)
-            ReviewerScore.award_points(
-                self.reviewer3,
-                search_plugin,
-                amo.STATUS_APPROVED,
-                version=search_plugin.versions.all()[0],
-                post_review=False,
-                content_review=True,
-            )
+            addon_factory(type=4)
 
             # Dictionary (submitted before auto-approval was implemented)
-            dictionary = addon_factory(type=3)
-            ReviewerScore.award_points(
-                self.reviewer3,
-                dictionary,
-                amo.STATUS_APPROVED,
-                version=dictionary.versions.all()[0],
-                post_review=False,
-                content_review=True,
-            )
+            addon_factory(type=amo.ADDON_DICT)
 
     def test_report_addon_reviewer(self):
         self.generate_review_data()
