@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms.widgets import HiddenInput, NumberInput
+from django.forms.widgets import HiddenInput, NumberInput, Select
 
 from olympia.amo.admin import HTML5DateTimeInput
 from olympia.amo.forms import AMOModelForm
@@ -83,6 +83,16 @@ class BlocklistSubmissionForm(AMOModelForm):
     )
     update_reason = forms.fields.BooleanField(required=False, initial=True)
     update_url = forms.fields.BooleanField(required=False, initial=True)
+    disable_addon = forms.fields.NullBooleanField(
+        required=False,
+        widget=Select(
+            choices=[
+                ('', 'Disable if all signed versions are blocked'),
+                (True, 'Disable add-on and all versions'),
+                (False, 'Do not disable add-on'),
+            ]
+        ),
+    )
 
     def __init__(self, data=None, *args, **kw):
         instance = kw.get('instance')

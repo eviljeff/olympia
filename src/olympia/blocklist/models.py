@@ -251,7 +251,12 @@ class BlocklistSubmission(ModelBase):
         blank=True,
         help_text='The submission will not be published into blocks before this time.',
     )
-    disable_addon = models.BooleanField(default=True)
+    disable_addon = models.BooleanField(
+        default=None,
+        null=True,
+        help_text='Should the add-on be disabled after the submission is published. '
+        'Unknown means only disable if no other signed versions exist.',
+    )
 
     objects = BlocklistSubmissionManager()
 

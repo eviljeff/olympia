@@ -469,7 +469,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
         pending_version.file.reload()
         disabled_version.file.reload()
         deleted_version.file.reload()
-        assert addon.status != amo.STATUS_DISABLED  # not 0 - * so no change
+        assert addon.status == amo.STATUS_DISABLED
         assert first_version.file.status == amo.STATUS_DISABLED
         assert second_version.file.status == amo.STATUS_DISABLED
         assert pending_version.file.status == (
@@ -539,7 +539,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
         assert 'partial@existing' in content
         assert 'Partial Danger' in content
         assert f'{partial_addon.average_daily_users} users' in content
-        # but not for existing blocks already 0 - *
+        # but not for existing blocks where the addon is completely blocked already
         assert 'full@existing' in content
         assert 'Full Danger' not in content
         assert f'{existing_and_complete.addon.average_daily_users} users' not in content
@@ -559,7 +559,6 @@ class TestBlocklistSubmissionAdmin(TestCase):
                     new_addon.current_version.id,
                     partial_addon.current_version.id,
                 ],
-                'disable_addon': True,
                 'url': 'dfd',
                 'reason': 'some reason',
                 'update_url': True,
@@ -721,6 +720,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
         )
         assert submission.url == new_block.url
         assert submission.reason == new_block.reason
+        assert submission.disable_addon is None
 
         assert submission.to_block == [
             {
@@ -829,7 +829,6 @@ class TestBlocklistSubmissionAdmin(TestCase):
                     new_addon.current_version.id,
                     partial_addon.current_version.id,
                 ],
-                'disable_addon': True,
                 'url': 'new url that will be ignored because no update_url=True',
                 'reason': 'new reason',
                 # no 'update_url'
@@ -1115,7 +1114,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
                 'input_guids': 'guid2@\nfoo@baa',  # should be ignored
                 'changed_version_ids': [],  # should be ignored
                 'url': 'new.url',
-                # disable_addon defaults to True, so omitting it is changing to False
+                'disable_addon': False,  # default is None
                 'reason': 'a new reason thats longer than 40 charactors',
                 'update_url': True,
                 'update_reason': True,
@@ -1147,7 +1146,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
             field.lower() for field in change_json[0]['changed']['fields']
         ]
         assert change_json == [
-            {'changed': {'fields': ['disable addon', 'url', 'reason']}}
+            {'changed': {'fields': ['disable_addon', 'url', 'reason']}}
         ]
 
         response = self.client.get(multi_url, follow=True)
@@ -1338,7 +1337,7 @@ class TestBlocklistSubmissionAdmin(TestCase):
         )
         assert b'not a Block!' not in response.content
 
-        # we disabled versions and the addon (because 0 - *)
+        # we disabled versions and the addon all the versions were blocked
         addon.reload()
         version.file.reload()
         assert addon.status == amo.STATUS_DISABLED
@@ -1680,7 +1679,6 @@ class TestBlocklistSubmissionAdmin(TestCase):
                 'input_guids': 'guid@',
                 'action': str(BlocklistSubmission.ACTION_ADDCHANGE),
                 'changed_version_ids': [version.id],
-                'disable_addon': True,
                 'url': 'dfd',
                 'reason': 'some reason',
                 'update_url': True,
@@ -1942,40 +1940,35 @@ class TestBlocklistSubmissionAdmin(TestCase):
         assert mbs.signoff_state == BlocklistSubmission.SIGNOFF_PUBLISHED
         assert Block.objects.count() == 1
 
-    def test_not_disable_addon(self):
+    def _setup_disable_addon_test(self, *, disable_addon, another_version_kw=None):
         user = user_factory(email='someone@mozilla.com')
         self.grant_permission(user, 'Blocklist:Create')
         self.client.force_login(user)
+        addon_adu = settings.DUAL_SIGNOFF_AVERAGE_DAILY_USERS_THRESHOLD - 1
 
-        new_addon_adu = settings.DUAL_SIGNOFF_AVERAGE_DAILY_USERS_THRESHOLD - 1
-        new_addon = addon_factory(
-            guid='any@new', name='New Danger', average_daily_users=new_addon_adu
-        )
-        partial_addon_adu = new_addon_adu - 1
-        partial_addon = addon_factory(
-            guid='partial@existing',
-            name='Partial Danger',
-            average_daily_users=(partial_addon_adu),
-        )
-        block_factory(
-            guid=partial_addon.guid,
-            # should be updated to addon's adu
-            average_daily_users_snapshot=146722437,
-            updated_by=user_factory(),
-        )
-        version_factory(addon=partial_addon)
-        assert Block.objects.count() == 1
+        addon = addon_factory(average_daily_users=addon_adu)
+        # version_blocked_already is blocked already
+        version_blocked_already = addon.current_version
+        block_factory(guid=addon.guid, updated_by=user)
+        version_blocked_already.file.update(status=amo.STATUS_DISABLED)
+        # version_to_be_blocked will be blocked in this submission
+        version_to_be_blocked = version_factory(addon=addon)
+        # version_another isn't blocked already, and won't be blocked in this submission
+        version_another = version_factory(addon=addon, **(another_version_kw or {}))
+        # create a previous addon instance that we ignore when considering versions
+        old_addon = addon_factory(file_kw={'is_signed': True})
+        version_old_addon = old_addon.current_version
+        old_addon.delete()
+        old_addon.addonguid.update(guid=addon.guid)
+
         # Create the block submission
         response = self.client.post(
             self.submission_url,
             {
-                'input_guids': ('any@new\npartial@existing\nfull@existing\ninvalid@'),
+                'input_guids': addon.guid,
                 'action': str(BlocklistSubmission.ACTION_ADDCHANGE),
-                'changed_version_ids': [
-                    new_addon.current_version.id,
-                    partial_addon.current_version.id,
-                ],
-                # 'disable_addon' it's a checkbox so leaving it out is False
+                'changed_version_ids': [version_to_be_blocked.id],
+                'disable_addon': disable_addon,
                 'url': 'dfd',
                 'reason': 'some reason',
                 'update_url': True,
@@ -1987,19 +1980,62 @@ class TestBlocklistSubmissionAdmin(TestCase):
         )
         assert response.status_code == 200
 
-        assert Block.objects.count() == 2
+        assert Block.objects.count() == 1
         assert BlocklistSubmission.objects.count() == 1
 
-        new_addon_version = new_addon.current_version
-        new_addon.reload()
-        new_addon_version.file.reload()
-        assert new_addon.status != amo.STATUS_DISABLED
-        assert new_addon_version.file.status == amo.STATUS_DISABLED
-        partial_addon_version = partial_addon.current_version
-        partial_addon.reload()
-        partial_addon_version.file.reload()
-        assert partial_addon.status != amo.STATUS_DISABLED
-        assert partial_addon_version.file.status == (amo.STATUS_DISABLED)
+        addon.reload()
+        version_blocked_already.file.reload()
+        version_to_be_blocked.file.reload()
+        version_another.file.reload()
+        version_old_addon.file.reload()
+
+        # we should always disable the version being blocked
+        assert version_to_be_blocked.file.status == amo.STATUS_DISABLED
+
+        return (addon, version_another)
+
+    def test_disable_addon_is_false(self):
+        (
+            addon,
+            version_another,
+        ) = self._setup_disable_addon_test(disable_addon=False)
+
+        assert addon.status != amo.STATUS_DISABLED
+        assert version_another.file.status != amo.STATUS_DISABLED  # not changed
+
+    def test_disable_addon_is_true(self):
+        (
+            addon,
+            version_another,
+        ) = self._setup_disable_addon_test(disable_addon=True)
+
+        assert addon.status == amo.STATUS_DISABLED
+        # all versions for addon will be disabled, regardless of their state
+        assert version_another.file.status == amo.STATUS_DISABLED
+
+    def test_disable_addon_is_none_no_unblocked(self):
+        (
+            addon,
+            version_another,
+        ) = self._setup_disable_addon_test(disable_addon='')
+
+        # only the blocked version is disabled, but the others were either already
+        # blocked or unsigned so we disable the addon
+        assert addon.status == amo.STATUS_DISABLED
+        assert version_another.file.status != amo.STATUS_DISABLED
+
+    def test_disable_addon_is_none_some_unblocked(self):
+        (
+            addon,
+            version_another,
+        ) = self._setup_disable_addon_test(
+            disable_addon='', another_version_kw={'file_kw': {'is_signed': True}}
+        )
+
+        # only the blocked version is disabled; but because there is a signed version
+        # still unblocked we don't disable the add-on.
+        assert addon.status != amo.STATUS_DISABLED
+        assert version_another.file.status != amo.STATUS_DISABLED
 
 
 class TestBlockAdminDelete(TestCase):

@@ -155,8 +155,11 @@ def disable_versions_for_block(block, submission):
         # We don't need to reject versions from older deleted instances
         # and already disabled files
         if ver.addon == block.addon
-        and ver.id in submission.changed_version_ids
         and ver.file.status != amo.STATUS_DISABLED
+        and (
+            ver.id in submission.changed_version_ids
+            or submission.disable_addon is True  # disable all the versions
+        )
     ]
     review.set_data({'versions': versions_to_reject})
     review.reject_multiple_versions()
@@ -206,7 +209,16 @@ def save_versions_to_blocks(guids, submission):
             submission_obj=submission if submission.id else None,
         )
         disable_versions_for_block(block, submission)
-        if submission.disable_addon:
+        signed_unblocked_versions = (
+            version
+            for version in block.addon_versions
+            if version.addon == block.addon
+            and version.file.is_signed
+            and not version.is_blocked
+        )
+        if submission.disable_addon is True or (
+            submission.disable_addon is None and not any(signed_unblocked_versions)
+        ):
             if block.addon.status == amo.STATUS_DELETED:
                 try:
                     block.addon.deny_resubmission()
