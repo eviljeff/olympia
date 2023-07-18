@@ -130,17 +130,16 @@ class Block(ModelBase):
         """Given a list of guids, return a list of Blocks - either existing
         instances if the guid exists in a Block, or new instances otherwise.
         """
-        # load all the Addon instances together
         using_db = get_replica()
-        addons = list(cls.get_addons_for_guids_qs(guids).using(using_db))
 
-        # And then any existing block instances
+        # Get any existing block instances
         blocks = {
             block.guid: block
             for block in cls.objects.using(using_db).filter(guid__in=guids)
         }
 
-        for addon in addons:
+        # And iterate through all the add-ons for those guids
+        for addon in cls.get_addons_for_guids_qs(guids).using(using_db):
             # get the existing block object or create a new instance
             block = blocks.get(addon.guid, None)
             if block:

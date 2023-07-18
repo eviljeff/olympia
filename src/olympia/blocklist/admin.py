@@ -15,6 +15,7 @@ from olympia.amo.admin import AMOModelAdmin
 from olympia.amo.utils import HttpResponseTemporaryRedirect
 
 from .forms import (
+    BlockForm,
     BlocklistSubmissionForm,
     MultiAddForm,
     MultiDeleteForm,
@@ -543,13 +544,14 @@ class BlockAdmin(BlockAdminAddMixin, AMOModelAdmin):
         'review_unlisted_link',
         'block_history',
         'url_link',
-        'blocked_versions',
+        'blocked_version_ids',
     )
     ordering = ['-modified']
     view_on_site = False
     list_select_related = ('updated_by',)
     change_list_template = 'admin/blocklist/block_change_list.html'
     change_form_template = 'admin/blocklist/block_change_form.html'
+    form = BlockForm
 
     class Media:
         css = {'all': ('css/admin/blocklist_block.css',)}
@@ -569,10 +571,11 @@ class BlockAdmin(BlockAdminAddMixin, AMOModelAdmin):
     def users(self, obj):
         return obj.average_daily_users_snapshot
 
-    def blocked_versions(self, obj):
+    def blocked_version_ids(self, obj):
         return ', '.join(
             sorted(obj.blockversion_set.values_list('version__version', flat=True))
         )
+    blocked_version_ids.short_description = 'Blocked Versions'
 
     def block_history(self, obj):
         logs = (
@@ -613,7 +616,7 @@ class BlockAdmin(BlockAdminAddMixin, AMOModelAdmin):
             'Edit Block',
             {
                 'fields': (
-                    'blocked_versions',
+                    'blocked_version_ids',
                     ('url', 'url_link'),
                     'reason',
                 ),
@@ -621,9 +624,6 @@ class BlockAdmin(BlockAdminAddMixin, AMOModelAdmin):
         )
 
         return (details, history, edit)
-
-    def has_change_permission(self, request, obj=None):
-        return False
 
     def save_model(self, request, obj, form, change):
         # We don't save via this Admin so if we get here something has gone

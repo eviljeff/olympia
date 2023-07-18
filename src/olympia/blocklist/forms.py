@@ -208,8 +208,7 @@ class BlocklistSubmissionForm(AMOModelForm):
         return data
 
     def clean(self):
-        super().clean()
-        data = self.cleaned_data
+        data = super().clean()
         if delay_days := data.get('delay_days', 0):
             data['delayed_until'] = datetime.now() + timedelta(days=delay_days)
         for field_name in ('reason', 'url'):
@@ -217,3 +216,27 @@ class BlocklistSubmissionForm(AMOModelForm):
                 data[field_name] = None
             elif field_name in data and data[field_name] is None:
                 data[field_name] = ''
+        return data
+
+
+class BlockForm(AMOModelForm):
+    def clean(self):
+        data = super().clean()
+        original_ids = set(
+            self.instance.blockversion_set.values_list('version_id', flat=True)
+        )
+        added_ids = original_ids - data['blocked_version_ids']
+        removed_ids = original_ids - data['blocked_version_ids']
+        # Note: we don't need to do much validation here - BlocklistSubmissionForm will
+        # raise an error if we try to submit invalid data.
+        if added_ids and removed_ids:
+            raise ValidationError(
+                'Cannot add and remove blocked versions in a single change'
+            )
+        data['action'] = str(
+            BlocklistSubmission.ACTION_DELETE
+            if removed_ids else
+            BlocklistSubmission.ACTION_ADDCHANGE
+        )
+        data['changed_version_ids'] = added_ids + removed_ids
+        return data

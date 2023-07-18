@@ -2008,6 +2008,320 @@ class TestBlocklistSubmissionAdmin(TestCase):
         assert partial_addon_version.file.status == (amo.STATUS_DISABLED)
 
 
+class TestBlockAdminEdit(TestCase):
+    def setUp(self):
+        self.addon = addon_factory(
+            guid='guid@', name='Danger Danger', version_kw={'version': '123.456'}
+        )
+        self.v1 = self.addon.current_version
+        self.block = block_factory(
+            addon=self.addon,
+            updated_by=user_factory(),
+            average_daily_users_snapshot=12345678,
+        )
+        self.v2 = version_factory(addon=self.addon, version='123')
+        self.change_url = reverse('admin:blocklist_block_change', args=(self.block.pk,))
+        self.submission_url = reverse('admin:blocklist_blocklistsubmission_add')
+        # We need the task user because some test cases eventually trigger
+        # `disable_addon_for_block()`.
+        user_factory(id=settings.TASK_USER_ID)
+
+    def _test_edit(self, user, signoff_state):
+        self.grant_permission(user, 'Blocklist:Create')
+        self.client.force_login(user)
+
+        response = self.client.get(self.change_url, follow=True)
+        content = response.content.decode('utf-8')
+        assert 'Add-on GUIDs (one per line)' not in content
+        assert 'guid@' in content
+        assert 'Danger Danger' in content
+        assert str(12345678) in content
+        assert 'Block History' in content
+
+        # Change the block
+        response = self.client.post(
+            self.change_url,
+            {
+                'input_guids': self.block.guid,
+                'blocked_version_ids': [self.v1.id, self.v2.id],
+                'url': 'https://foo.baa',
+                'reason': 'some other reason',
+                '_continue': 'Save and continue editing',
+            },
+            follow=True,
+        )
+        assert response.status_code == 200
+        assert BlocklistSubmission.objects.exists()
+        submission = BlocklistSubmission.objects.get(input_guids=self.block.guid)
+        assert submission.signoff_state == signoff_state
+
+    def _test_post_edit_logging(self, user, blocked_version_changes=True):
+        assert Block.objects.count() == 1  # check we didn't create another
+        block = Block.objects.first()
+        assert block.addon == self.addon  # wasn't changed
+        [bv_v1, bv_v2] = block.blockversion_set.all()
+        assert bv_v1.version == self.v1
+        assert bv_v2.version == self.v2
+        reject_log, edit_log = list(
+            ActivityLog.objects.for_addons(self.addon).exclude(
+                action=amo.LOG.BLOCKLIST_SIGNOFF.id
+            )
+        )
+        assert edit_log.action == amo.LOG.BLOCKLIST_BLOCK_EDITED.id
+        assert edit_log.arguments == [self.addon, self.addon.guid, self.block]
+        assert edit_log.details['changed_version_ids'] == [self.v2.id]
+        assert edit_log.details['reason'] == 'some other reason'
+        block_log = (
+            ActivityLog.objects.for_block(self.block)
+            .filter(action=amo.LOG.BLOCKLIST_BLOCK_EDITED.id)
+            .last()
+        )
+        assert block_log == edit_log
+        block_log_by_guid = (
+            ActivityLog.objects.for_guidblock('guid@')
+            .filter(action=amo.LOG.BLOCKLIST_BLOCK_EDITED.id)
+            .last()
+        )
+        assert block_log_by_guid == edit_log
+        current_version_log = ActivityLog.objects.for_versions(
+            self.v2
+        ).last()
+        assert current_version_log == edit_log
+        assert block.is_version_blocked(self.v2.version)
+        if blocked_version_changes:
+            extra_version_log = ActivityLog.objects.for_versions(
+                self.v1
+            ).last()
+            # should have a block entry for the version even though it's now not blocked
+            assert extra_version_log == edit_log
+            assert not block.is_version_blocked(self.v1.version)
+
+        assert reject_log.action == amo.LOG.REJECT_VERSION.id
+
+        # Check the block history contains the edit just made.
+        response = self.client.get(self.change_url, follow=True)
+        content = response.content.decode('utf-8')
+        todaysdate = datetime.now().date()
+        assert f'<a href="https://foo.baa">{todaysdate}</a>' in content
+        assert f'Block edited by {user.name}:\n        {self.block.guid}' in (content)
+        assert f'versions 0 - {self.v2.version}' in content
+
+    def test_edit_low_adu(self):
+        user = user_factory(email='someone@mozilla.com')
+        self.addon.update(
+            average_daily_users=(settings.DUAL_SIGNOFF_AVERAGE_DAILY_USERS_THRESHOLD)
+        )
+        self._test_edit(user, BlocklistSubmission.SIGNOFF_PUBLISHED)
+        self._test_post_edit_logging(user)
+
+    # def test_edit_high_adu(self):
+    #     user = user_factory(email='someone@mozilla.com')
+    #     self.addon.update(
+    #         average_daily_users=(
+    #             settings.DUAL_SIGNOFF_AVERAGE_DAILY_USERS_THRESHOLD + 1
+    #         )
+    #     )
+    #     self._test_edit(user, BlocklistSubmission.SIGNOFF_PENDING)
+    #     submission = BlocklistSubmission.objects.get(input_guids=self.block.guid)
+    #     submission.update(
+    #         signoff_state=BlocklistSubmission.SIGNOFF_APPROVED,
+    #         signoff_by=user_factory(),
+    #     )
+    #     submission.save_to_block_objects()
+    #     self._test_post_edit_logging(user)
+
+    # def test_edit_high_adu_only_metadata(self):
+    #     user = user_factory(email='someone@mozilla.com')
+    #     self.addon.update(
+    #         average_daily_users=(
+    #             settings.DUAL_SIGNOFF_AVERAGE_DAILY_USERS_THRESHOLD + 1
+    #         )
+    #     )
+    #     BlockVersion.objects.create(version=self.v2, block=self.block)
+    #     self._test_edit(user, BlocklistSubmission.SIGNOFF_PUBLISHED)
+    #     self._test_post_edit_logging(user, blocked_version_changes=False)
+
+    # def test_invalid_versions_not_accepted(self):
+    #     user = user_factory(email='someone@mozilla.com')
+    #     self.grant_permission(user, 'Blocklist:Create')
+    #     self.client.force_login(user)
+
+    #     deleted_addon = addon_factory(version_kw={'version': '345.34a'})
+    #     deleted_addon.delete()
+    #     deleted_addon.addonguid.update(guid=self.addon.guid)
+    #     self.v1.update(version='123.4b5')
+    #     self.v2.update(version='678')
+    #     # Update min_version in self.block to a version that doesn't exist
+    #     self.block.update(min_version='444.4a')
+
+    #     response = self.client.get(self.change_url, follow=True)
+    #     content = response.content.decode('utf-8')
+    #     doc = pq(content)
+    #     ver_list = doc('#id_min_version option')
+    #     assert len(ver_list) == 5
+    #     assert ver_list.eq(0).attr['value'] == '444.4a'
+    #     assert ver_list.eq(0).text() == '(invalid)'
+    #     assert ver_list.eq(1).attr['value'] == '0'
+    #     assert ver_list.eq(2).attr['value'] == '123.4b5'
+    #     assert ver_list.eq(3).attr['value'] == '678'
+    #     assert ver_list.eq(4).attr['value'] == '345.34a'
+
+    #     data = {
+    #         'input_guids': self.block.guid,
+    #         'action': '0',
+    #         'url': 'https://foo.baa',
+    #         'reason': 'some other reason',
+    #         '_save': 'Update',
+    #     }
+    #     # Try saving the form with the same min_version
+    #     response = self.client.post(
+    #         self.change_url,
+    #         dict(
+    #             min_version='444.4a',  # current value, but not a version.
+    #             max_version=self.v2.version,  # valid
+    #             **data,
+    #         ),
+    #         follow=True,
+    #     )
+    #     assert response.status_code == 200
+    #     assert b'Invalid version' in response.content
+    #     self.block = self.block.reload()
+    #     assert self.block.min_version == '444.4a'  # not changed
+    #     assert self.block.max_version == '*'  # not changed either.
+    #     assert not ActivityLog.objects.for_addons(self.addon).exists()
+    #     doc = pq(content)
+    #     assert doc('#id_min_version option').eq(0).attr['value'] == '444.4a'
+
+    #     # Change to a version that exists
+    #     response = self.client.post(
+    #         self.change_url,
+    #         dict(min_version='345.34a', max_version='*', **data),
+    #         follow=True,
+    #     )
+    #     assert response.status_code == 200
+    #     assert b'Invalid version' not in response.content
+    #     self.block = self.block.reload()
+    #     assert self.block.min_version == '345.34a'  # changed
+    #     assert self.block.max_version == '*'
+    #     assert ActivityLog.objects.for_addons(self.addon).exists()
+    #     # the value shouldn't be in the list of versions either any longer.
+    #     assert b'444.4a' not in response.content
+
+    def test_can_not_edit_without_permission(self):
+        user = user_factory(email='someone@mozilla.com')
+        self.client.force_login(user)
+
+        response = self.client.get(self.change_url, follow=True)
+        assert response.status_code == 403
+        assert b'Danger Danger' not in response.content
+
+        # Try to edit the block anyway
+        response = self.client.post(
+            self.change_url,
+            {
+                'input_guids': self.block.guid,
+                'blocked_version_ids': [self.v1.id, self.v2.id],
+                'url': 'dfd',
+                'reason': 'some reason',
+                '_save': 'Save',
+            },
+            follow=True,
+        )
+        assert response.status_code == 403
+        assert Block.objects.count() == 1
+
+    # def test_cannot_edit_when_guid_in_blocklistsubmission_change(self):
+    #     user = user_factory(email='someone@mozilla.com')
+    #     self.grant_permission(user, 'Blocklist:Create')
+    #     self.client.force_login(user)
+    #     blocksubm = BlocklistSubmission.objects.create(
+    #         input_guids=self.block.guid, min_version='123.45'
+    #     )
+    #     assert blocksubm.to_block == [
+    #         {
+    #             'id': self.block.id,
+    #             'guid': self.block.guid,
+    #             'average_daily_users': self.block.addon.average_daily_users,
+    #         }
+    #     ]
+
+    #     response = self.client.get(self.change_url, follow=True)
+    #     content = response.content.decode('utf-8')
+    #     assert 'Add-on GUIDs (one per line)' not in content
+    #     assert 'guid@' in content
+    #     assert 'Danger Danger' in content
+    #     assert 'Add/Change submission pending' in content
+    #     submission_url = reverse(
+    #         'admin:blocklist_blocklistsubmission_change', args=(blocksubm.id,)
+    #     )
+    #     assert 'min_version: "0" to "123.45"' in content
+    #     assert submission_url in content
+    #     assert 'Close' in content
+    #     assert '_save' not in content
+    #     assert 'deletelink' not in content
+
+    #     # Try to edit the block anyway
+    #     response = self.client.post(
+    #         self.change_url,
+    #         {
+    #             'input_guids': self.block.guid,
+    #             'min_version': '0',
+    #             'max_version': self.v2.version,
+    #             'url': 'dfd',
+    #             'reason': 'some reason',
+    #             '_save': 'Save',
+    #         },
+    #         follow=True,
+    #     )
+    #     assert response.status_code == 403
+    #     assert self.block.max_version == '*'  # not changed
+
+    # def test_cannot_edit_when_guid_in_blocklistsubmission_delete(self):
+    #     user = user_factory(email='someone@mozilla.com')
+    #     self.grant_permission(user, 'Blocklist:Create')
+    #     self.client.force_login(user)
+    #     blocksubm = BlocklistSubmission.objects.create(
+    #         input_guids=self.block.guid, action=BlocklistSubmission.ACTION_DELETE
+    #     )
+    #     assert blocksubm.to_block == [
+    #         {
+    #             'id': self.block.id,
+    #             'guid': self.block.guid,
+    #             'average_daily_users': self.block.addon.average_daily_users,
+    #         }
+    #     ]
+
+    #     response = self.client.get(self.change_url, follow=True)
+    #     content = response.content.decode('utf-8')
+    #     assert 'Add-on GUIDs (one per line)' not in content
+    #     assert 'guid@' in content
+    #     assert 'Danger Danger' in content
+    #     assert 'Delete submission pending' in content
+    #     submission_url = reverse(
+    #         'admin:blocklist_blocklistsubmission_change', args=(blocksubm.id,)
+    #     )
+    #     assert submission_url in content
+    #     assert 'Close' in content
+    #     assert '_save' not in content
+    #     assert 'deletelink' not in content
+
+    #     # Try to edit the block anyway
+    #     response = self.client.post(
+    #         self.change_url,
+    #         {
+    #             'input_guids': self.block.guid,
+    #             'min_version': '0',
+    #             'max_version': self.v2.version,
+    #             'url': 'dfd',
+    #             'reason': 'some reason',
+    #             '_save': 'Save',
+    #         },
+    #         follow=True,
+    #     )
+    #     assert response.status_code == 403
+    #     assert self.block.max_version == '*'  # not changed
+
+
 class TestBlockAdminDelete(TestCase):
     def setUp(self):
         self.delete_url = reverse('admin:blocklist_block_delete_multiple')
