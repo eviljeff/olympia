@@ -37,6 +37,10 @@ select = [
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
 
+[tool.ruff.format]
+quote-style = "single"
+line-ending = "lf"
+
 [tool.ruff.isort]
 combine-as-imports = true
 lines-after-imports = 2
