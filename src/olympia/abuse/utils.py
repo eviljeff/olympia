@@ -382,6 +382,7 @@ class CinderActionDeleteRating(CinderAction):
 
 class CinderActionTargetAppealApprove(AnyTargetMixin, AnyOwnerEmailMixin, CinderAction):
     description = 'Reported content is within policy, after appeal'
+    reporter_template_path = 'abuse/emails/reporter_content_approve.txt'
 
     def process_action(self):
         target = self.target
@@ -404,6 +405,7 @@ class CinderActionTargetAppealApprove(AnyTargetMixin, AnyOwnerEmailMixin, Cinder
 
 class CinderActionOverrideApprove(CinderActionTargetAppealApprove):
     description = 'Reported content is within policy, after override'
+    reporter_template_path = None
 
 
 class CinderActionApproveNoAction(AnyTargetMixin, NoActionMixin, CinderAction):
@@ -426,6 +428,21 @@ class CinderActionTargetAppealRemovalAffirmation(
     AnyTargetMixin, NoActionMixin, AnyOwnerEmailMixin, CinderAction
 ):
     description = 'Reported content is still offending, after appeal.'
+
+    @property
+    def reporter_template_path(self):
+        # We use this class for multiple content types but the takedown is type specific
+        match self.target:
+            case target if isinstance(target, Addon):
+                return 'abuse/emails/reporter_takedown_addon.txt'
+            case target if isinstance(target, UserProfile):
+                return 'abuse/emails/reporter_takedown_user.txt'
+            case target if isinstance(target, Collection):
+                return 'abuse/emails/reporter_takedown_collection.txt'
+            case target if isinstance(target, Rating):
+                return 'abuse/emails/reporter_takedown_rating.txt'
+            case target:
+                return None
 
 
 class CinderActionIgnore(AnyTargetMixin, NoActionMixin, CinderAction):

@@ -102,46 +102,25 @@ class BaseTestCinderAction:
         assert self.decision.notes not in mail.outbox[0].body
         assert self.decision.notes not in mail.outbox[1].body
 
-    def _test_reporter_content_approve_email(self, subject):
-        assert mail.outbox[0].to == ['email@domain.com']
-        assert mail.outbox[1].to == [self.abuse_report_auth.reporter.email]
-        assert mail.outbox[0].subject == (
-            subject + f' [ref:ab89/{self.abuse_report_no_auth.id}]'
-        )
-        assert mail.outbox[1].subject == (
-            subject + f' [ref:ab89/{self.abuse_report_auth.id}]'
-        )
-        assert 'does not violate Mozilla' in mail.outbox[0].body
-        assert 'does not violate Mozilla' in mail.outbox[1].body
-        assert 'was correct' not in mail.outbox[0].body
+    def _test_reporter_content_approve_email(self, mail_item, subject, email, report):
+        assert mail_item.to == [email]
+        assert mail_item.subject == subject + f' [ref:ab89/{report.id}]'
+        assert 'does not violate Mozilla' in mail_item.body
+        assert 'was correct' not in mail_item.body
         assert (
             reverse(
                 'abuse.appeal_reporter',
                 kwargs={
-                    'abuse_report_id': self.abuse_report_no_auth.id,
+                    'abuse_report_id': report.id,
                     'decision_cinder_id': self.decision.cinder_id,
                 },
             )
-            in mail.outbox[0].body
+            in mail_item.body
         )
-        assert (
-            reverse(
-                'abuse.appeal_reporter',
-                kwargs={
-                    'abuse_report_id': self.abuse_report_auth.id,
-                    'decision_cinder_id': self.decision.cinder_id,
-                },
-            )
-            in mail.outbox[1].body
-        )
-        assert f'[ref:ab89/{self.abuse_report_no_auth.id}]' in mail.outbox[0].body
-        assert f'[ref:ab89/{self.abuse_report_auth.id}]' in mail.outbox[1].body
-        assert '&quot;' not in mail.outbox[0].body
-        assert '&quot;' not in mail.outbox[1].body
-        assert '&lt;b&gt;' not in mail.outbox[0].body
-        assert '&lt;b&gt;' not in mail.outbox[1].body
-        assert self.decision.notes not in mail.outbox[0].body
-        assert self.decision.notes not in mail.outbox[1].body
+        assert f'[ref:ab89/{report.id}]' in mail_item.body
+        assert '&quot;' not in mail_item.body
+        assert '&lt;b&gt;' not in mail_item.body
+        assert self.decision.notes not in mail_item.body
 
     def _test_reporter_appeal_takedown_email(self, subject):
         assert mail.outbox[0].to == [self.abuse_report_auth.reporter.email]
@@ -212,22 +191,30 @@ class BaseTestCinderAction:
             assert log_token.uuid.hex in mail_item.reply_to[0]
 
     def _test_owner_restore_email(self, subject):
-        mail_item = mail.outbox[0]
-        assert len(mail.outbox) == 1
+        mail_item = mail.outbox[-1]
         self._check_owner_email(mail_item, subject, 'we have restored')
         assert 'right to appeal' not in mail_item.body
         assert self.decision.notes in mail_item.body
 
-    def _test_approve_appeal_or_override(CinderActionClass):
+    def _test_approve_appeal_or_override(self, CinderActionClass):
         raise NotImplementedError
 
     def test_approve_appeal_success(self):
+        original_job = CinderJob.objects.create(
+            decision=CinderDecision.objects.create(
+                action=self.decision.action,
+                appeal_job=self.cinder_job,
+                user=self.user,
+            )
+        )
+        # move one of the reports to the orginal job
+        self.abuse_report_no_auth.update(cinder_job=original_job)
         self._test_approve_appeal_or_override(CinderActionTargetAppealApprove)
-        assert 'After reviewing your appeal' in mail.outbox[0].body
+        assert 'After reviewing your appeal' in mail.outbox[-1].body
 
     def test_approve_override(self):
         self._test_approve_appeal_or_override(CinderActionOverrideApprove)
-        assert 'After reviewing your appeal' not in mail.outbox[0].body
+        assert 'After reviewing your appeal' not in mail.outbox[-1].body
 
     def _test_reporter_no_action_taken(
         self,
@@ -240,7 +227,18 @@ class BaseTestCinderAction:
     def test_reporter_content_approve_report(self):
         subject = self._test_reporter_no_action_taken()
         assert len(mail.outbox) == 2
-        self._test_reporter_content_approve_email(subject)
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            'email@domain.com',
+            self.abuse_report_no_auth,
+        )
+        self._test_reporter_content_approve_email(
+            mail.outbox[1],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
+        )
 
     def test_reporter_appeal_approve(self):
         original_job = CinderJob.objects.create(
@@ -269,7 +267,18 @@ class BaseTestCinderAction:
             ActionClass=CinderActionApproveInitialDecision
         )
         assert len(mail.outbox) == 3
-        self._test_reporter_content_approve_email(subject)
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            'email@domain.com',
+            self.abuse_report_no_auth,
+        )
+        self._test_reporter_content_approve_email(
+            mail.outbox[1],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
+        )
         assert 'has been approved' in mail.outbox[-1].body
 
     def test_notify_reporters_reporters_provided(self):
@@ -391,7 +400,15 @@ class TestCinderActionUser(BaseTestCinderAction, TestCase):
 
         self.cinder_job.notify_reporters(action)
         action.notify_owners()
-        self._test_owner_restore_email(f'Mozilla Add-ons: {self.user.name}')
+        assert len(mail.outbox) == 2
+        subject = f'Mozilla Add-ons: {self.user.name}'
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
+        )
+        self._test_owner_restore_email(subject)
 
     def test_target_appeal_decline(self):
         self.user.update(banned=self.days_ago(1), deleted=True)
@@ -476,7 +493,15 @@ class TestCinderActionAddon(BaseTestCinderAction, TestCase):
 
         self.cinder_job.notify_reporters(action)
         action.notify_owners()
-        self._test_owner_restore_email(f'Mozilla Add-ons: {self.addon.name}')
+        assert len(mail.outbox) == 2
+        subject = f'Mozilla Add-ons: {self.addon.name}'
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
+        )
+        self._test_owner_restore_email(subject)
 
     def _test_reporter_no_action_taken(
         self,
@@ -926,7 +951,15 @@ class TestCinderActionCollection(BaseTestCinderAction, TestCase):
 
         self.cinder_job.notify_reporters(action)
         action.notify_owners()
-        self._test_owner_restore_email(f'Mozilla Add-ons: {self.collection.name}')
+        assert len(mail.outbox) == 2
+        subject = f'Mozilla Add-ons: {self.collection.name}'
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
+        )
+        self._test_owner_restore_email(subject)
 
     def test_target_appeal_decline(self):
         self.collection.update(deleted=True)
@@ -1028,9 +1061,15 @@ class TestCinderActionRating(BaseTestCinderAction, TestCase):
 
         self.cinder_job.notify_reporters(action)
         action.notify_owners()
-        self._test_owner_restore_email(
-            f'Mozilla Add-ons: "Saying ..." for {self.rating.addon.name}'
+        assert len(mail.outbox) == 2
+        subject = f'Mozilla Add-ons: "Saying ..." for {self.rating.addon.name}'
+        self._test_reporter_content_approve_email(
+            mail.outbox[0],
+            subject,
+            self.abuse_report_auth.reporter.email,
+            self.abuse_report_auth,
         )
+        self._test_owner_restore_email(subject)
 
     def test_target_appeal_decline(self):
         self.rating.delete()
