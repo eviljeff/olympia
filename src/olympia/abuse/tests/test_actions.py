@@ -12,8 +12,7 @@ from olympia.constants.abuse import DECISION_ACTIONS
 from olympia.core import set_user
 from olympia.ratings.models import Rating
 
-from ..models import AbuseReport, CinderAppeal, CinderDecision, CinderJob, CinderPolicy
-from ..utils import (
+from ..actions import (
     CinderActionApproveInitialDecision,
     CinderActionApproveNoAction,
     CinderActionBanUser,
@@ -27,6 +26,7 @@ from ..utils import (
     CinderActionTargetAppealApprove,
     CinderActionTargetAppealRemovalAffirmation,
 )
+from ..models import AbuseReport, CinderAppeal, CinderDecision, CinderJob, CinderPolicy
 
 
 class BaseTestCinderAction:

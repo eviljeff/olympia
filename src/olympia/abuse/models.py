@@ -24,16 +24,7 @@ from olympia.ratings.models import Rating
 from olympia.users.models import UserProfile
 from olympia.versions.models import Version, VersionReviewerFlags
 
-from .cinder import (
-    CinderAddon,
-    CinderAddonHandledByReviewers,
-    CinderCollection,
-    CinderRating,
-    CinderReport,
-    CinderUnauthenticatedReporter,
-    CinderUser,
-)
-from .utils import (
+from .actions import (
     CinderActionAlreadyRemoved,
     CinderActionApproveInitialDecision,
     CinderActionApproveNoAction,
@@ -49,6 +40,15 @@ from .utils import (
     CinderActionRejectVersionDelayed,
     CinderActionTargetAppealApprove,
     CinderActionTargetAppealRemovalAffirmation,
+)
+from .entities import (
+    CinderAddon,
+    CinderAddonHandledByReviewers,
+    CinderCollection,
+    CinderRating,
+    CinderReport,
+    CinderUnauthenticatedReporter,
+    CinderUser,
 )
 
 

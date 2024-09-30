@@ -21,7 +21,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 import olympia.core.logger
-from olympia.abuse.cinder import CinderAddonHandledByReviewers
+from olympia.abuse.entities import CinderAddonHandledByReviewers
 from olympia.abuse.tasks import appeal_to_cinder
 from olympia.accounts.utils import redirect_for_login
 from olympia.accounts.views import AccountViewSet

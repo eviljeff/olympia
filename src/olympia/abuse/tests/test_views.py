@@ -32,13 +32,13 @@ from olympia.constants.abuse import DECISION_ACTIONS
 from olympia.core import get_user, set_user
 from olympia.ratings.models import Rating
 
-from ..models import AbuseReport, CinderAppeal, CinderDecision, CinderJob
-from ..utils import (
+from ..actions import (
     CinderActionApproveNoAction,
     CinderActionDisableAddon,
     CinderActionTargetAppealApprove,
     CinderActionTargetAppealRemovalAffirmation,
 )
+from ..models import AbuseReport, CinderAppeal, CinderDecision, CinderJob
 from ..views import CinderInboundPermission, cinder_webhook, filter_enforcement_actions
 
 

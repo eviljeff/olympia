@@ -4,8 +4,8 @@ from django.core.management.base import BaseCommand
 
 import olympia.core.logger
 from olympia import amo
+from olympia.abuse.actions import CinderActionRejectVersionDelayed
 from olympia.abuse.models import CinderDecision, CinderJob
-from olympia.abuse.utils import CinderActionRejectVersionDelayed
 from olympia.activity.models import ActivityLog
 from olympia.addons.models import Addon, AddonReviewerFlags
 from olympia.constants.abuse import DECISION_ACTIONS

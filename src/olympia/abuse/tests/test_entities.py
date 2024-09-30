@@ -34,7 +34,7 @@ from olympia.reviewers.models import NeedsHumanReview
 from olympia.users.models import UserProfile
 from olympia.versions.models import VersionPreview
 
-from ..cinder import (
+from ..entities import (
     CinderAddon,
     CinderAddonHandledByReviewers,
     CinderCollection,

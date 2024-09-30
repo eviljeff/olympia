@@ -35,23 +35,7 @@ from olympia.ratings.models import Rating
 from olympia.reviewers.models import NeedsHumanReview
 from olympia.versions.models import Version, VersionReviewerFlags
 
-from ..cinder import (
-    CinderAddon,
-    CinderAddonHandledByReviewers,
-    CinderCollection,
-    CinderRating,
-    CinderUnauthenticatedReporter,
-    CinderUser,
-)
-from ..models import (
-    AbuseReport,
-    AbuseReportManager,
-    CinderAppeal,
-    CinderDecision,
-    CinderJob,
-    CinderPolicy,
-)
-from ..utils import (
+from ..actions import (
     CinderActionAlreadyRemoved,
     CinderActionApproveInitialDecision,
     CinderActionApproveNoAction,
@@ -66,6 +50,22 @@ from ..utils import (
     CinderActionRejectVersionDelayed,
     CinderActionTargetAppealApprove,
     CinderActionTargetAppealRemovalAffirmation,
+)
+from ..entities import (
+    CinderAddon,
+    CinderAddonHandledByReviewers,
+    CinderCollection,
+    CinderRating,
+    CinderUnauthenticatedReporter,
+    CinderUser,
+)
+from ..models import (
+    AbuseReport,
+    AbuseReportManager,
+    CinderAppeal,
+    CinderDecision,
+    CinderJob,
+    CinderPolicy,
 )
 
 
