@@ -20,11 +20,7 @@ from olympia.constants.abuse import DECISION_ACTIONS
 from olympia.reviewers.models import NeedsHumanReview, UsageTier
 from olympia.users.models import UserProfile
 
-from .cinder import (
-    CinderAddonContentReview,
-    CinderAddonHandledByLegal,
-    CinderContentChange,
-)
+from .cinder import CinderAddonContentReview, CinderContentChange
 from .models import (
     AbuseReport,
     CinderJob,
@@ -239,28 +235,6 @@ def sync_cinder_policies():
     policies_in_cinder = sync_policies(data)
     delete_unused_orphaned_policies(policies_in_cinder)
     mark_used_orphaned_policies(policies_in_cinder)
-
-
-@task
-@use_primary_db
-def handle_forward_to_legal_action(*, decision_pk):
-    decision = ContentDecision.objects.get(id=decision_pk)
-    old_job = getattr(decision, 'cinder_job', None)
-    entity_helper = CinderAddonHandledByLegal(decision.addon)
-    job_id = entity_helper.workflow_recreate(reasoning=decision.reasoning, job=old_job)
-
-    new_job, _ = CinderJob.objects.update_or_create(
-        job_id=job_id,
-        defaults={
-            'resolvable_in_reviewer_tools': False,
-            'target_addon': decision.addon,
-        },
-    )
-
-    if old_job:
-        # Update fks to connected objects
-        AbuseReport.objects.filter(cinder_job=old_job).update(cinder_job=new_job)
-        ContentDecision.objects.filter(appeal_job=old_job).update(appeal_job=new_job)
 
 
 @task

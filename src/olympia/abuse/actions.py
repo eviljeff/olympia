@@ -725,9 +725,28 @@ class ContentActionForwardToLegal(ContentAction):
     valid_targets = (Addon,)
 
     def process_action(self, release_hold=False):
-        from olympia.abuse.tasks import handle_forward_to_legal_action
+        from .cinder import CinderAddonHandledByLegal
+        from .models import CinderJob
 
-        handle_forward_to_legal_action.delay(decision_pk=self.decision.id)
+        entity_helper = CinderAddonHandledByLegal(self.target)
+        if self.decision.cinder_job:
+            job_id = self.decision.cinder_job.job_id
+            entity_helper.move_job(job_id=job_id)
+        else:
+            job_id = entity_helper.report(
+                report=None, reporter=None, message=self.decision.reasoning
+            )
+        job, _ = CinderJob.objects.update_or_create(
+            job_id=job_id,
+            defaults={
+                'resolvable_in_reviewer_tools': False,
+                'target_addon': self.decision.addon,
+            },
+        )
+        if not self.decision.cinder_job:
+            self.decision.update(cinder_job=job)
+        entity_helper.post_queue_move(job=job)
+
         return self.log_action(amo.LOG.REQUEST_LEGAL)
 
 

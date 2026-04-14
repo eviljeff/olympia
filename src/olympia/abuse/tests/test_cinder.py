@@ -191,6 +191,29 @@ class BaseTestCinderCase:
         assert instance.get_str(None) == ''
         assert instance.get_str(' ') == ''
 
+    def test_move_job(self):
+        cinder_entity_instance = self.CinderClass(self._create_dummy_target())
+        job = CinderJob.objects.create(job_id='12345')
+
+        responses.add(
+            responses.POST,
+            f'{settings.CINDER_SERVER_URL}v2/jobs/{job.job_id}/move',
+            json={'success': True, 'message': 'Very nice!'},
+            status=202,
+        )
+        assert cinder_entity_instance.move_job(job_id=job.job_id) == 'Very nice!'
+        data = json.loads(responses.calls[0].request.body)
+        assert data['job_ids'] == ['12345']
+        assert data['queue_slug'] == cinder_entity_instance.queue
+        responses.add(
+            responses.POST,
+            f'{settings.CINDER_SERVER_URL}v2/jobs/{job.job_id}/move',
+            json={'success': False, 'message': 'Wa wa wee wa'},
+            status=202,
+        )
+        with self.assertRaises(requests.HTTPError):
+            cinder_entity_instance.move_job(job_id=job.job_id)
+
 
 class TestCinderAddon(BaseTestCinderCase, TestCase):
     CinderClass = CinderAddon
@@ -1528,17 +1551,6 @@ class TestCinderAddonHandledByReviewers(TestCinderAddon):
             == NeedsHumanReview.REASONS.CINDER_APPEAL_ESCALATION
         )
 
-    def test_post_queue_move_2nd_level_approval(self):
-        cinder_instance, cinder_job, listed_version, unlisted_version = (
-            self._setup_post_queue_move_test()
-        )
-        cinder_instance.post_queue_move(job=cinder_job, from_2nd_level=True)
-        self._check_post_queue_move_test(
-            listed_version,
-            unlisted_version,
-            NeedsHumanReview.REASONS.SECOND_LEVEL_REQUEUE,
-        )
-
     def test_post_queue_move_specific_version(self):
         # but if we have a version specified, we flag that version
         cinder_instance, cinder_job, listed_version, unlisted_version = (
@@ -1564,49 +1576,6 @@ class TestCinderAddonHandledByReviewers(TestCinderAddon):
         activity = ActivityLog.objects.get(action=amo.LOG.NEEDS_HUMAN_REVIEW_CINDER.id)
         assert activity.arguments == [other_version]
         assert activity.user == self.task_user
-
-    def test_workflow_recreate(self):
-        cinder_instance, cinder_job, listed_version, unlisted_version = (
-            self._setup_post_queue_move_test()
-        )
-        responses.add(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '2'},
-            status=201,
-        )
-
-        assert cinder_instance.workflow_recreate(reasoning='foo', job=cinder_job) == '2'
-        assert json.loads(responses.calls[0].request.body)['reasoning'] == 'foo'
-
-        self._check_post_queue_move_test(
-            listed_version, unlisted_version, NeedsHumanReview.REASONS.CINDER_ESCALATION
-        )
-
-    def test_workflow_recreate_from_2nd_level(self):
-        cinder_instance, cinder_job, listed_version, unlisted_version = (
-            self._setup_post_queue_move_test()
-        )
-        responses.add(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '3'},
-            status=201,
-        )
-
-        assert (
-            cinder_instance.workflow_recreate(
-                reasoning='foo', job=cinder_job, from_2nd_level=True
-            )
-            == '3'
-        )
-        assert json.loads(responses.calls[0].request.body)['reasoning'] == 'foo'
-
-        self._check_post_queue_move_test(
-            listed_version,
-            unlisted_version,
-            NeedsHumanReview.REASONS.SECOND_LEVEL_REQUEUE,
-        )
 
     def test_post_queue_move_no_versions_to_flag(self):
         cinder_instance, cinder_job, listed_version, unlisted_version = (
@@ -1645,28 +1614,6 @@ class TestCinderAddonHandledByReviewers(TestCinderAddon):
         assert listed_version.needshumanreview_set.exists()
         assert other_version.needshumanreview_set.exists()
 
-    def test_workflow_recreate_no_versions_to_flag(self):
-        cinder_instance, cinder_job, listed_version, unlisted_version = (
-            self._setup_post_queue_move_test()
-        )
-        NeedsHumanReview.objects.create(
-            reason=NeedsHumanReview.REASONS.CINDER_ESCALATION, version=listed_version
-        )
-        NeedsHumanReview.objects.create(
-            reason=NeedsHumanReview.REASONS.CINDER_ESCALATION, version=unlisted_version
-        )
-        assert NeedsHumanReview.objects.count() == 2
-        ActivityLog.objects.all().delete()
-        responses.add(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '2'},
-            status=201,
-        )
-        assert cinder_instance.workflow_recreate(reasoning=None, job=cinder_job) == '2'
-        assert NeedsHumanReview.objects.count() == 2
-        assert ActivityLog.objects.count() == 0
-
     @override_switch('dsa-cinder-forwarded-review', active=False)
     def test_post_queue_move_waffle_switch_off(self):
         # Escalation when the waffle switch is off is essentially a no-op on
@@ -1698,26 +1645,6 @@ class TestCinderAddonHandledByReviewers(TestCinderAddon):
         assert not other_version.due_date
         assert not listed_version.reload().needshumanreview_set.exists()
         assert not unlisted_version.reload().needshumanreview_set.exists()
-
-    @override_switch('dsa-cinder-forwarded-review', active=False)
-    def test_workflow_recreate_waffle_switch_off(self):
-        cinder_instance, cinder_job, listed_version, unlisted_version = (
-            self._setup_post_queue_move_test()
-        )
-        responses.add(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '2'},
-            status=201,
-        )
-        assert cinder_instance.workflow_recreate(reasoning='', job=cinder_job) == '2'
-
-        assert listed_version.addon.reload().status == amo.STATUS_APPROVED
-        assert not listed_version.reload().needshumanreview_set.exists()
-        assert not listed_version.due_date
-        assert not unlisted_version.reload().needshumanreview_set.exists()
-        assert not unlisted_version.due_date
-        assert ActivityLog.objects.count() == 0
 
 
 class TestCinderAddonContentReview(TestCinderAddon):
@@ -2187,39 +2114,6 @@ class TestCinderAddonHandledByLegal(TestCinderAddon):
         # addon-type.
         target = self._create_dummy_target(type=amo.ADDON_STATICTHEME)
         assert self.CinderClass(target).queue_appeal == 'legal-escalations'
-
-    def test_workflow_recreate(self):
-        """Test that a job is created in the legal queue."""
-        # Specifically create signed files because there are some circumstances where we
-        # filter out unsigned files from NeedsHumanReview and we don't want a false
-        # positive.
-        addon = self._create_dummy_target(file_kw={'is_signed': True})
-        listed_version = addon.current_version
-        unlisted_version = version_factory(
-            addon=addon, channel=amo.CHANNEL_UNLISTED, file_kw={'is_signed': True}
-        )
-        cinder_instance = self.CinderClass(addon)
-        cinder_job = CinderJob.objects.create(target_addon=addon, job_id='1')
-        responses.add(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '2'},
-            status=201,
-        )
-
-        assert cinder_instance.workflow_recreate(reasoning='foo', job=cinder_job) == '2'
-
-        # Check that we've not inadvertently changed the status
-        assert listed_version.addon.reload().status == amo.STATUS_APPROVED
-        # And check there have been no needshumanreview instances created or activity
-        # - only reviewer tools handled jobs should generated needshumanreviews
-        assert not listed_version.reload().needshumanreview_set.exists()
-        assert not unlisted_version.reload().needshumanreview_set.exists()
-        assert (
-            ActivityLog.objects.filter(action=amo.LOG.NEEDS_HUMAN_REVIEW.id).count()
-            == 0
-        )
-        assert json.loads(responses.calls[0].request.body)['reasoning'] == 'foo'
 
 
 class TestCinderUser(BaseTestCinderCase, TestCase):

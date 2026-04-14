@@ -1,5 +1,4 @@
 import json
-import uuid
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -905,31 +904,26 @@ class TestContentActionDisableAddon(BaseTestContentAction, TestCase):
 
     def test_forward_from_reviewers_with_job(self):
         self.decision.update(action=DECISION_ACTIONS.AMO_LEGAL_FORWARD)
+        job = self.decision.cinder_job
         action = ContentActionForwardToLegal(self.decision)
-        responses.add_callback(
-            responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/jobs/{self.cinder_job.job_id}/decision',
-            callback=lambda r: (201, {}, json.dumps({'uuid': uuid.uuid4().hex})),
-        )
         responses.add(
             responses.POST,
-            f'{settings.CINDER_SERVER_URL}v1/create_report',
-            json={'job_id': '1234-xyz'},
-            status=201,
+            f'{settings.CINDER_SERVER_URL}v2/jobs/{job.job_id}/move',
+            json={'success': True, 'message': 'yes!'},
+            status=202,
         )
 
         action.process_action()
 
-        new_cinder_job = CinderJob.objects.get(job_id='1234-xyz')
-        assert new_cinder_job != self.cinder_job
-        assert new_cinder_job.job_id == '1234-xyz'
-        # The reports should now be part of the new job instead
-        assert self.abuse_report_auth.reload().cinder_job == new_cinder_job
-        assert self.abuse_report_no_auth.reload().cinder_job == new_cinder_job
+        job.reload()
+        # no new job
+        assert not CinderJob.objects.exclude(
+            job_id=self.decision.cinder_job.job_id
+        ).exists()
         request_body = json.loads(responses.calls[0].request.body)
-        assert request_body['reasoning'] == self.decision.reasoning
+        assert request_body['job_ids'] == [job.job_id]
         assert request_body['queue_slug'] == 'legal-escalations'
-        assert not new_cinder_job.resolvable_in_reviewer_tools
+        assert job.resolvable_in_reviewer_tools is False
 
     def test_log_action_args(self):
         activity = self.ActionClass(self.decision).log_action(self.activity_log_action)

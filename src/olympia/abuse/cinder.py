@@ -209,17 +209,22 @@ class CinderEntity:
         else:
             raise HTTPError(response.content)
 
+    def move_job(self, *, job_id):
+        url = f'{settings.CINDER_SERVER_URL}v2/jobs/{job_id}/move'
+        data = {'job_ids': [job_id], 'queue_slug': self.queue}
+        response = requests.post(url, json=data, headers=self.get_cinder_http_headers())
+        if response.status_code == 202 and response.json().get('success') is True:
+            return response.json().get('message')
+        else:
+            raise HTTPError(response.content)
+
     def post_report(self, *, job):
         """Callback triggered after a report has been posted to Cinder API and
         a job has been created or fetched for that report. The job is passed as
         a keyword argument."""
         pass
 
-    def workflow_recreate(self, *, reasoning, job=None, from_2nd_level=False):
-        """Recreate a job in a queue."""
-        raise NotImplementedError
-
-    def post_queue_move(self, *, job, from_2nd_level=False):
+    def post_queue_move(self, *, job):
         """Callback triggered after a job has moved to, or been created in, a different
         queue."""
         raise NotImplementedError
@@ -409,14 +414,7 @@ class CinderAddon(CinderEntity):
                 ],
             }
 
-    def workflow_recreate(self, *, reasoning, job=None, from_2nd_level=False):
-        """Recreate a job in a queue."""
-        job_id = self.report(report=None, reporter=None, message=reasoning)
-        if job:
-            self.post_queue_move(job=job, from_2nd_level=from_2nd_level)
-        return job_id
-
-    def post_queue_move(self, *, job, from_2nd_level=False):
+    def post_queue_move(self, *, job):
         # We don't need to do anything for, or after, the move, by default
         pass
 
@@ -627,16 +625,13 @@ class CinderAddonHandledByReviewers(CinderAddon):
         self.flag_for_human_review(versions=versions, appeal=True)
         return super().appeal(decision_cinder_id=decision_cinder_id, **kwargs)
 
-    def post_queue_move(self, *, job, from_2nd_level=False):
+    def post_queue_move(self, *, job):
         # When the move is to AMO reviewers we need to flag versions for review
         self.versions_strings = set(
             job.abusereport_set.values_list('addon_version', flat=True)
         )
         self.flag_for_human_review(
-            versions=self.get_versions(),
-            appeal=job.is_appeal,
-            forwarded=True,
-            second_level=from_2nd_level,
+            versions=self.get_versions(), appeal=job.is_appeal, forwarded=True
         )
 
 

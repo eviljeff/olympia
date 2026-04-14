@@ -969,7 +969,7 @@ class ReviewHelper:
                 'If you have concerns about the legality of this add-on that requires '
                 "Mozilla's legal to investigate, enter your comments in the area "
                 'below. They will not be sent to the developer.'
-                'If it relates to an open abuse report job or appeal resolve then job.'
+                'If it relates to an open abuse report job or appeal, resolve the job.'
             ),
             'minimal': True,
             'available': is_appropriate_reviewer,
