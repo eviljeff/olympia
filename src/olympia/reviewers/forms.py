@@ -116,12 +116,14 @@ class VersionsChoiceWidget(forms.SelectMultiple):
     actions_filters = {
         amo.CHANNEL_UNLISTED: {
             amo.STATUS_APPROVED: [
+                'review_with_policy',
                 'block_multiple_versions',
                 'confirm_multiple_versions',
                 'reject_multiple_versions',
                 'reply',
             ],
             amo.STATUS_AWAITING_REVIEW: [
+                'review_with_policy',
                 'approve_multiple_versions',
                 'reject_multiple_versions',
                 'reply',
@@ -133,11 +135,13 @@ class VersionsChoiceWidget(forms.SelectMultiple):
         },
         amo.CHANNEL_LISTED: {
             amo.STATUS_APPROVED: [
+                'review_with_policy',
                 'block_multiple_versions',
                 'reject_multiple_versions',
                 'reply',
             ],
             amo.STATUS_AWAITING_REVIEW: [
+                'review_with_policy',
                 'approve_multiple_versions',
                 'reject_multiple_versions',
                 'reply',
@@ -331,12 +335,10 @@ class CinderPolicyWidget(forms.CheckboxSelectMultiple):
         )
         attrs['class'] = 'data-toggle'
         attrs['data-value'] = ' '.join(visible_for_reviewer_actions)
-        attrs['data-enforcement-primary-actions'] = ', '.join(
-            DECISION_ACTIONS(action).label for action in enforcement_actions.primary
-        )
-        attrs['data-enforcement-followup-actions'] = ', '.join(
-            DECISION_ACTIONS(action).label for action in enforcement_actions.followup
-        )
+        attrs['data-enforcement-primary-actions'] = str(
+            [action.value for action in enforcement_actions.primary])
+        attrs['data-enforcement-followup-actions'] = str(
+            [action.value for action in enforcement_actions.followup])
         attrs['data-enforcement-actions-order'] = hash_addon_negative_actions(
             enforcement_actions
         ).hex()

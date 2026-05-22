@@ -577,7 +577,6 @@ class ReviewHelper:
                 policy_selection_enabled
                 and not is_static_theme
                 and not self.content_review
-                and addon_is_reviewable
                 and is_appropriate_reviewer
             ),
             'enforcement_actions': (
@@ -592,10 +591,7 @@ class ReviewHelper:
                 # DECISION_ACTIONS.AMO_IGNORE,
                 DECISION_ACTIONS.AMO_BLOCK_ADDON,
             ),
-            # TODO: allow multiple version selection so we can replace
-            # `reject_multiple_versions` too - we need to handle policies that would
-            # disable the add-on
-            # 'multiple_versions': True,
+            'multiple_versions': can_reject_multiple,
             'resolves_cinder_jobs': True,
             'can_attach': True,
         }
@@ -754,7 +750,7 @@ class ReviewHelper:
                 'This will reject the selected versions. '
                 'The comments will be sent to the developer.'
             ),
-            'available': can_reject_multiple,
+            'available': not policy_selection_enabled and can_reject_multiple,
             'enforcement_actions': (
                 DECISION_ACTIONS.AMO_DISABLE_ADDON,
                 DECISION_ACTIONS.AMO_REJECT_VERSION_ADDON,
@@ -807,7 +803,10 @@ class ReviewHelper:
                 'admin page.'
             ),
             'available': (
-                not is_static_theme and version_is_unlisted and is_appropriate_reviewer
+                not policy_selection_enabled
+                and not is_static_theme
+                and version_is_unlisted
+                and is_appropriate_reviewer
             ),
         }
         actions['confirm_multiple_versions'] = {

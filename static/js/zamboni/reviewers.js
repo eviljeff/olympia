@@ -133,12 +133,19 @@ function updatePolicyEnforcementActionsDisplay() {
       highestCheckedPolicy = $(this);
     }
   });
+  let $primaryActions = $("#policy-enforcement-primary-actions span");
+  let $followupActions = $("#policy-enforcement-followup-actions span");
+  $primaryActions.addClass('hidden');
+  $followupActions.addClass('hidden');
   if (highestCheckedPolicy) {
-    $("#policy-enforcement-primary-actions").text(highestCheckedPolicy.data('enforcement-primary-actions'));
-    $("#policy-enforcement-followup-actions").text(highestCheckedPolicy.data('enforcement-followup-actions'));
+    highestCheckedPolicy.data('enforcement-primary-actions').forEach(action => {
+      $primaryActions.filter(".action-" + action).removeClass('hidden');
+    });
+    highestCheckedPolicy.data('enforcement-followup-actions').forEach(action => {
+      $followupActions.filter(".action-" + action).removeClass('hidden');
+    });
   } else {
-    $("#policy-enforcement-primary-actions").text('No Action');
-    $("#policy-enforcement-followup-actions").text('');
+    $primaryActions.filter(".action-0").removeClass('hidden');
   }
 }
 
